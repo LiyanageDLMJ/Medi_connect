@@ -1,0 +1,267 @@
+/* Ensure Tailwind CSS is installed and configured correctly */
+@import "tailwindcss";
+
+
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+body {
+  display: flex;
+  flex-direction: column; /* Ensures elements are stacked */
+  justify-content: center; /* Centers vertically */
+  align-items: center; /* Centers horizontally */
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+
+
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto; /* Centers content horizontally */
+  padding: 20px;
+}
+
+
+h1 {
+  font-size: 2em;
+  line-height: 1.1;
+}
+/* Button Styles */
+.button {
+  background-color: #25a0ec; /* Sky blue color */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  display: inline-block;
+  text-align: center;
+}
+
+.button:hover {
+  background-color: #0369a1; /* Darker blue on hover */
+}
+
+.button:active {
+  transform: scale(0.95); /* Pressed effect */
+}
+
+.button:disabled {
+  background-color: #94a3b8; /* Gray for disabled button */
+  cursor: not-allowed;
+}
+/* General Button Styles */
+.btn {
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  display: inline-block;
+  text-align: center;
+}
+
+/* Details Button - Black */
+.btn-details {
+  background-color: black;
+}
+
+.btn-details:hover {
+  background-color: #333;
+}
+
+/* Apply Button - Purple */
+.btn-apply {
+  background-color: #6a0dad; /* Dark Purple */
+}
+
+.btn-apply:hover {
+  background-color: #4b0082; /* Darker Purple */
+}
+
+/* Pressed Effect */
+.btn:active {
+  transform: scale(0.95);
+}
+
+/* Disabled Button */
+.btn:disabled {
+  background-color: #94a3b8;
+  cursor: not-allowed;
+}
+
+/* Icon Cursor Pointer */
+.icon {
+  cursor: pointer;
+}
+
+/* Card Styling */
+.card {
+  background-color: rgb(142, 138, 138);
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.15); /* Subtle shadow */
+  transition: background-color 0.3s ease-in-out;
+}
+
+/* Hover Effect - Light Blue */
+.card:hover {
+  background-color: #57b0f5; /* Light blue */
+}
+
+/* Light Mode Styles */
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color:#fff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+}
+/* Footer container with gradient background */
+.footer-container {
+  position: relative;
+  background: linear-gradient(180deg, #66b0f2 0%, #4a9cf2 100%);
+  color: #fff;
+  padding: 3rem 1rem 2rem; /* top, sides, bottom */
+  margin-top: 2rem;
+  overflow: hidden; /* ensures the shape displays correctly */
+}
+
+/* Triangular shape that “cuts” into the footer at the top */
+.footer-shape {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 40px;
+  background: #4a9cf2;
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  /* 
+     You can tweak the clip-path to change the shape.
+     For a bigger or smaller triangle, adjust width/height and polygon points.
+  */
+}
+
+/* Main content area of the footer */
+.footer-content {
+  display: flex;
+  flex-wrap: wrap; /* ensures responsiveness */
+  justify-content: space-around;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Each column in the footer */
+.footer-col {
+  flex: 1 1 200px; /* flexible basis for responsiveness */
+  margin: 1rem;
+  min-width: 200px;
+}
+
+/* Titles and subtitles */
+.footer-title {
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.footer-subtitle {
+  margin: 1rem 0 0.5rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+/* Text items */
+.footer-item {
+  display: flex;
+  align-items: center;
+  margin: 0.25rem 0;
+}
+
+/* Footer links */
+.footer-link {
+  display: block; /* or inline-flex if you want icons next to text horizontally */
+  color: #fff;
+  margin: 0.25rem 0;
+  text-decoration: none;
+  transition: color 0.2s ease-in-out;
+}
+
+.footer-link:hover {
+  color: #cce8ff;
+}
+
+/* Icons styling */
+.footer-icon {
+  margin-right: 0.5rem;
+}
+
+
+
+
+
+
+
+
+li {
+  list-style: none;
+  cursor: pointer;
+  padding: 15px 10px;
+  border-radius: 8px; /* Ensures rounded corners */
+  transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease, border-radius 0.3s ease;
+  position: relative;
+}
+
+/* Hover effect */
+li:hover {
+  background-color: #184389; /* Blue background */
+  color: white;
+  border-radius: 12px; /* Slightly increases rounding on hover */
+  box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.2); /* Soft shadow */
+}
+
+/* Optional: Border effect on hover */
+li::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 12px; /* Ensures border follows rounded corners */
+  transition: border-color 0.3s ease, border-radius 0.3s ease;
+}
+
+li:hover::before {
+  border-color: white; /* Shows border on hover */
+  border-radius: 12px; /* Ensures border stays rounded */
+}
+
