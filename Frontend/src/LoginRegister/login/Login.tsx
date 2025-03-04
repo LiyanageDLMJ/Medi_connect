@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { InputGroup, Label, Input } from '../components/StyledFormComponents';
 import Navbar from '../components/Navbar';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Here you would typically make an API call to authenticate
     console.log('Login attempt with:', { email, password });
+    // For now, we'll just redirect to dashboard
+    navigate('/dashboard');
   }
 
   return (
@@ -39,6 +43,9 @@ const LoginPage = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+              <ForgotPasswordLink>
+                <Link to="/forgot-password">Forgot Password?</Link>
+              </ForgotPasswordLink>
             </InputGroup>
             <LoginButton type="submit">
               Login <span>→</span>
@@ -49,7 +56,7 @@ const LoginPage = () => {
           </LoginForm>
         </LoginSection>
       </ContentWrapper>
-      
+
     </LoginContainer>
   );
 };
@@ -62,40 +69,14 @@ const LoginContainer = styled.div`
   background: linear-gradient(180deg, #E6F0FF 0%, #FFFFFF 100%);
 `;
 
-const NavBar = styled.nav`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 4rem;
-  background: transparent;
-`;
-
-const Logo = styled.div`
-  font-size: 1.5rem;
-  font-weight: bold;
-`;
-
-const NavLinks = styled.div`
-  display: flex;
-  gap: 2rem;
-`;
-
-const NavLink = styled.a`
-  color: #333;
-  text-decoration: none;
-  &:hover {
-    color: #2E5FB7;
-  }
-`;
-
 const ContentWrapper = styled.div`
   flex: 1;
   display: flex;
-  width: 100%;
-  height: 100%;
   justify-content: center;
   align-items: center;
   padding: 2rem;
+  width: 100%;
+  height: 100%;
 `;
 
 const LoginSection = styled.div`
@@ -105,7 +86,6 @@ const LoginSection = styled.div`
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 400px;
-  
 `;
 
 const LoginTitle = styled.h1`
@@ -146,6 +126,21 @@ const RegisterLink = styled.p`
   a {
     color: #2E5FB7;
     text-decoration: none;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+`;
+
+const ForgotPasswordLink = styled.div`
+  text-align: right;
+  margin-top: 0.5rem;
+  
+  a {
+    color: #2E5FB7;
+    text-decoration: none;
+    font-size: 0.9rem;
+    
     &:hover {
       text-decoration: underline;
     }
