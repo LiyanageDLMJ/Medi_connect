@@ -52,7 +52,7 @@ export default function JobApplicationForm() {
       
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden">
-        <div className="bg-blue-500 py-6 px-8">
+        <div className="bg-gradient-to-tr from-[#2E5FB7] to-[#1a365d]  py-6 px-8">
           <h2 className="text-2xl font-bold text-white text-center">Job Application Form</h2>
           <p className="text-blue-100 text-center mt-2">Please fill in your details below</p>
         </div>
@@ -135,7 +135,7 @@ export default function JobApplicationForm() {
           <div className="pt-4">
             <button
               type="submit"
-              className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200"
+              className="w-full bg-gradient-to-tr from-[#2E5FB7] to-[#1a365d]  text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200"
             >
               Submit Application
             </button>
