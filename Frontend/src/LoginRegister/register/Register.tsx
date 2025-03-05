@@ -12,24 +12,19 @@ type UserType = 'doctor' | 'medical_student' | 'recruiter' | 'educational_instit
 
 interface FormData {
   userType: UserType;
-  // Common fields
   email: string;
   password: string;
   confirmPassword: string;
-  // Doctor specific fields
   profession?: string;
   specialty?: string;
   location?: string;
   higherEducation?: string;
-  // Medical Student specific fields
   currentInstitute?: string;
   yearOfStudy?: string;
   fieldOfStudy?: string;
-  // Recruiter specific fields
   companyName?: string;
   position?: string;
   industryType?: string;
-  // Educational Institute specific fields
   instituteName?: string;
   instituteType?: string;
   accreditation?: string;
@@ -84,6 +79,7 @@ const Register = () => {
               <Input
                 type="email"
                 name="email"
+                placeholder=""
                 value={formData.email}
                 onChange={handleChange}
                 required
@@ -95,6 +91,7 @@ const Register = () => {
               <Input
                 type="password"
                 name="password"
+                placeholder=""
                 value={formData.password}
                 onChange={handleChange}
                 required
@@ -106,6 +103,7 @@ const Register = () => {
               <Input
                 type="password"
                 name="confirmPassword"
+                placeholder=""
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 required
@@ -121,20 +119,18 @@ const Register = () => {
               Register <span>→</span>
             </RegisterButton>
             <RegisterLink>
-              Already have an account? <Link to="/">Login</Link>
+              Already have an account? <Link to="/login">Login</Link>
             </RegisterLink>
           </RegisterForm>
         </RegisterSection>
       </ContentWrapper>
-      
     </RegisterContainer>
   );
 };
 
-// Styled components that are specific to Register.tsx
 const RegisterContainer = styled.div`
   height: 100vh;
-  width: 100vw;
+  width: 100%;
   display: flex;
   flex-direction: column;
   background: linear-gradient(180deg, #E6F0FF 0%, #FFFFFF 100%);
@@ -142,12 +138,12 @@ const RegisterContainer = styled.div`
 
 const ContentWrapper = styled.div`
   flex: 1;
-  width: 100%;
-  height: 100%;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   padding: 2rem;
+  width: 100%;
+  height: 100%;
 `;
 
 const RegisterSection = styled.div`
@@ -201,13 +197,6 @@ const RegisterLink = styled.p`
       text-decoration: underline;
     }
   }
-`;
-
-const Copyright = styled.div`
-  text-align: center;
-  color: #666;
-  padding-top: 1rem;
-  border-top: 1px solid #ddd;
 `;
 
 export default Register;

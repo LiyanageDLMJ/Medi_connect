@@ -8,10 +8,12 @@ interface DoctorFormProps {
     location?: string;
     higherEducation?: string;
   };
-  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
 }
 
 const DoctorForm: React.FC<DoctorFormProps> = ({ formData, handleChange }) => {
+  const specialties = ['Dermatologist', 'Neurologist', 'Obstetrics and gynaecology', 'Family medicine','Cardiologist', 'Gastroenterologist', 'Internal medicine', 'Endocrinologist', 'Ophthalmologist', 'Pulmonologist', 'Rheumatologist', 'Urologist'];
+
   return (
     <>
       <InputGroup>
@@ -26,13 +28,27 @@ const DoctorForm: React.FC<DoctorFormProps> = ({ formData, handleChange }) => {
       </InputGroup>
       <InputGroup>
         <Label>Specialty</Label>
-        <Input
-          type="text"
+        <select
           name="specialty"
           value={formData.specialty || ''}
           onChange={handleChange}
           required
-        />
+          style={{
+            width: '100%',
+            color: 'Blue',
+            padding: '8px',
+            borderRadius: '4px',
+            border: '1px solid #ccc',
+            fontSize: '16px'
+          }}
+        >
+          <option value="">Select a specialty</option>
+          {specialties.map((specialty) => (
+            <option key={specialty} value={specialty}>
+              {specialty}
+            </option>
+          ))}
+        </select>
       </InputGroup>
       <InputGroup>
         <Label>Location</Label>
