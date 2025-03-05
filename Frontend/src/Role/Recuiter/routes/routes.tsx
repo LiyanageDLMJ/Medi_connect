@@ -2,7 +2,7 @@ import NavBar from "../components/NavBar/NavBar";
 import React from 'react'
 import { Routes, Route } from 'react-router-dom';
 import JobPost from "../pages/JobPost";
-import Dashboard from "../pages/dashboard";
+import Dashboard from "../pages/Dashboard";
 
 const routes = () => {
   return (

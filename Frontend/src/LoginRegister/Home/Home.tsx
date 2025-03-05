@@ -12,7 +12,7 @@ const Home = () => {
       <HeroSection>
         <HeroContent>
           <HeroTitle>
-            Your Gateway to Healthcare Excellence
+            Your Gateway to 
           </HeroTitle>
           <HeroSubtitle>
             Connect with top healthcare institutions, advance your medical career, and make a difference in patient care.
