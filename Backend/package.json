@@ -17,6 +17,7 @@
     "express-validator": "^7.2.1",
     "http": "^0.0.1-security",
     "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.12.1",
     "mssql": "^11.0.1",
     "mysql": "^2.18.1",
     "nodeman": "^1.1.2",
