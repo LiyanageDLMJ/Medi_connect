@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import router from "../Routes/BasicRouting";
 const Schema=mongoose.Schema;
 
 const CvUpdateSchema=new Schema({
@@ -16,20 +17,13 @@ const CvUpdateSchema=new Schema({
     },
     address:String 
     ,
-    qualification:{
-        type:String,
-        required:true
-    },
-    skills:{
-        type:String,
-        required:true
-    },
-    experience:{
-        type:String,
-        required:true
-    },
-    projects:{
+    specialization:{
         type:String,
         required:true
     }
 });
+const db=mongoose.connection.useDb('User');
+const CvDoctorUpdate=db.model('Doctor',CvUpdateSchema,'Doctor');
+
+
+export default CvDoctorUpdate;

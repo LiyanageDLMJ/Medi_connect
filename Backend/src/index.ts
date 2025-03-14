@@ -1,17 +1,18 @@
-const express = require("express");
-const app=express();
-const PORT=3000;
-const mongoose = require('mongoose');
-const URI="mongodb+srv://liyanagedlmj22:Mokshitha2002@cvupdate.hivx4.mongodb.net/?retryWrites=true&w=majority&appName=CvUpdate"
+import express from "express";
+import mongoose from "mongoose";
+import router from "./Routes/BasicRouting";
+import CvDocRouter from "./Routes/CvDoctorRoutes";
+import connectDB from "./Config/db";
+connectDB();
+
+const app = express();
+const PORT = 3000;
 
 
-try{
-    mongoose.connect(URI);
-    console.log("Connect to server");
-}
-catch(err){
-    console.log(err);
-}
-app.listen(PORT,()=>{
+app.use(express.json()); // ✅ Fix: added parentheses
+app.use("/api", router);
+app.use("/CvdoctorUpdate", CvDocRouter);
+
+app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
-})
+});
