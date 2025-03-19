@@ -2,6 +2,7 @@ import { useState } from "react";
 import Search from "../components/DegreeDiv/DegreeSearch"; // Adjusted to the new search component for degree programs
 import DegreeCard from "../components/DegreeDiv/DegreeCard"; // Adjusted to display degree programs
 import NavBar from "../components/NavBar/NavBar";
+import degreeImage from "../../../../asset/img.jpg"; // Import the local image
 
 const degreePrograms = [
   {
@@ -14,6 +15,8 @@ const degreePrograms = [
     tuition: "Above $50,000",
     status: "OPEN",
     statusColor: "bg-green-500",
+    image: degreeImage,
+
   },
   {
     id: 2,
@@ -25,6 +28,8 @@ const degreePrograms = [
     tuition: "Above $30,000",
     status: "INTERVIEW",
     statusColor: "bg-blue-500",
+    image: "https://example.com/image2.jpg"
+
   },
   {
     id: 3,
@@ -36,6 +41,8 @@ const degreePrograms = [
     tuition: "Above $20,000",
     status: "PENDING",
     statusColor: "bg-yellow-500",
+    image: "https://example.com/image2.jpg" 
+
   },
   {
     id: 4,
@@ -47,6 +54,7 @@ const degreePrograms = [
     tuition: "Funded",
     status: "CLOSED",
     statusColor: "bg-red-500",
+
   },
 ];
 
