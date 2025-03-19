@@ -8,5 +8,10 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
-  }
+  },
+
+"include": [
+    "src/**/*",
+    "src/types/declarations.d.ts"   // Explicitly include the declarations file
+  ]
 }
