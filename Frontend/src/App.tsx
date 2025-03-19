@@ -1,6 +1,9 @@
 import { Routes, Route } from "react-router-dom";
 import JobInternshipSearch from "./Role/Physician/pages/JobInternshipSearch";
+
+import HigherEducationSearch from "./Role/Physician/pages/HigherEducationSearch";
 import JobApplicationForm from "./Role/Physician/pages/JobApplicationForm";
+import DegreeListing from "./Role/higherEducation/pages/DegreeListing";
 import Login from"./LoginRegister/login/Login"
 import Register from "./LoginRegister/register/Register";
 import Footer from "./Components/FooterDiv/Footer"
@@ -13,8 +16,10 @@ const App = () => {
     <div>
       
       <Routes>
-        
+     
+        <Route path="/higher-education" element={<HigherEducationSearch />} />
         <Route path="/physician/job-internship" element={<JobInternshipSearch />} />
+        <Route path="/degree-listing" element={<DegreeListing />} />
         <Route path="/physician/job-application" element={<JobApplicationForm />} />
         <Route path="login" element={<Login />} />
         <Route path="/" element={<Home />} />

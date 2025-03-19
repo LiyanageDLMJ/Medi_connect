@@ -6,7 +6,7 @@ import Footer from "../../../Components/FooterDiv/Footer";
 import Dashboard from "../pages/dashborad";
 import UserProfile from "../pages/YourProfile";
 import UpdateCV from "../pages/UpdateCV";
-import HigherEducation from "../pages/HigherEducationSearch";
+import HigherEducationSearch from "../pages/HigherEducationSearch";
 import Messages from "../pages/Messages";
 const routes = () => {
   return (
@@ -18,7 +18,7 @@ const routes = () => {
        <Route path="/update-cv" element={<UpdateCV />} />
        <Route path="/job-internship" element={<JobInternshipSearch />} />
        <Route path="/physician/job-application" element={<JobApplicationForm />} />
-       <Route path="/higher-education" element={<HigherEducation />} />
+       <Route path="/higher-education" element={<HigherEducationSearch />} />
        <Route path="/messages" element={<Messages />} />
        
 
