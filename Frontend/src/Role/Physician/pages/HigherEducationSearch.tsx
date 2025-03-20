@@ -2,17 +2,19 @@ import { useState } from "react";
 import Search from "../components/DegreeDiv/DegreeSearch"; // Adjusted to the new search component for degree programs
 import DegreeCard from "../components/DegreeDiv/DegreeCard"; // Adjusted to display degree programs
 import NavBar from "../components/NavBar/NavBar";
-import degreeImage from "../../../../asset/img.jpg"; // Import the local image
+import degreeImage from "../../../asset/img.jpg";
+
+
 
 const degreePrograms = [
   {
     id: 1,
-    name: "MBBS (Bachelor of Medicine & Surgery)",
+    name: "MBBS ",
     institution: "Harvard Medical School",
     duration: "6 Years",
     location: "USA",
     type: "Full-Time",
-    tuition: "Above $50,000",
+    tuition: " $50,000",
     status: "OPEN",
     statusColor: "bg-green-500",
     image: degreeImage,
@@ -25,7 +27,7 @@ const degreePrograms = [
     duration: "2 Years",
     location: "UK",
     type: "Full-Time",
-    tuition: "Above $30,000",
+    tuition: " $30,000",
     status: "INTERVIEW",
     statusColor: "bg-blue-500",
     image: "https://example.com/image2.jpg"
@@ -38,7 +40,7 @@ const degreePrograms = [
     duration: "4 Years",
     location: "Australia",
     type: "Part-Time",
-    tuition: "Above $20,000",
+    tuition: " $20,000",
     status: "PENDING",
     statusColor: "bg-yellow-500",
     image: "https://example.com/image2.jpg" 

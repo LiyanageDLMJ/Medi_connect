@@ -1,7 +1,6 @@
 import { FaUniversity, FaClock, FaMoneyBillAlt, FaGlobe } from "react-icons/fa";
 import PropTypes from "prop-types";
 
-
 interface Degree {
   id: number;
   name: string;
@@ -12,7 +11,7 @@ interface Degree {
   tuition: string;
   status: string;
   statusColor: string;
-  image?: string; 
+  image?: string;
 }
 
 interface DegreeCardProps {
@@ -24,17 +23,19 @@ const DegreeCard: React.FC<DegreeCardProps> = ({ degrees, totalDegrees }) => {
   return (
     <div className="p-8">
       <h2 className="text-xl font-semibold mb-4">
-        Showing <span className="text-blue-600">{degrees.length}</span> of total {" "}
+        Showing <span className="text-blue-600">{degrees.length}</span> of total{" "}
         <span className="text-blue-600">{totalDegrees}</span> Degree Programs
       </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {degrees.map((degree) => (
           <div key={degree.id} className="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200">
             {/* Image Section with Status Badge */}
             <div className="relative">
-              <img src={degree.image} alt={degree.name} className="w-full h-48 object-cover" />
-              <span className={`absolute top-2 left-2 px-3 py-1 text-white text-sm font-semibold rounded ${degree.statusColor}`}>
+
+  <img src={degree.image} alt={degree.name} className="w-full h-48 object-cover rounded-lg pt-4 px-4 pb-0 bg-white" />
+
+              <span className={`absolute top-5 right-6 px-3 py-1 text-white text-sm font-semibold rounded ${degree.statusColor}`}>
                 {degree.status.toLowerCase()}
               </span>
             </div>
@@ -42,7 +43,7 @@ const DegreeCard: React.FC<DegreeCardProps> = ({ degrees, totalDegrees }) => {
             {/* Course Details */}
             <div className="p-4">
               <div className="flex justify-between items-center">
-                <h3 className="text-lg font-bold">{degree.name}</h3>
+                <h5  className="text-lg  font-bold">{degree.name}</h5>
                 <button className="px-3 py-1 text-sm bg-gray-200 rounded">Details</button>
               </div>
               <p className="text-gray-600 flex items-center gap-2 mt-1">
