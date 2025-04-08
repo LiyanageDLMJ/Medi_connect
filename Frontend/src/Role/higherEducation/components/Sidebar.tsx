@@ -15,16 +15,16 @@ const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const upperLinks = [
-    { to: "/deshboard", label: "Dashboard", icon: <FiHome size={20} /> },
-    { to: "/your-profile", label: "Your Profile", icon: <FiUser size={20} /> },
-    { to: "/messages", label: "Messages", icon: <FiMessageSquare size={20} /> },
+    { to: "/higher-education/deshboard", label: "Dashboard", icon: <FiHome size={20} /> },
+    { to: "/higher-education/your-profile", label: "Your Profile", icon: <FiUser size={20} /> },
+    { to: "/higher-education/messages", label: "Messages", icon: <FiMessageSquare size={20} /> },
     {
       to: "/higher-education/degree-listing",
       label: "Degree Listings",
       icon: <FiBook size={20} />,
     },
     {
-      to: "/view-applications",
+      to: "/higher-education/view-applications",
       label: "View Applications",
       icon: <FiBook size={20} />,
     },
