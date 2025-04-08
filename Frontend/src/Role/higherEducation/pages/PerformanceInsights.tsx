@@ -1,12 +1,18 @@
+
+
 import React from 'react'
-import NavBar from "../components/NavBar/NavBar";
+import Sidebar from "../components/Sidebar";
 
 const PerformanceInsights = () => {
   return (
-    <div>
-      <NavBar />
-    <div>PerformanceInsights</div>
-    </div>
+    <div className="flex h-screen">
+    {/* Sidebar */}
+    <Sidebar />
+
+    {/* Main Content */}
+    <div className="flex-1 overflow-auto md:pl-64"> {/* Add padding on larger screens to account for sidebar */}
+</div>
+</div>
   )
 }
 
