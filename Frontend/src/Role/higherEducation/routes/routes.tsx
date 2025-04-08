@@ -13,11 +13,11 @@ const routes = () => {
       <NavBar />
       <Routes>
        <Route path="/" element={<Dashboard />} />
-       <Route path="/profile" element={<UserProfile />} />
-       <Route path="/degree-listing" element={<DegreeListing />} />
-       <Route path="/view-applications" element={<ViewApplications />} />
-       <Route path="/performance-insights" element={<PerformanceInsights />} />
-       <Route path="/messages" element={<Messages />} />
+       <Route path="/higher-education/degree-listing/profile" element={<UserProfile />} />
+       <Route path="/higher-education/degree-listing/degree-listing" element={<DegreeListing />} />
+       <Route path="/higher-education/degree-listing/view-applications" element={<ViewApplications />} />
+       <Route path="/higher-education/degree-listing/performance-insights" element={<PerformanceInsights />} />
+       <Route path="/higher-education/degree-listing/messages" element={<Messages />} />
        
 
       </Routes>
