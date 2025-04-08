@@ -29,7 +29,7 @@ const Sidebar = () => {
       icon: <FiBook size={20} />,
     },
     {
-      to: "/performance-insights",
+      to: "/higher-education/performance-insights",
       label: "Performance Insights",
       icon: <FiBarChart2 size={20} />,
     },
