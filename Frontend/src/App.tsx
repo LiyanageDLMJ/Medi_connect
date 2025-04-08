@@ -4,7 +4,7 @@
 
 import { Routes, Route, Outlet  } from "react-router-dom";
 import JobInternshipSearch from "./Role/Physician/pages/JobInternshipSearch";
-import DegreeList from "./Role/higherEducation/pages/example";
+
 import HigherEducationSearch from "./Role/Physician/pages/HigherEducationSearch";
 import JobApplicationForm from "./Role/Physician/pages/JobApplicationForm";
 import DegreeListing from "./Role/higherEducation/pages/DegreeListing";
@@ -42,13 +42,15 @@ const App = () => {
           <Route path="messages" element={<Messages />} />
           <Route path="view-applications" element={<ViewApplications />} />
           <Route path="degree-listing" element={<DegreeListing />} />
+          <Route path="deshboard" element={<Dashborad />} />
+
         </Route>
 
         <Route path="/recuiter">
           <Route path="jobPost" element={<JobPost />} />
         </Route>
 
-        <Route path="/degreelist" element={<DegreeList />} />
+        {/* <Route path="/degreelist" element={<DegreeList />} /> */}
         
         <Route path="/deshboard" element={<Dashborad />} />
       </Route>
