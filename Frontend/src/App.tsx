@@ -17,8 +17,9 @@ import "react-datepicker/dist/react-datepicker.css";
 import Home from "./LoginRegister/Home/Home";
 import ForgotPassword from "./LoginRegister/login/ForgetPassword";
 import WithFooter from "./Layout/WithFooter";
-import WithoutFooter from "./Layout/WithoutFooter";
-
+import WithoutFooter from "./Layout/WithoutFooter";  
+import Dashborad from "./Role/higherEducation/pages/dashborad";
+  
 const App = () => {
   return (
     <Routes>
@@ -48,6 +49,8 @@ const App = () => {
         </Route>
 
         <Route path="/degreelist" element={<DegreeList />} />
+        
+        <Route path="/deshboard" element={<Dashborad />} />
       </Route>
     </Routes>
 
