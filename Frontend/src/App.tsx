@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import JobInternshipSearch from "./Role/Physician/pages/JobInternshipSearch";
 import JobApplicationForm from "./Role/Physician/pages/JobApplicationForm";
+import Dashboard from "./Role/Physician/pages/dashboard";
 import Login from"./LoginRegister/login/Login"
 import Register from "./LoginRegister/register/Register";
 import Footer from "./Components/FooterDiv/Footer"
@@ -15,6 +16,7 @@ const App = () => {
       <Routes>
         <Route path="/physician/job-internship" element={<JobInternshipSearch />} />
         <Route path="/physician/job-application" element={<JobApplicationForm />} />
+        <Route path="/physician/dashboard" element={<Dashboard />} />
         <Route path="login" element={<Login />} />
         <Route path="/" element={<Home />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
