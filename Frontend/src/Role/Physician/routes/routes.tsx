@@ -3,7 +3,7 @@ import NavBar from "../components/NavBar/NavBar";
 import JobInternshipSearch from "../pages/JobInternshipSearch";
 import JobApplicationForm from "../pages/JobApplicationForm";
 import Footer from "../../../Components/FooterDiv/Footer";
-import Dashboard from "../pages/dashborad";
+import Dashboard from "../pages/dashboard";
 import UserProfile from "../pages/YourProfile";
 import UpdateCV from "../pages/UpdateCV";
 import HigherEducation from "../pages/HigherEducationSearch";
@@ -13,7 +13,7 @@ const routes = () => {
     <div>
       <NavBar />
       <Routes>
-       <Route path="/" element={<Dashboard />} />
+       <Route path="/physician/dashboard" element={<Dashboard />} />
        <Route path="/profile" element={<UserProfile />} />
        <Route path="/update-cv" element={<UpdateCV />} />
        <Route path="/job-internship" element={<JobInternshipSearch />} />
