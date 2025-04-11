@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import router from "../Routes/BasicRouting";
+import router from "../Routes/PhysicianRoutes/BasicRoutes";
 const Schema=mongoose.Schema;
 
 const CvUpdateSchema=new Schema({
