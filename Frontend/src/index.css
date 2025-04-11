@@ -1,7 +1,10 @@
 /* Ensure Tailwind CSS is installed and configured correctly */
 @import "tailwindcss";
 
-
+/* Custom style for react-datepicker */
+.react-datepicker-popper {
+  z-index: 1000 !important;
+}
 
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
@@ -19,14 +22,14 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
+/* a {
   font-weight: 500;
   color: #646cff;
   text-decoration: inherit;
 }
 a:hover {
   color: #535bf2;
-}
+} */
 body {
   display: flex;
   flex-direction: column;
@@ -156,9 +159,9 @@ h1 {
     color: #213547;
     background-color:#fff;
   }
-  a:hover {
+  /* a:hover {
     color: #747bff;
-  }
+  } */
 }
 /* Footer container with gradient background */
 .footer-container {
@@ -309,7 +312,7 @@ li {
 /* Hover effect */
 li:hover {
   background-color: #184389; /* Blue background */
-  color: white;
+  color: black;
   border-radius: 12px; /* Slightly increases rounding on hover */
   box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.2); /* Soft shadow */
 }
