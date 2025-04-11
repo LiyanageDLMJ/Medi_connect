@@ -7,6 +7,7 @@ import JobInternshipSearch from "./Role/Physician/pages/JobInternshipSearch";
 
 import HigherEducationSearch from "./Role/Physician/pages/HigherEducationSearch";
 import JobApplicationForm from "./Role/Physician/pages/JobApplicationForm";
+import Dashboard from "./Role/Physician/pages/dashboard";
 import DegreeListing from "./Role/higherEducation/pages/DegreeListing";
 import ViewApplications from "./Role/higherEducation/pages/ViewApplications";
 import Messages from "./Role/higherEducation/pages/Messages";
@@ -36,6 +37,7 @@ const App = () => {
           <Route path="higher-education" element={<HigherEducationSearch />} />
           <Route path="job-internship" element={<JobInternshipSearch />} />
           <Route path="job-application" element={<JobApplicationForm />} />
+          <Route path="/dashboard" element={<Dashboard />} />
         </Route>
 
         <Route path="/higher-education">

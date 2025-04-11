@@ -1,15 +1,18 @@
 import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
+import mongoose from "mongoose";
+import router from "./Routes/BasicRouting";
+import CvDocRouter from "./Routes/CvDoctorRoutes";
+import connectDB from "./Config/db";
+connectDB();
 
-dotenv.config();
+const app = express();
+const PORT = 3000;
 
-const app=express();
-app.use(express.json());
-app.use(cors());
 
-app.get("/",(req,res)=>{
-    res.send("Api in running");
+app.use(express.json()); 
+app.use("/api", router);
+app.use("/CvdoctorUpdate", CvDocRouter);
+
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });
-const PORT=process.env.PORT ||5000;
-app.listen(PORT,()=>console.log('Server running on port${PORT}'))
