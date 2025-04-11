@@ -7,22 +7,17 @@ import JobPost from "./Role/Recuiter/pages/JobPost";
 import "react-datepicker/dist/react-datepicker.css";
 import Home from "./LoginRegister/Home/Home";
 import ForgotPassword from "./LoginRegister/login/ForgetPassword";
-import WithFooter from "./Layout/WithFooter";
-import WithoutFooter from "./Layout/WithoutFooter";  
-import Dashborad from "./Role/higherEducation/pages/dashborad";
-<<<<<<< Updated upstream
 import DegreeListing from "./Role/higherEducation/pages/DegreeListing";
 import ViewApplications from "./Role/higherEducation/pages/ViewApplications";
 import Messages from "./Role/higherEducation/pages/Messages";
 import Login from "./LoginRegister/login/Login";
 import Dashboard from "./Role/Physician/pages/dashboard";
 
-=======
 
 import DegreeForm from "./Role/higherEducation/pages/DegreeForm";
-
-  
->>>>>>> Stashed changes
+import WithFooter from "./Layout/WithFooter";
+import WithoutFooter from "./Layout/WithoutFooter";  
+import Dashborad from "./Role/higherEducation/pages/dashborad";
 const App = () => {
   return (
     <Routes>
@@ -60,14 +55,10 @@ const App = () => {
           <Route path="jobPost" element={<JobPost />} />
         </Route>
 
-<<<<<<< Updated upstream
-        {/* Duplicate dashboard route (optional) */}
-        <Route path="/deshboard" element={<Dashborad />} />
-=======
-        {/* <Route path="/degreelist" element={<DegreeList />} /> */}
+      
         
         <Route path="/DegreeForm" element={<DegreeForm />} />
->>>>>>> Stashed changes
+
       </Route>
     </Routes>
   );
