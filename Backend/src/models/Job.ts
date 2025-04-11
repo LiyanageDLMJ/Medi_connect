@@ -39,14 +39,12 @@ const JobSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    description: {
-        type: String,
-        required: true
-    }
+   
+    
 });
 
-const Job = mongoose.model("Job", JobSchema, "Jobdata");
-const db=mongoose.connection.useDb('Jobs');
+const db = mongoose.connection.useDb('Jobs');
+const Job = db.model("Job", JobSchema, "Jobdata");
 export default Job;
 
 
