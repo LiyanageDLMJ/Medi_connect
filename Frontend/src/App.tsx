@@ -15,6 +15,8 @@ import ViewApplications from "./Role/higherEducation/pages/ViewApplications";
 import Messages from "./Role/higherEducation/pages/Messages";
 import Login from "./LoginRegister/login/Login";
 import Dashboard from "./Role/Physician/pages/dashboard";
+import UpdateCV01 from "./Role/Physician/pages/UpdateCV01";
+import UpdateCV02 from "./Role/Physician/pages/UpdateCV02";
 
 const App = () => {
   return (
@@ -37,6 +39,8 @@ const App = () => {
           <Route path="higher-education" element={<HigherEducationSearch />} />
           <Route path="job-internship" element={<JobInternshipSearch />} />
           <Route path="job-application" element={<JobApplicationForm />} />
+          <Route path="update-cv01" element={<UpdateCV01 />} />
+          <Route path="update-cv02" element={<UpdateCV02 />} />
         </Route>
 
         {/* Higher Education Routes */}
