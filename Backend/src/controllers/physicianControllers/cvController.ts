@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import CvDoctorUpdate from '../models/CvUpdate';
+import CvDoctorUpdate from '../../models/CvUpdate';
 
 exports.viewDoctorsCv=async(req:Request ,res:Response)=>{
     const result=await CvDoctorUpdate.find();

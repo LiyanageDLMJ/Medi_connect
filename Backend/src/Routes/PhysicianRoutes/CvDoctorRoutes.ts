@@ -1,7 +1,7 @@
 import express from 'express';
-import CvDoctorUpdate from '../models/CvUpdate';
+import CvDoctorUpdate from '../../models/CvUpdate';
 const router = express.Router();
-const docCvController=require('../controllers/cvController');
+const docCvController=require('../../controllers/physicianControllers/cvController');
 
 router.get("/viewDoctorsCv",docCvController.viewDoctorsCv);
 router.post("/addDoctorCv",docCvController.addDoctorCv);
