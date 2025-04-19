@@ -1,38 +1,48 @@
 "use client";
 import { useNavigate } from "react-router-dom";
 import React, { useState } from "react";
-import { Bell, ChevronDown, ChevronLeft, ChevronRight, Menu, Search, User } from "lucide-react";
+import {
+  Bell,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Menu,
+  Search,
+  User,
+} from "lucide-react";
 import Sidebar from "../../higherEducation/components/Sidebar";
 import UpdateCV02 from "./UpdateCV02";
 
 interface ProfileFormData {
-  yourName: string;
-  professionalTitle: string;
-  currentLocation: string;
-  linkedinLink: string;
-  careerSummary: string;
-  contactPhone: string;
-  contactEmail: string;
+  JobTitle: string;
+  EmploymentPeriod: string;
+  HospitalInstitution: string;
 }
 
-export default function UpdateCV01() {
-  const navigate = useNavigate(); 
+export default function UpdateCV03() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<ProfileFormData>({
-    yourName: "",
-    professionalTitle: "",
-    currentLocation: "",
-    linkedinLink: "",
-    careerSummary: "",
-    contactPhone: "",
-    contactEmail: "",
+    JobTitle: "",
+    EmploymentPeriod: "",
+    HospitalInstitution: "",
   });
+
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  if (e.target.files && e.target.files[0]) {
+    setSelectedFile(e.target.files[0]);
+  }
+};
 
   const handleNext = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,23 +50,28 @@ export default function UpdateCV01() {
     setMessage(null);
 
     try {
-      const response = await fetch("http://localhost:3000/CvdoctorUpdate/addDoctorCv", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+        "http://localhost:3000/CvdoctorUpdate/addDoctorCv",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
       if (response.ok) {
         const result = await response.json();
         setMessage("Doctor CV added successfully!");
         console.log("Form submitted successfully:", result);
 
-        navigate("/physician/update-cv02"); 
+        navigate("/physician/update-cv02");
       } else {
         const error = await response.json();
-        setMessage(error.message || "Failed to add Doctor CV. Please try again.");
+        setMessage(
+          error.message || "Failed to add Doctor CV. Please try again."
+        );
         console.error("Error submitting form:", error);
       }
     } catch (err) {
@@ -95,7 +110,11 @@ export default function UpdateCV01() {
               </span>
             </div>
             <div className="flex items-center gap-1 cursor-pointer">
-              <img src="/placeholder.svg?height=24&width=24" alt="English flag" className="w-6 h-6 rounded" />
+              <img
+                src="/placeholder.svg?height=24&width=24"
+                alt="English flag"
+                className="w-6 h-6 rounded"
+              />
               <span className="text-sm font-medium">English</span>
               <ChevronDown className="w-4 h-4" />
             </div>
@@ -108,38 +127,38 @@ export default function UpdateCV01() {
 
           {/* Tabs */}
           <div className="flex border-b mb-8">
-            <button
-              className="flex items-center gap-2 px-6 py-4 border-b-2 border-blue-500 text-blue-500"
-            >
+            <button className="flex items-center gap-2 px-6 py-4 border-b-2 border-blue-500 text-blue-500">
               <User className="w-5 h-5" />
               <span>Basic Details</span>
             </button>
-            <button
-              className="flex items-center gap-2 px-6 py-4 text-gray-600"
-            >
+            <button className="flex items-center gap-2 px-6 py-4 text-gray-600">
               <span>Update CV</span>
             </button>
-            <button
-              className="flex items-center gap-2 px-6 py-4 text-gray-600"
-            >
+            <button className="flex items-center gap-2 px-6 py-4 text-gray-600">
               <span>Profile Settings</span>
             </button>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleNext} className="bg-white p-8 rounded-lg shadow-sm">
+          <form
+            onSubmit={handleNext}
+            className="bg-white p-8 rounded-lg shadow-sm"
+          >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Left Column */}
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <label htmlFor="yourName" className="block text-sm font-medium">
-                    Your Name*
+                  <label
+                    htmlFor="JobTitle"
+                    className="block text-sm font-medium"
+                  >
+                    Job Title*
                   </label>
                   <input
-                    id="yourName"
-                    name="yourName"
+                    id="JobTitle"
+                    name="JobTitle"
                     type="text"
-                    value={formData.yourName}
+                    value={formData.JobTitle}
                     onChange={handleInputChange}
                     className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
                     required
@@ -147,94 +166,64 @@ export default function UpdateCV01() {
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="currentLocation" className="block text-sm font-medium">
-                    Current Location*
+                  <label
+                    htmlFor="HospitalInstitution"
+                    className="block text-sm font-medium"
+                  >
+                    Hospital/Institution*
                   </label>
                   <input
-                    id="currentLocation"
-                    name="currentLocation"
+                    id="HospitalInstitution"
+                    name="HospitalInstitution"
                     type="text"
-                    value={formData.currentLocation}
+                    value={formData.HospitalInstitution}
                     onChange={handleInputChange}
                     className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
                     required
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <label htmlFor="linkedinLink" className="block text-sm font-medium">
-                    LinkedIn Link
-                  </label>
-                  <input
-                    id="linkedinLink"
-                    name="linkedinLink"
-                    type="text"
-                    value={formData.linkedinLink}
-                    onChange={handleInputChange}
-                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label htmlFor="contactPhone" className="block text-sm font-medium">
-                    Contact (Phone)*
-                  </label>
-                  <input
-                    id="contactPhone"
-                    name="contactPhone"
-                    type="tel"
-                    value={formData.contactPhone}
-                    onChange={handleInputChange}
-                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
-                    required
-                  />
-                </div>
+                
               </div>
 
               {/* Right Column */}
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <label htmlFor="professionalTitle" className="block text-sm font-medium">
-                    Professional Title*
+                  <label
+                    htmlFor="EmploymentPeriod"
+                    className="block text-sm font-medium"
+                  >
+                    Employment Period*
                   </label>
                   <input
-                    id="professionalTitle"
-                    name="professionalTitle"
+                    id="EmploymentPeriod"
+                    name="EmploymentPeriod"
                     type="text"
-                    value={formData.professionalTitle}
+                    value={formData.EmploymentPeriod}
                     onChange={handleInputChange}
                     className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
                     required
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <label htmlFor="careerSummary" className="block text-sm font-medium">
-                    Career Summary*
-                  </label>
-                  <textarea
-                    id="careerSummary"
-                    name="careerSummary"
-                    value={formData.careerSummary}
-                    onChange={handleInputChange}
-                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md h-40 resize-none"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label htmlFor="contactEmail" className="block text-sm font-medium">
-                    Contact (Email)*
-                  </label>
-                  <input
-                    id="contactEmail"
-                    name="contactEmail"
-                    type="email"
-                    value={formData.contactEmail}
-                    onChange={handleInputChange}
-                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
-                    required
-                  />
+                <div>
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="resume"
+                      className="block text-sm font-medium"
+                    >
+                      Upload Resume (PDF)*
+                    </label>
+                    <input
+                      id="resume"
+                      name="resume"
+                      type="file"
+                      accept=".pdf"
+                      onChange={handleFileChange}
+                      className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
+                      required
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -257,7 +246,13 @@ export default function UpdateCV01() {
           {/* Message */}
           {message && (
             <div className="mt-4 text-center">
-              <p className={`text-sm ${message.includes("successfully") ? "text-green-500" : "text-red-500"}`}>
+              <p
+                className={`text-sm ${
+                  message.includes("successfully")
+                    ? "text-green-500"
+                    : "text-red-500"
+                }`}
+              >
                 {message}
               </p>
             </div>

@@ -17,6 +17,7 @@ import Login from "./LoginRegister/login/Login";
 import Dashboard from "./Role/Physician/pages/dashboard";
 import UpdateCV01 from "./Role/Physician/pages/UpdateCV01";
 import UpdateCV02 from "./Role/Physician/pages/UpdateCV02";
+import UpdateCV03 from "./Role/Physician/pages/UpdateCV03";
 
 const App = () => {
   return (
@@ -41,6 +42,7 @@ const App = () => {
           <Route path="job-application" element={<JobApplicationForm />} />
           <Route path="update-cv01" element={<UpdateCV01 />} />
           <Route path="update-cv02" element={<UpdateCV02 />} />
+          <Route path="update-cv03" element={<UpdateCV03 />} />
         </Route>
 
         {/* Higher Education Routes */}
