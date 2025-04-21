@@ -7,6 +7,7 @@ import Footer from "./Components/FooterDiv/Footer"
 import JobPost from "./Role/Recuiter/pages/JobPost";
 import Home from "./LoginRegister/Home/Home";
 import ForgotPassword from "./LoginRegister/login/ForgetPassword";
+import MessageBox from "./Components/MessageBox/MessageBox";
 
 const App = () => {
   return (
@@ -22,6 +23,8 @@ const App = () => {
         <Route path="/recuiter/jobPost" element={<JobPost />} />
       </Routes>
       <Footer />
+      {/* MessageBox for demo/testing; you can later route or conditionally render it */}
+      <MessageBox />
     </div>
   );
 };

@@ -28,13 +28,19 @@ a:hover {
   color: #535bf2;
 }
 body {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  width: 100%;
   margin: 0;
   padding: 0;
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
   overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
 }
 
 .container {
@@ -162,13 +168,14 @@ h1 {
 }
 /* Footer container with gradient background */
 .footer-container {
-  position: relative;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
   background: linear-gradient(180deg, #66b0f2 0%, #4a9cf2 100%);
   color: #fff;
-  padding: 3rem 1rem 2rem; /* top, sides, bottom */
-  margin-top: 2rem;
-  overflow: hidden; /* ensures the shape displays correctly */
-  z-index: 0;
+  padding: 3rem 1rem 2rem;
+  z-index: 10;
   margin-top: auto;
 }
 
@@ -241,31 +248,41 @@ h1 {
   margin-right: 0.5rem;
 }
 
-.page-content {
+main {
+  padding-bottom: 250px; /* Match the footer height */
+  min-height: calc(100vh - 250px);
   position: relative;
-  z-index: 0;
-  min-height: calc(100vh - 200px); /* Adjust based on your header/footer height */
-  padding-bottom: 3rem;
+  z-index: 1;
 }
 
-/* Form styles */
+/* Form container and layout styles */
 .form-container {
   width: 100%;
   max-width: 600px;
   margin: 2rem auto;
   padding: 2rem;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  position: relative;
-  z-index: 1;
+  min-height: calc(100vh - 400px); /* Adjust based on header and footer height */
+  display: flex;
+  flex-direction: column;
 }
 
+/* Main content wrapper to ensure proper spacing */
+.main-content {
+  flex: 1;
+  width: 100%;
+  min-height: calc(100vh - 200px); /* Adjust for footer height */
+  padding-bottom: 3rem; /* Add padding to prevent overlap with footer */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Form group styles */
 .form-group {
   margin-bottom: 1.5rem;
-  width: 100%;
 }
 
+/* Form styles */
 .form-control {
   width: 100%;
   padding: 0.75rem;
