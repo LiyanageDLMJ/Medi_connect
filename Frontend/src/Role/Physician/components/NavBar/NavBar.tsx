@@ -24,7 +24,7 @@ const NavBar = () => {
         <li className="menuList text-[#6f6f6f] hover:text-blue-600" onClick={() => navigate("/physician/job-internship")}>
           Job & Internships
         </li>
-        <li className="menuList text-[#6f6f6f] hover:text-blue-600" onClick={() => navigate("/higher-education")}>
+        <li className="menuList text-[#6f6f6f] hover:text-blue-600" onClick={() => navigate("/physician/higher-education")}>
           Higher Education
         </li>
         <li className="menuList text-[#6f6f6f] hover:text-blue-600" onClick={() => navigate("/messages")}>
