@@ -1,7 +1,8 @@
 import { useState } from "react";
 import Search from "../components/SearchDiv/Search"; // Adjust the import based on your project structure
 import Jobs from "../components/JobDiv/Jobs";
-import NavBar from "../components/NavBar/NavBar";
+// import NavBar from "../components/NavBar/NavBar";
+import Sidebar from "../components/NavBar/Sidebar";
 
 
 const doctorJobs = [
@@ -213,9 +214,11 @@ const JobInternshipSearch = () => {
 
   return (
     <div>
-      <NavBar />
+      <Sidebar   />
+      <div className="flex-1 overflow-auto md:pl-64">
       <Search filters={filters} onFilterChange={handleFilterChange} onClear={handleClearFilters} />
       <Jobs jobs={filteredJobs} totalJobs={doctorJobs.length} />
+      </div>
     </div>
   );
 };

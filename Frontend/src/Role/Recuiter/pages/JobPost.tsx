@@ -4,7 +4,8 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { FaCheckSquare, FaRegSquare } from "react-icons/fa"
-import NavBar from '../components/NavBar/NavBar'
+import Sidebar from '../components/NavBar/Sidebar'
+import { Sidebar as SidebarIcon } from "lucide-react"
 
 
 const formSchema = z.object({
@@ -45,7 +46,8 @@ export default function JobPostForm() {
 
   return (
     <div>
-      <NavBar/>
+      <Sidebar/>
+      <div className="flex-1 overflow-auto md:pl-64">
     <div className="max-w-2xl mx-auto bg-white shadow-md rounded-lg overflow-hidden">
       <div className="bg-blue-900 px-6 py-4">
       <h2 className="text-xl font-semibold text-white">Post a Medical Position</h2>
@@ -135,6 +137,6 @@ export default function JobPostForm() {
           Post Job
         </button>
       </form>
-    </div></div>
+    </div></div></div>
   )
 }

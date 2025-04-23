@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-import NavBar from "../components/NavBar/NavBar";
+import NavBar from "../components/NavBar/Sidebar";
 import JobInternshipSearch from "../pages/JobInternshipSearch";
 import JobApplicationForm from "../pages/JobApplicationForm";
 import Footer from "../../../Components/FooterDiv/Footer";

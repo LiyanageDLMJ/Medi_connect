@@ -2,7 +2,7 @@ import express from "express";
 import * as jobPostController from "../../controllers/RecuiterControllers/jobPostController";
 
 const router = express.Router();
-
+const jobPost = require("../../models/Job");
 // Route to view all job posts
 router.get("/Veiwjobs", jobPostController.viewJobs);
 
