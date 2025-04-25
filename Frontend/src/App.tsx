@@ -8,21 +8,14 @@ import JobListing from "./Role/Recuiter/pages/JobListing";
 import "react-datepicker/dist/react-datepicker.css";
 import Home from "./LoginRegister/Home/Home";
 import ForgotPassword from "./LoginRegister/login/ForgetPassword";
-import WithFooter from "./Layout/WithFooter";
-import WithoutFooter from "./Layout/WithoutFooter";  
-import Dashborad from "./Role/higherEducation/pages/dashborad";
-import DegreeListing from "./Role/higherEducation/pages/DegreeListing";
-import ViewApplications from "./Role/higherEducation/pages/ViewApplications";
-import Messages from "./Role/higherEducation/pages/Messages";
 import Login from "./LoginRegister/login/Login";
-import Dashboard from "./Role/Physician/pages/dashboard";
-import UpdateCV01 from "./Role/Physician/pages/UpdateCV01";
-import UpdateCV02 from "./Role/Physician/pages/UpdateCV02";
-import UpdateCV03 from "./Role/Physician/pages/UpdateCV03";
+import Footer from "./Components/FooterDiv/Footer"; // Adjust the path as needed
+import WithFooter from "./Layout/WithFooter"; // Adjust the path as needed
 
 const App = () => {
   return (
-    <Routes>
+    <>
+      <Routes>
 
       {/* With Footer Routes */}
       <Route element={<WithFooter><Outlet /></WithFooter>}>
@@ -57,8 +50,6 @@ const App = () => {
         {/* Recruiter Routes */}
         <Route path="/recuiter">
           <Route path="jobPost" element={<JobPost />} />
-          <Route path="jobListing" element={<JobListing />} />
-          <Route path="dashboard" element={<Dashborad />} />
         </Route>
 
         {/* Duplicate dashboard route (optional) */}
