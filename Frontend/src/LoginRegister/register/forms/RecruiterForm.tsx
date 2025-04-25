@@ -3,9 +3,9 @@ import { InputGroup, Label, Input, Select } from '../../components/StyledFormCom
 
 interface RecruiterFormProps {
   formData: {
-    companyName?: string;
+    hospitalName?: string;
     position?: string;
-    industryType?: string;
+    healthcareType?: string;
   };
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
 }
@@ -14,11 +14,11 @@ const RecruiterForm: React.FC<RecruiterFormProps> = ({ formData, handleChange })
   return (
     <>
       <InputGroup>
-        <Label>Company Name</Label>
+        <Label>Hospital Name</Label>
         <Input
           type="text"
-          name="companyName"
-          value={formData.companyName || ''}
+          name="hospitalName"
+          value={formData.hospitalName || ''}
           onChange={handleChange}
           required
         />
@@ -34,10 +34,10 @@ const RecruiterForm: React.FC<RecruiterFormProps> = ({ formData, handleChange })
         />
       </InputGroup>
       <InputGroup>
-        <Label>Industry Type</Label>
+        <Label>Healthcare Type</Label>
         <Select
-          name="industryType"
-          value={formData.industryType || ''}
+          name="healthcareType"
+          value={formData.healthcareType || ''}
           onChange={handleChange}
           required
         >

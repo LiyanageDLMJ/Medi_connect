@@ -22,9 +22,9 @@ interface FormData {
   currentInstitute?: string;
   yearOfStudy?: string;
   fieldOfStudy?: string;
-  companyName?: string;
+  hospitalName?: string;
   position?: string;
-  industryType?: string;
+  healthcareType?: string;
   instituteName?: string;
   instituteType?: string;
   accreditation?: string;
