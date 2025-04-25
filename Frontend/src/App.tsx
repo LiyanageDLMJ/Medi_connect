@@ -22,7 +22,7 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="register" element={<Register />} />
+    
           <Route path="/recuiter/jobPost" element={<JobPost />} />
         </Route>
       </Routes>
