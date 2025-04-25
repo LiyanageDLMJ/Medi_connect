@@ -5,11 +5,11 @@ import { useNavigate } from 'react-router-dom';
   interface Job {
     id: number;
     title: string;
-    hospital: string;
-    date: string;
+    hospitalName:string;
+    postedDate: string;
     location: string;
-    type: string;
-    salary: string;
+    jobType:string;
+    salaryRange:string;
     status: string;
     statusColor: string;
   }
@@ -43,7 +43,7 @@ import { useNavigate } from 'react-router-dom';
               <div>
                 <h3 className="text-lg font-bold">{job.title}</h3>
                 <p className="text-gray-600 flex items-center gap-2">
-                  <FaHospital className="text-gray-500" /> {job.hospital}
+                  <FaHospital className="text-gray-500" /> {job.hospitalName}
                 </p>
               </div>
             </div>
@@ -51,16 +51,16 @@ import { useNavigate } from 'react-router-dom';
             {/* Job Details */}
             <div className="mt-4 text-gray-600">
               <p className="flex items-center gap-2">
-                <FaCalendarAlt className="text-gray-500" /> {job.date}
+                <FaCalendarAlt className="text-gray-500" /> {new Date(job.postedDate).toLocaleDateString()}
               </p>
               <p className="flex items-center gap-2">
                 <FaMapMarkerAlt className="text-gray-500" /> {job.location}
               </p>
               <p className="flex items-center gap-2">
-                <FaBriefcase className="text-gray-500" /> {job.type}
+                <FaBriefcase className="text-gray-500" /> {job.jobType}
               </p>
               <p className="flex items-center gap-2">
-                <FaMoneyBillAlt className="text-gray-500" /> {job.salary}
+                <FaMoneyBillAlt className="text-gray-500" /> {job.salaryRange}
               </p>
             </div>
 
@@ -85,11 +85,11 @@ Jobs.propTypes = {
     PropTypes.shape({
       id: PropTypes.number.isRequired,
       title: PropTypes.string.isRequired,
-      hospital: PropTypes.string.isRequired,
-      date: PropTypes.string.isRequired,
+      hospitalName:PropTypes.string.isRequired,
+      postedDate: PropTypes.string.isRequired,
       location: PropTypes.string.isRequired,
-      type: PropTypes.string.isRequired,
-      salary: PropTypes.string.isRequired,
+      jobType:PropTypes.string.isRequired,
+      salaryRange:PropTypes.string.isRequired,
       status: PropTypes.string.isRequired,
       statusColor: PropTypes.string.isRequired,
     })

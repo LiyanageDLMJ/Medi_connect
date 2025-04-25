@@ -4,6 +4,7 @@ import HigherEducationSearch from "./Role/Physician/pages/HigherEducationSearch"
 import JobApplicationForm from "./Role/Physician/pages/JobApplicationForm";
 import Register from "./LoginRegister/register/Register";
 import JobPost from "./Role/Recuiter/pages/JobPost";
+import JobListing from "./Role/Recuiter/pages/JobListing";
 import "react-datepicker/dist/react-datepicker.css";
 import Home from "./LoginRegister/Home/Home";
 import ForgotPassword from "./LoginRegister/login/ForgetPassword";
@@ -56,6 +57,8 @@ const App = () => {
         {/* Recruiter Routes */}
         <Route path="/recuiter">
           <Route path="jobPost" element={<JobPost />} />
+          <Route path="jobListing" element={<JobListing />} />
+          <Route path="dashboard" element={<Dashborad />} />
         </Route>
 
         {/* Duplicate dashboard route (optional) */}

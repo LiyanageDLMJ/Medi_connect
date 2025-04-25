@@ -4,44 +4,55 @@ const JobSchema = new mongoose.Schema({
     jobId: {
         type: Number,
         required: true,
-        unique: true
-    },
-    title: {
-        type: String,
-        required: true
-    },
-    hospital: {
-        type: String,
-        required: true
-    },
-    date: {
-        type: String,
-        required: true
-    },
-    location: {
-        type: String,
-        required: true
-    },
-    type: {
-        type: String,
-        required: true
-    },
-    salary: {
-        type: String,  // Keeping it as String to accommodate "Above 300000"
-        required: true
-    },
-    status: {
+        unique: true,
+      },
+      title: {
         type: String,
         required: true,
-        enum: ["PENDING", "APPROVED", "REJECTED"] // Enum for predefined values
-    },
-    statusColor: {
+      },
+      department: {
         type: String,
-        required: true
-    },
-   
-    
-});
+        required: true,
+      },
+      jobType: {
+        type: String,
+        enum: ["Full-Time", "Part-Time", "Internship"],
+        required: true,
+      },
+      hospitalName: {
+        type: String,
+        required: true,
+      },
+      location: {
+        type: String,
+        required: true,
+      },
+      jobDescription: {
+        type: String,
+        required: true,
+      },
+      requirements: {
+        type: String,
+        required: true,
+      },
+      salaryRange: {
+        type: String,
+      },
+      status: {
+        type: String,
+        enum: ["OPEN", "INTERVIEW", "PENDING", "CLOSED"],
+        default: "OPEN",
+      },
+     
+      postedDate: {
+        type: Date,
+        default: Date.now,
+      },
+      urgent: {
+        type: Boolean,
+        default: false,
+      },
+    });
 
 const db = mongoose.connection.useDb('Jobs');
 const Job = db.model("Job", JobSchema, "Jobdata");

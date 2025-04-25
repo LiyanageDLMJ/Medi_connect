@@ -1,18 +1,28 @@
 import express from "express";
-import * as jobPostController from "../../controllers/RecuiterControllers/jobPostController";
+import {
+  viewJobs,
+  addJob,
+  updateJob,
+  deleteJob,
+} from "../../controllers/RecuiterControllers/jobPostController";
 
 const router = express.Router();
-const jobPost = require("../../models/Job");
+
+// Helper to handle async errors
+const asyncHandler = (fn: Function) => (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  Promise.resolve(fn(req, res, next)).catch(next);
+};
+
 // Route to view all job posts
-router.get("/Veiwjobs", jobPostController.viewJobs);
+router.get("/viewJobs", asyncHandler(viewJobs));
 
 // Route to add a new job post
-router.post("/Postjobs", jobPostController.addJob);
+router.post("/postJobs", asyncHandler(addJob));
 
-// Route to update a job post
-router.put("/Updatejobs", jobPostController.updateJob);
+// Route to update a job post by ID
+router.put("/updateJobs/:id", asyncHandler(updateJob));
 
-// Route to delete a job post
-router.delete("Deletejobs", jobPostController.deleteJob);
+// Route to delete a job post by ID
+router.delete("/deleteJobs/:id", asyncHandler(deleteJob));
 
 export default router;
