@@ -11,7 +11,7 @@ import {
   X,
   Calendar,
 } from "lucide-react";
-import Sidebar from "../../higherEducation/components/Sidebar";
+import Sidebar from "../components/NavBar/Sidebar";
 import { useNavigate } from "react-router-dom";
 
 // Define the interface for form data

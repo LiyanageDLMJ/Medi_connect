@@ -18,7 +18,7 @@ const SidebarNav = () => {
   const navLinks = [
     { label: "Dashboard", to: "/physician/dashboard", icon: <FiHome size={20} /> },
     { label: "Your Profile", to: "/physician/profile", icon: <FiUser size={20} /> },
-    { label: "Update CV", to: "/physician/update-cv", icon: <FiFileText size={20} /> },
+    { label: "Update CV", to: "/physician/update-cv01", icon: <FiFileText size={20} /> },
     {
       label: "Job & Internships",
       to: "/physician/job-internship",

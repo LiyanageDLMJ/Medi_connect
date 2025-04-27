@@ -2,7 +2,7 @@
 import { useNavigate } from "react-router-dom";
 import React, { useState } from "react";
 import { Bell, ChevronDown, ChevronLeft, ChevronRight, Menu, Search, User } from "lucide-react";
-import Sidebar from "../../higherEducation/components/Sidebar";
+import Sidebar from "../components/NavBar/Sidebar";
 import UpdateCV02 from "./UpdateCV02";
 
 interface ProfileFormData {

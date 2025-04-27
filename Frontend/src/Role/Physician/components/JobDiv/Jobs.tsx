@@ -1,26 +1,40 @@
 import { FaCalendarAlt, FaMapMarkerAlt, FaBriefcase, FaHospital, FaMoneyBillAlt } from "react-icons/fa";
-import PropTypes from 'prop-types';
-import { useNavigate } from 'react-router-dom';
+import PropTypes from "prop-types";
+import { useNavigate } from "react-router-dom";
 
-  interface Job {
-    id: number;
-    title: string;
-    hospitalName:string;
-    postedDate: string;
-    location: string;
-    jobType:string;
-    salaryRange:string;
-    status: string;
-    statusColor: string;
+interface Job {
+  id: number;
+  title: string;
+  hospitalName: string;
+  postedDate: string;
+  location: string;
+  jobType: string;
+  salaryRange: string;
+  status: string;
+}
+
+interface JobsProps {
+  jobs: Job[];
+  totalJobs: number;
+}
+
+const getStatusColor = (status: string) => {
+  switch (status.toUpperCase()) {
+    case "OPEN":
+      return "bg-green-500";
+    case "PENDING":
+      return "bg-orange-500";
+    case "INTERVIEW":
+      return "bg-blue-500";
+    case "REJECTED":
+      return "bg-red-500";
+    default:
+      return "bg-gray-500";
   }
+};
 
-  interface JobsProps {
-    jobs: Job[];
-    totalJobs: number;
-  }
-
-  const Jobs: React.FC<JobsProps> = ({ jobs, totalJobs }) => {
-    const navigate = useNavigate();
+const Jobs: React.FC<JobsProps> = ({ jobs, totalJobs }) => {
+  const navigate = useNavigate();
 
   return (
     <div className="p-8">
@@ -65,14 +79,20 @@ import { useNavigate } from 'react-router-dom';
             </div>
 
             {/* Status Label */}
-            <span className={`inline-block mt-3 px-3 py-1 text-white text-sm font-semibold rounded ${job.statusColor}`}>
+            <span
+              className={`inline-block mt-3 px-3 py-1 text-white text-sm font-semibold rounded ${getStatusColor(
+                job.status
+              )}`}
+            >
               {job.status}
             </span>
 
             {/* Buttons */}
             <div className="mt-4 flex gap-4">
               <button className="btn btn-details">Details</button>
-              <button className="btn btn-apply" onClick={()=>navigate ("/physician/job-application")}>Apply</button>
+              <button className="btn btn-apply" onClick={() => navigate("/physician/job-application")}>
+                Apply
+              </button>
             </div>
           </div>
         ))}
@@ -80,18 +100,18 @@ import { useNavigate } from 'react-router-dom';
     </div>
   );
 };
+
 Jobs.propTypes = {
   jobs: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.number.isRequired,
       title: PropTypes.string.isRequired,
-      hospitalName:PropTypes.string.isRequired,
+      hospitalName: PropTypes.string.isRequired,
       postedDate: PropTypes.string.isRequired,
       location: PropTypes.string.isRequired,
-      jobType:PropTypes.string.isRequired,
-      salaryRange:PropTypes.string.isRequired,
+      jobType: PropTypes.string.isRequired,
+      salaryRange: PropTypes.string.isRequired,
       status: PropTypes.string.isRequired,
-      statusColor: PropTypes.string.isRequired,
     })
   ).isRequired,
   totalJobs: PropTypes.number.isRequired,

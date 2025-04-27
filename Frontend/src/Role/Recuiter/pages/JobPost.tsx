@@ -8,14 +8,14 @@ import Sidebar from "../components/NavBar/Sidebar"
 import { useState } from "react"
 
 const formSchema = z.object({
-  jobTitle: z.string().min(2, { message: "Job title is required" }),
+  title: z.string().min(2, { message: "Job title is required" }),
   department: z.string().min(2, { message: "Department is required" }),
   hospitalName: z.string().min(2, { message: "Hospital name is required" }),
   location: z.string().min(2, { message: "Location is required" }),
   jobType: z.string().min(1, { message: "Job type is required" }),
   description: z.string().min(10, { message: "Description must be at least 10 characters" }),
   requirements: z.string().min(10, { message: "Requirements must be at least 10 characters" }),
-  salary: z.string().optional(),
+  salaryRange: z.string().optional(),
   urgent: z.boolean().default(false),
 })
 
@@ -25,14 +25,14 @@ export default function JobPostForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      jobTitle: "",
+      title: "",
       department: "",
       hospitalName: "",
       location: "",
       jobType: "",
       description: "",
       requirements: "",
-      salary: "",
+      salaryRange: "",
       urgent: false,
     },
   })
@@ -72,11 +72,11 @@ export default function JobPostForm() {
                 <label className="block font-medium">Job Title</label>
                 <input
                   type="text"
-                  {...register("jobTitle")}
+                  {...register("title")}
                   placeholder="e.g. Cardiologist"
                   className="w-full border rounded px-3 py-2"
                 />
-                {errors.jobTitle && <p className="text-red-500 text-sm">{errors.jobTitle.message}</p>}
+                {errors.title && <p className="text-red-500 text-sm">{errors.title.message}</p>}
               </div>
               <div>
                 <label className="block font-medium">Department</label>
@@ -154,10 +154,10 @@ export default function JobPostForm() {
             </div>
 
             <div>
-              <label className="block font-medium">Salary Range (Optional)</label>
+              <label className="block font-medium">salaryRange Range (Optional)</label>
               <input
                 type="text"
-                {...register("salary")}
+                {...register("salaryRange")}
                 placeholder="e.g. $200,000 - $250,000"
                 className="w-full border rounded px-3 py-2"
               />

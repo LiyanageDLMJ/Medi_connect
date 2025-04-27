@@ -2,16 +2,23 @@ import { Routes, Route, Outlet } from "react-router-dom";
 import JobInternshipSearch from "./Role/Physician/pages/JobInternshipSearch";
 import HigherEducationSearch from "./Role/Physician/pages/HigherEducationSearch";
 import JobApplicationForm from "./Role/Physician/pages/JobApplicationForm";
+import ViewApplications from "./Role/higherEducation/pages/ViewApplications";
 import Register from "./LoginRegister/register/Register";
 import JobPost from "./Role/Recuiter/pages/JobPost";
 import JobListing from "./Role/Recuiter/pages/JobListing";
+import UpdateCV01 from "./Role/Physician/pages/UpdateCV01";
+import UpdateCV02 from "./Role/Physician/pages/UpdateCV02";
+import UpdateCV03 from "./Role/Physician/pages/UpdateCV03";
+import Messages from "./Role/higherEducation/pages/Messages";
 import "react-datepicker/dist/react-datepicker.css";
 import Home from "./LoginRegister/Home/Home";
 import ForgotPassword from "./LoginRegister/login/ForgetPassword";
 import Login from "./LoginRegister/login/Login";
 import Footer from "./Components/FooterDiv/Footer"; // Adjust the path as needed
 import WithFooter from "./Layout/WithFooter"; // Adjust the path as needed
-
+import DegreeListing from "./Role/higherEducation/pages/DegreeListing";
+import Dashborad from "./Role/higherEducation/pages/dashborad";
+import Dashboard from "./Role/Physician/pages/dashboard";
 const App = () => {
   return (
     <>
@@ -26,7 +33,7 @@ const App = () => {
       </Route>
 
       {/* Without Footer Routes */}
-      <Route element={<WithoutFooter><Outlet /></WithoutFooter>}>
+      <Route element={<><Outlet /></>}>
 
         {/* Physician Routes */}
         <Route path="/physician">
@@ -50,12 +57,14 @@ const App = () => {
         {/* Recruiter Routes */}
         <Route path="/recuiter">
           <Route path="jobPost" element={<JobPost />} />
+          <Route path="jobListing" element={<JobListing />} />
         </Route>
 
         {/* Duplicate dashboard route (optional) */}
         <Route path="/deshboard" element={<Dashborad />} />
       </Route>
     </Routes>
+    </>
   );
 };
 

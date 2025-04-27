@@ -1,5 +1,5 @@
 import { useState, ChangeEvent, FormEvent } from "react";
-import Sidebar from "../../higherEducation/components/Sidebar";
+import Sidebar from "../components/NavBar/Sidebar";
 
 interface FormData {
   name: string;
