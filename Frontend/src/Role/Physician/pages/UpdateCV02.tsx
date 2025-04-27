@@ -11,8 +11,12 @@ import {
   X,
   Calendar,
 } from "lucide-react";
+import { format } from "date-fns";
 import Sidebar from "../../higherEducation/components/Sidebar";
 import { useNavigate } from "react-router-dom";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { useFormContext } from "../../../context/FormContext";
 
 // Define the interface for form data
 interface ProfileFormData {
@@ -21,7 +25,7 @@ interface ProfileFormData {
   specialization: string;
   experience: string;
   additionalCertifications: string[];
-  graduationDate: string;
+
   medicalLicenseNumber: string;
   medicalLicenseIssuer: string;
 }
@@ -34,10 +38,20 @@ export default function UpdateCV02() {
     specialization: "",
     experience: "",
     additionalCertifications: [],
-    graduationDate: "",
+
     medicalLicenseNumber: "",
     medicalLicenseIssuer: "",
   });
+
+  const handleDateChange = (date: Date | null) => {
+    if (date) {
+      setFormData((prev) => ({
+        ...prev,
+        graduationDate: format(date, "MM/dd/yyyy"),
+      }));
+      setStartDate(date);
+    }
+  };
 
   const [certificationInput, setCertificationInput] = useState("");
 
@@ -74,6 +88,7 @@ export default function UpdateCV02() {
       ),
     }));
   };
+  const [startDate, setStartDate] = useState(new Date());
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -119,9 +134,23 @@ export default function UpdateCV02() {
           </div>
         </header>
 
+        {/* Tabs */}
+        <div className="flex border-b mb-8">
+          <button className="flex items-center gap-2 px-6 py-4 border-b-2 border-blue-500 text-blue-500">
+            <User className="w-5 h-5" />
+            <span>Basic Details</span>
+          </button>
+          <button className="flex items-center gap-2 px-6 py-4 text-gray-600">
+            <span>Update CV</span>
+          </button>
+          <button className="flex items-center gap-2 px-6 py-4 text-gray-600">
+            <span>Profile Settings</span>
+          </button>
+        </div>
+
         {/* Main Content */}
         <main className="max-w-6xl mx-auto p-6">
-          <h1 className="text-2xl font-bold mb-6">Setup Profile</h1>
+         
 
           {/* Form */}
           <form
@@ -237,13 +266,12 @@ export default function UpdateCV02() {
                   <label className="block text-sm mb-1">
                     Graduation Date<span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="text"
-                    name="graduationDate"
-                    value={formData.graduationDate}
-                    onChange={handleInputChange}
+                  <DatePicker
+                    showIcon
+                    selected={startDate}
+                    onChange={handleDateChange}
+                    dateFormat="MM/dd/yyyy"
                     className="w-full p-2 border rounded-md bg-gray-50"
-                    placeholder="MM/DD/YYYY"
                   />
                 </div>
 
@@ -283,7 +311,7 @@ export default function UpdateCV02() {
               {/* Navigation Buttons */}
               <div className="flex justify-between mt-10">
                 <button
-                  onClick={() => navigate("/physician/update-cv02")}
+                  onClick={() => navigate("/physician/update-cv03")}
                   className="flex items-center justify-center w-10 h-10 rounded-md border"
                 >
                   <ChevronLeft className="h-5 w-5" />
@@ -292,7 +320,7 @@ export default function UpdateCV02() {
                   type="submit"
                   className="px-6 py-2 bg-blue-500 text-white rounded-md"
                 >
-                  Submit
+                  Next
                 </button>
               </div>
             </div>

@@ -66,7 +66,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setMessage("Doctor CV added successfully!");
         console.log("Form submitted successfully:", result);
 
-        navigate("/physician/update-cv02");
+        navigate("/physician/update-cv03");
       } else {
         const error = await response.json();
         setMessage(
@@ -238,7 +238,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                 className="px-6 py-2 bg-blue-500 text-white rounded-md"
                 disabled={loading}
               >
-                {loading ? "Processing..." : "Next"}
+                {loading ? "Processing..." : "Submit"}
               </button>
             </div>
           </form>
