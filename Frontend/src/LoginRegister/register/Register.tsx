@@ -22,9 +22,9 @@ interface FormData {
   currentInstitute?: string;
   yearOfStudy?: string;
   fieldOfStudy?: string;
-  companyName?: string;
+  hospitalName?: string;
   position?: string;
-  industryType?: string;
+  healthcareType?: string;
   instituteName?: string;
   instituteType?: string;
   accreditation?: string;
@@ -129,11 +129,12 @@ const Register = () => {
 };
 
 const RegisterContainer = styled.div`
-  height: 100vh;
+  min-height: 100vh;
   width: 100%;
   display: flex;
   flex-direction: column;
   background: linear-gradient(180deg, #E6F0FF 0%, #FFFFFF 100%);
+  padding-bottom: 250px; /* Increased padding to ensure more space for the form */
 `;
 
 const ContentWrapper = styled.div`
@@ -142,8 +143,9 @@ const ContentWrapper = styled.div`
   justify-content: center;
   align-items: flex-start;
   padding: 2rem;
+  padding-bottom: 4rem; /* Added extra padding at the bottom */
   width: 100%;
-  height: 100%;
+  min-height: calc(100vh - 250px); /* Ensure minimum height with footer space */
 `;
 
 const RegisterSection = styled.div`
@@ -152,19 +154,21 @@ const RegisterSection = styled.div`
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 400px;
-`;
-
-const RegisterTitle = styled.h1`
-  font-size: 2rem;
-  color: #333;
-  margin-bottom: 2rem;
+  max-width: 500px; /* Increased max-width for better form display */
+  margin: 2rem auto;
 `;
 
 const RegisterForm = styled.form`
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  width: 100%;
+`;
+
+const RegisterTitle = styled.h1`
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 2rem;
 `;
 
 const RegisterButton = styled.button`

@@ -1,15 +1,40 @@
 import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
+import cors from "cors"; // Import cors
+import mongoose from "mongoose";
+import router from "./Routes/PhysicianRoutes/BasicRoutes";
+import CvDocRouter from "./Routes/PhysicianRoutes/CvDoctorRoutes";
+import RecuiterJobPost from "./Routes/RecuiterRoutes/JobPostRoutes";
+import connectDB from "./Config/db";
+import JobSearch from "./Routes/PhysicianRoutes/JobSearchRoutes";
+import jobApplicationRoutes from "./Routes/PhysicianRoutes/jobApplicationRoutes";
+import fs from "fs";
+import path from "path";
 
-dotenv.config();
+connectDB();
 
-const app=express();
-app.use(express.json());
+const app = express();
+const PORT = 3000;
+
+// Enable CORS
 app.use(cors());
 
-app.get("/",(req,res)=>{
-    res.send("Api in running");
+// Middleware to parse JSON
+app.use(express.json());
+
+// Create uploads folder if it doesn't exist
+const uploadDir = path.join(__dirname, "../uploads");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
+
+// Routes
+app.use("/api", router);
+app.use("/CvdoctorUpdate", CvDocRouter);
+app.use("/JobPost", RecuiterJobPost);
+app.use("/JobSearch", JobSearch);
+app.use("/JobApplication", jobApplicationRoutes);
+
+// Start the server
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
-const PORT=process.env.PORT ||5000;
-app.listen(PORT,()=>console.log('Server running on port${PORT}'))
