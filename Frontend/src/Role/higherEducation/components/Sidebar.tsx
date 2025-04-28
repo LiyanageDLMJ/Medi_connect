@@ -9,6 +9,7 @@ import {
   FiBarChart2,
   FiSettings,
   FiLogOut,
+  FiFileText,
 } from "react-icons/fi";
 
 const Sidebar = () => {
@@ -27,6 +28,11 @@ const Sidebar = () => {
       to: "/higher-education/view-applications",
       label: "View Applications",
       icon: <FiBook size={20} />,
+    },
+    {
+      to: "/higher-education/update-cv",
+      label: "Update CV",
+      icon: <FiFileText size={20} />,
     },
     {
       to: "/higher-education/performance-insights",

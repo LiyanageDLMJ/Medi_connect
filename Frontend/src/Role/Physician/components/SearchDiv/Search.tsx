@@ -53,7 +53,7 @@ const SearchForm: React.FC<{ filters: SearchFilters; onFilterChange: (e: React.C
       />
       <button type="submit" className="button">
         Search
-      </button>
+      </button> 
     </div>
   </form>
 );

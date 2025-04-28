@@ -1,18 +1,23 @@
 import { Routes, Route, Outlet } from "react-router-dom";
+import Login from "./LoginRegister/login/Login";
 import JobInternshipSearch from "./Role/Physician/pages/JobInternshipSearch";
 import HigherEducationSearch from "./Role/Physician/pages/HigherEducationSearch";
 import JobApplicationForm from "./Role/Physician/pages/JobApplicationForm";
+import ViewApplications from "./Role/higherEducation/pages/ViewApplications";
 import Register from "./LoginRegister/register/Register";
 import JobPost from "./Role/Recuiter/pages/JobPost";
+import JobListing from "./Role/Recuiter/pages/JobListing";
+import UpdateCV01 from "./Role/Physician/pages/UpdateCV01";
+import UpdateCV02 from "./Role/Physician/pages/UpdateCV02";
+import UpdateCV03 from "./Role/Physician/pages/UpdateCV03";
+import Messages from "./Role/higherEducation/pages/Messages";
 import "react-datepicker/dist/react-datepicker.css";
 import Home from "./LoginRegister/Home/Home";
 import ForgotPassword from "./LoginRegister/login/ForgetPassword";
 import DegreeListing from "./Role/higherEducation/pages/DegreeListing";
-import ViewApplications from "./Role/higherEducation/pages/ViewApplications";
-import Messages from "./Role/higherEducation/pages/Messages";
-import Login from "./LoginRegister/login/Login";
+
 import Dashboard from "./Role/Physician/pages/dashboard";
- import JobListing from"./Role/Recuiter/pages/JobListing";
+
 
 import PostDegree from "./Role/higherEducation/pages/PostDegree";
 // import PostDegrees from "./Role/higherEducation/pages/examble";
@@ -21,7 +26,8 @@ import WithoutFooter from "./Layout/WithoutFooter";
 import Dashborad from "./Role/higherEducation/pages/dashborad";
 const App = () => {
   return (
-    <Routes>
+    <>
+      <Routes>
 
       {/* With Footer Routes */}
       <Route element={<WithFooter><Outlet /></WithFooter>}>
@@ -32,7 +38,7 @@ const App = () => {
       </Route>
 
       {/* Without Footer Routes */}
-      <Route element={<WithoutFooter><Outlet /></WithoutFooter>}>
+      <Route element={<><Outlet /></>}>
 
         {/* Physician Routes */}
         <Route path="/physician">
@@ -60,10 +66,11 @@ const App = () => {
       
         
         <Route path="/postdegree" element={<PostDegree />} />
-        {/* <Route path="/postdegrees" element={<PostDegrees />} /> */}
+ 
 
       </Route>
     </Routes>
+    </>
   );
 };
 

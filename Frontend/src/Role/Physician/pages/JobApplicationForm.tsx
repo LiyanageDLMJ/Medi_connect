@@ -1,5 +1,5 @@
 import { useState, ChangeEvent, FormEvent } from "react";
-import NavBar from "../components/NavBar/NavBar";
+import Sidebar from "../components/NavBar/Sidebar";
 
 interface FormData {
   name: string;
@@ -48,7 +48,8 @@ export default function JobApplicationForm() {
 
   return (
     <div>
-      <NavBar />
+      <Sidebar />
+      <div className="flex-1 overflow-auto md:pl-64">
       
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden">
@@ -143,6 +144,6 @@ export default function JobApplicationForm() {
         </form>
       </div>
     </div>
-    </div>
+    </div></div>
   );
 }

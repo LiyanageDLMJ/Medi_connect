@@ -1,4 +1,4 @@
-import NavBar from "../components/NavBar/NavBar";
+import Sidebar from "../components/NavBar/Sidebar";
 import React from 'react'
 import { Routes, Route } from 'react-router-dom';
 import JobPost from "../pages/JobPost";
@@ -8,7 +8,7 @@ import JobListing from "../pages/JobListing";
 const routes = () => {
   return (
     <div>
-    <NavBar />
+    <Sidebar />
     <Routes>
       <Route path="/" element={<Dashboard />} />
       <Route path="/jobPost" element={<JobPost />} />

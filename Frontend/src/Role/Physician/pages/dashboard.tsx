@@ -1,13 +1,14 @@
 import React from 'react'
 import { Bell, Search } from "lucide-react"
-import NavBar from "../components/NavBar/NavBar";
+import Sidebar from "../components/NavBar/Sidebar";
 import doctorImage from "../../../Doctor.png";
+
 
 const Dashboard: React.FC = () => {
   return (
     <div>
-      <NavBar />
-    <div className="min-h-screen bg-sky-50">
+      <Sidebar />
+    <div className="flex-1 overflow-auto md:pl-64">
       
       <div className="flex items-center justify-between p-4 bg-white">
         <div className="flex items-center gap-4">
@@ -51,7 +52,7 @@ const Dashboard: React.FC = () => {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row items-center">
             <div className="md:w-1/2 mb-8 md:mb-0 z-10">
-              <h1 className="text-4xl md:text-5xl font-bold text-slate-700 mb-8">Doctors</h1>
+              <h1 className="text-4xl md:text-5xl font-bold text-slate-700 mb-8" >Doctors</h1>
               <div className="bg-sky-200 rounded-xl p-8 md:p-10 max-w-2xl max-h-2xl ">
                 <h2 className="text-xl md:text-2xl font-semibold text-slate-800 leading-relaxed">
                   Advance your medical career with exclusive job opportunities and global healthcare connections.

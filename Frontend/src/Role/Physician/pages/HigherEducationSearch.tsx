@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Search from "../components/DegreeDiv/DegreeSearch"; // Adjusted to the new search component for degree programs
 import DegreeCard from "../components/DegreeDiv/DegreeCard"; // Adjusted to display degree programs
-import NavBar from "../components/NavBar/NavBar";
+import NavBar from "../components/NavBar/Sidebar";
 import degreeImage from "../../../asset/img.jpg";
 import Sidebar from "../components/Sidebar";
 import TopBar from "../components/TopBar";
