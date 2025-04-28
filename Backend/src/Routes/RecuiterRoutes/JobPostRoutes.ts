@@ -4,6 +4,7 @@ import {
   addJob,
   updateJob,
   deleteJob,
+  getJobById,
 } from "../../controllers/RecuiterControllers/jobPostController";
 
 const router = express.Router();
@@ -15,6 +16,9 @@ const asyncHandler = (fn: Function) => (req: express.Request, res: express.Respo
 
 // Route to view all job posts
 router.get("/viewJobs", asyncHandler(viewJobs));
+
+// Route to view a job post by ID
+router.get("/viewJobs/:id", asyncHandler(getJobById));
 
 // Route to add a new job post
 router.post("/postJobs", asyncHandler(addJob));
