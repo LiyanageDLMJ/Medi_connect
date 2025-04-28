@@ -12,9 +12,10 @@ import ViewApplications from "./Role/higherEducation/pages/ViewApplications";
 import Messages from "./Role/higherEducation/pages/Messages";
 import Login from "./LoginRegister/login/Login";
 import Dashboard from "./Role/Physician/pages/dashboard";
+ import JobListing from"./Role/Recuiter/pages/JobListing";
 
-
-import DegreeForm from "./Role/higherEducation/pages/DegreeForm";
+import PostDegree from "./Role/higherEducation/pages/PostDegree";
+// import PostDegrees from "./Role/higherEducation/pages/examble";
 import WithFooter from "./Layout/WithFooter";
 import WithoutFooter from "./Layout/WithoutFooter";  
 import Dashborad from "./Role/higherEducation/pages/dashborad";
@@ -53,11 +54,13 @@ const App = () => {
         {/* Recruiter Routes */}
         <Route path="/recuiter">
           <Route path="jobPost" element={<JobPost />} />
+          <Route path="JobListing" element={<JobListing />} />
         </Route>
 
       
         
-        <Route path="/DegreeForm" element={<DegreeForm />} />
+        <Route path="/postdegree" element={<PostDegree />} />
+        {/* <Route path="/postdegrees" element={<PostDegrees />} /> */}
 
       </Route>
     </Routes>

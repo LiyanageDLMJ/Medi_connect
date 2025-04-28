@@ -3,8 +3,8 @@ import Search from "../components/DegreeDiv/DegreeSearch"; // Adjusted to the ne
 import DegreeCard from "../components/DegreeDiv/DegreeCard"; // Adjusted to display degree programs
 import NavBar from "../components/NavBar/NavBar";
 import degreeImage from "../../../asset/img.jpg";
-
-
+import Sidebar from "../components/Sidebar";
+import TopBar from "../components/TopBar";
 
 const degreePrograms = [
   {
@@ -125,11 +125,26 @@ const HigherEducationSearch = () => {
   });
 
   return (
-    <div>
-      <NavBar />
-      <Search filters={filters} onFilterChange={handleFilterChange} onClear={handleClearFilters} />
+    
+   
+   <div className="flex h-screen">
+    {/* Sidebar */}
+    <Sidebar />
+
+    
+    {/* Main Content */}
+    <div className="flex-1 overflow-auto md:pl-64"> {/* Add padding on larger screens to account for sidebar */}
+    <TopBar />
+    <div className="flex flex-col min-h-[calc(100vh-80px)] p-4 ">
+     
+     
+    <Search filters={filters} onFilterChange={handleFilterChange} onClear={handleClearFilters} />
       <DegreeCard degrees={filteredDegrees} totalDegrees={degreePrograms.length} />
     </div>
+      </div>
+</div>
+
+
   );
 };
 

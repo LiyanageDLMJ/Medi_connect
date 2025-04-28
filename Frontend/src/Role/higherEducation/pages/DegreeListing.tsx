@@ -3,6 +3,7 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import { FiFilter,FiGlobe } from "react-icons/fi";
 import { FaCalendarAlt } from "react-icons/fa";
 import Sidebar from "../components/Sidebar";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import {
   Button,
   TextField,
@@ -30,6 +31,7 @@ interface Degree {
 }
 
 const DegreeListing: React.FC = () => {
+  const navigate = useNavigate(); // Initialize navigate
   const [degree, setDegree] = useState<Degree[]>([
     {
       id: 1,
@@ -257,7 +259,7 @@ const DegreeListing: React.FC = () => {
                 />
               </div>
 
-              <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+              <button  onClick={() => navigate("/postdegree")} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
                 + Post a degree
               </button>
             </div>
