@@ -36,7 +36,7 @@ app.use("/CvdoctorUpdate", CvDocRouter);
 app.use("/JobPost", RecuiterJobPost);
 app.use("/JobSearch", JobSearch);
 app.use("/JobApplication", jobApplicationRoutes);
-app.use('/api/degrees', degreePostRoutes);
+app.use('/degrees', degreePostRoutes);
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
