@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import NavBar from "../components/NavBar/NavBar"
+import Sidebar from "../components/NavBar/Sidebar"
 import { FaBuilding, FaEdit, FaTrashAlt } from "react-icons/fa"
 
 type Job = {
@@ -105,7 +105,8 @@ const JobListing = () => {
 
   return (
     <div>
-      <NavBar />
+      <Sidebar />
+      <div className="flex-1 overflow-auto md:pl-64">
       <div className="container mx-auto p-6">
         <h2 className="text-xl font-bold mb-4">Manage Job Postings</h2>
 
@@ -247,7 +248,7 @@ const JobListing = () => {
           </div>
         )}
       </div>
-    </div>
+    </div></div>
   )
 }
 

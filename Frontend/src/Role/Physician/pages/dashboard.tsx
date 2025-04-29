@@ -1,8 +1,8 @@
 import React from 'react'
 import { Bell, Search } from "lucide-react"
-import NavBar from "../components/NavBar/NavBar";
+import Sidebar from "../components/NavBar/Sidebar";
 import doctorImage from "../../../Doctor.png";
-import Sidebar from '../../higherEducation/components/Sidebar';
+
 
 const Dashboard: React.FC = () => {
   return (

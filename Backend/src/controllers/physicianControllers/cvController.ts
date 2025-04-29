@@ -18,19 +18,8 @@ exports.viewDoctorsCv=async(req:Request ,res:Response)=>{
 
 exports.addDoctorCv=async(req:Request,res:Response)=>{
     const data=req.body;
-    
-    if (!data.yourName || !data.contactEmail || !data.currentLocation || !data.professionalTitle || !data.contactPhone || !data.careerSummary) {
-        return res.status(400).send({
-            message: "Validation Error: Please provide all required fields (yourName, contactEmail, currentLocation, professionalTitle).",
-        });
-    }
-
-
     const doctor=new CvDoctorUpdate(data);
     const result=await doctor.save();
-    
-
-
     if(result){
         res.send({
             "Message":"Doctor Cv added successfully",

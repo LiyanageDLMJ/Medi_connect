@@ -1,26 +1,40 @@
 import { FaCalendarAlt, FaMapMarkerAlt, FaBriefcase, FaHospital, FaMoneyBillAlt } from "react-icons/fa";
-import PropTypes from 'prop-types';
-import { useNavigate } from 'react-router-dom';
+import PropTypes from "prop-types";
+import { useNavigate } from "react-router-dom";
 
-  interface Job {
-    id: number;
-    title: string;
-    hospital: string;
-    date: string;
-    location: string;
-    type: string;
-    salary: string;
-    status: string;
-    statusColor: string;
+interface Job {
+  jobId: string;
+  title: string;
+  hospitalName: string;
+  postedDate: string;
+  location: string;
+  jobType: string;
+  salaryRange: string;
+  status: string;
+}
+
+interface JobsProps {
+  jobs: Job[];
+  totalJobs: number;
+}
+
+const getStatusColor = (status: string) => {
+  switch (status.toUpperCase()) {
+    case "OPEN":
+      return "bg-green-500";
+    case "PENDING":
+      return "bg-orange-500";
+    case "INTERVIEW":
+      return "bg-blue-500";
+    case "REJECTED":
+      return "bg-red-500";
+    default:
+      return "bg-gray-500";
   }
+};
 
-  interface JobsProps {
-    jobs: Job[];
-    totalJobs: number;
-  }
-
-  const Jobs: React.FC<JobsProps> = ({ jobs, totalJobs }) => {
-    const navigate = useNavigate();
+const Jobs: React.FC<JobsProps> = ({ jobs, totalJobs }) => {
+  const navigate = useNavigate();
 
   return (
     <div className="p-8">
@@ -32,7 +46,7 @@ import { useNavigate } from 'react-router-dom';
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {jobs.map((job) => (
           <div
-            key={job.id}
+            key={job.jobId} // Use jobId as the unique identifier from the backend
             className="bg-gray-100 shadow-lg rounded-lg p-6 transition duration-300 hover:bg-blue-200 hover:shadow-xl"
           >
             {/* Job Title & Hospital */}
@@ -43,7 +57,7 @@ import { useNavigate } from 'react-router-dom';
               <div>
                 <h3 className="text-lg font-bold">{job.title}</h3>
                 <p className="text-gray-600 flex items-center gap-2">
-                  <FaHospital className="text-gray-500" /> {job.hospital}
+                  <FaHospital className="text-gray-500" /> {job.hospitalName}
                 </p>
               </div>
             </div>
@@ -51,28 +65,39 @@ import { useNavigate } from 'react-router-dom';
             {/* Job Details */}
             <div className="mt-4 text-gray-600">
               <p className="flex items-center gap-2">
-                <FaCalendarAlt className="text-gray-500" /> {job.date}
+                <FaCalendarAlt className="text-gray-500" /> {new Date(job.postedDate).toLocaleDateString()}
               </p>
               <p className="flex items-center gap-2">
                 <FaMapMarkerAlt className="text-gray-500" /> {job.location}
               </p>
               <p className="flex items-center gap-2">
-                <FaBriefcase className="text-gray-500" /> {job.type}
+                <FaBriefcase className="text-gray-500" /> {job.jobType}
               </p>
               <p className="flex items-center gap-2">
-                <FaMoneyBillAlt className="text-gray-500" /> {job.salary}
+                <FaMoneyBillAlt className="text-gray-500" /> {job.salaryRange}
               </p>
             </div>
 
             {/* Status Label */}
-            <span className={`inline-block mt-3 px-3 py-1 text-white text-sm font-semibold rounded ${job.statusColor}`}>
+            <span
+              className={`inline-block mt-3 px-3 py-1 text-white text-sm font-semibold rounded ${getStatusColor(
+                job.status
+              )}`}
+            >
               {job.status}
             </span>
 
             {/* Buttons */}
             <div className="mt-4 flex gap-4">
-              <button className="btn btn-details">Details</button>
-              <button className="btn btn-apply" onClick={()=>navigate ("/physician/job-application")}>Apply</button>
+              <button
+                className="btn btn-details"
+                onClick={() => navigate(`/physician/job-details/${job.jobId}`)} // Use jobId here as well
+              >
+                Details
+              </button>
+              <button className="btn btn-apply" onClick={() => navigate("/physician/job-application")}>
+                Apply
+              </button>
             </div>
           </div>
         ))}
@@ -80,18 +105,18 @@ import { useNavigate } from 'react-router-dom';
     </div>
   );
 };
+
 Jobs.propTypes = {
   jobs: PropTypes.arrayOf(
     PropTypes.shape({
-      id: PropTypes.number.isRequired,
+      jobId: PropTypes.number.isRequired,
       title: PropTypes.string.isRequired,
-      hospital: PropTypes.string.isRequired,
-      date: PropTypes.string.isRequired,
+      hospitalName: PropTypes.string.isRequired,
+      postedDate: PropTypes.string.isRequired,
       location: PropTypes.string.isRequired,
-      type: PropTypes.string.isRequired,
-      salary: PropTypes.string.isRequired,
+      jobType: PropTypes.string.isRequired,
+      salaryRange: PropTypes.string.isRequired,
       status: PropTypes.string.isRequired,
-      statusColor: PropTypes.string.isRequired,
     })
   ).isRequired,
   totalJobs: PropTypes.number.isRequired,

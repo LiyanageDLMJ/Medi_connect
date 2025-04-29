@@ -1,37 +1,29 @@
 import mongoose from "mongoose";
-const Schema = mongoose.Schema;
+import router from "../Routes/PhysicianRoutes/BasicRoutes";
+const Schema=mongoose.Schema;
 
-const CvUpdateSchema = new Schema({
-    yourName: { 
-        type: String,
-        required: true,
+const CvUpdateSchema=new Schema({
+    name:{
+        type:String,
+        required:true
     },
-    currentLocation: { 
-        type: String,
-        required: true,
+    email:{
+        type:String,
+        required:true
     },
-    contactEmail: { 
-        type: String,
-        required: true,
+    phone:{
+        type:String,
+        required:true
     },
-    contactPhone: { 
-        type: String,
-        required: true,
-    },
-    linkedinLink: { 
-        type: String,
-    },
-    careerSummary: { 
-        type: String,
-        required: true,
-    },
-    professionalTitle: { 
-        type: String,
-        required: true,
-    },
+    address:String 
+    ,
+    specialization:{
+        type:String,
+        required:true
+    }
 });
+const db=mongoose.connection.useDb('User');
+const CvDoctorUpdate=db.model('Doctor',CvUpdateSchema,'Doctor');
 
-const db = mongoose.connection.useDb("User");
-const CvDoctorUpdate = db.model("Doctor", CvUpdateSchema, "Doctor");
 
 export default CvDoctorUpdate;
