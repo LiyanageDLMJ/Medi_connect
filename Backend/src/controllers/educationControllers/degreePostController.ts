@@ -1,10 +1,10 @@
-import { Request, Response, RequestHandler, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import Degree, { IDegree } from '../../models/Degree';
 
 // Define a custom type for async handlers
 type AsyncRequestHandler = (req: Request, res: Response, next: NextFunction) => Promise<void>;
 
-// Use AsyncRequestHandler to ensure correct typing
+// Create a new degree
 export const createDegree = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const {
@@ -17,7 +17,6 @@ export const createDegree = async (req: Request, res: Response, next: NextFuncti
       applicantsApplied,
       duration,
       tuitionFee,
-      institute,
     } = req.body;
 
     const newDegree: IDegree = new Degree({
@@ -30,7 +29,6 @@ export const createDegree = async (req: Request, res: Response, next: NextFuncti
       applicantsApplied,
       duration,
       tuitionFee,
-      institute,
     });
 
     const savedDegree = await newDegree.save();
@@ -40,6 +38,7 @@ export const createDegree = async (req: Request, res: Response, next: NextFuncti
   }
 };
 
+// Get all degrees with filtering, pagination, and search
 export const getAllDegrees = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const {
@@ -52,7 +51,7 @@ export const getAllDegrees = async (req: Request, res: Response, next: NextFunct
       endDate,
       page = '1',
       limit = '5',
-      instituteOnly = 'false',
+      instituteOnly = 'false', // This parameter is irrelevant now but can be kept for future use
     } = req.query;
 
     const query: any = {};
@@ -97,7 +96,6 @@ export const getAllDegrees = async (req: Request, res: Response, next: NextFunct
 
     const total = await Degree.countDocuments(query);
     const degrees = await Degree.find(query)
-      .populate('institute', 'instituteName')
       .skip(skip)
       .limit(limitNum);
 
@@ -113,9 +111,10 @@ export const getAllDegrees = async (req: Request, res: Response, next: NextFunct
   }
 };
 
+// Get a degree by ID
 export const getDegreeById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const degree = await Degree.findById(req.params.id).populate('institute', 'instituteName');
+    const degree = await Degree.findById(req.params.id);
     if (!degree) {
       res.status(404).json({ message: 'Degree not found' });
       return;
@@ -126,6 +125,7 @@ export const getDegreeById = async (req: Request, res: Response, next: NextFunct
   }
 };
 
+// Update a degree by ID
 export const updateDegree = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const degree = await Degree.findById(req.params.id);
@@ -134,16 +134,14 @@ export const updateDegree = async (req: Request, res: Response, next: NextFuncti
       return;
     }
 
-    const updatedDegree = await Degree.findByIdAndUpdate(req.params.id, req.body, { new: true }).populate(
-      'institute',
-      'instituteName'
-    );
+    const updatedDegree = await Degree.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.status(200).json(updatedDegree);
   } catch (error: any) {
     res.status(500).json({ message: 'Error updating degree', error: error.message });
   }
 };
 
+// Delete a degree by ID
 export const deleteDegree = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const degree = await Degree.findById(req.params.id);
