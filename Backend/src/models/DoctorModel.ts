@@ -36,6 +36,8 @@ const doctorSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Use discriminator for Doctor
-const Doctor = User.discriminator('Doctor', doctorSchema,"Doctors");
+
+const Doctor = User.discriminator('Doctor', doctorSchema); // 'Doctor' matches enum
+
 
 export default Doctor;

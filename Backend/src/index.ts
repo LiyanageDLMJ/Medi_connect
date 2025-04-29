@@ -7,9 +7,11 @@ import RecuiterJobPost from "./Routes/RecuiterRoutes/JobPostRoutes";
 import connectDB from "./Config/db";
 import JobSearch from "./Routes/PhysicianRoutes/JobSearchRoutes";
 import jobApplicationRoutes from "./Routes/PhysicianRoutes/jobApplicationRoutes";
+import degreePostRoutes from './Routes/EducationRoutes/DegreePostRoutes';
 import fs from "fs";
 import path from "path";
 
+import LoginRegisterRoutes from "./Routes/LoginRegisterRoutes";
 connectDB();
 
 const app = express();
@@ -33,8 +35,10 @@ app.use("/CvdoctorUpdate", CvDocRouter);
 app.use("/JobPost", RecuiterJobPost);
 app.use("/JobSearch", JobSearch);
 app.use("/JobApplication", jobApplicationRoutes);
-
+app.use('/api/degrees', degreePostRoutes);
 // Start the server
+app.use("/auth", LoginRegisterRoutes); // Use the centralized login/register routes
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+

@@ -23,7 +23,7 @@ const educationalInstituteSchema = new mongoose.Schema({
   },
 }, { timestamps: true });
 
-// Use discriminator for Educational Institute
-const EducationalInstitute = User.discriminator('EducationalInstitute', educationalInstituteSchema,"Education Institutions");
+
+const EducationalInstitute = User.discriminator('EducationalInstitute', educationalInstituteSchema);
 
 export default EducationalInstitute;
