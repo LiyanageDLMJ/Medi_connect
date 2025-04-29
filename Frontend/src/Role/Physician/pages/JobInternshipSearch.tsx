@@ -1,149 +1,8 @@
-import { useState } from "react";
-import Search from "../components/SearchDiv/Search"; // Adjust the import based on your project structure
+import { useState, useEffect } from "react";
+import axios from "axios"; // Install axios if not already installed
+import Search from "../components/SearchDiv/Search";
 import Jobs from "../components/JobDiv/Jobs";
-import NavBar from "../components/NavBar/NavBar";
-
-
-const doctorJobs = [
-  {
-    id: 1,
-    title: "Cardiologist",
-    hospital: "Mayo Clinic",
-    date: "Feb 10th, 2025",
-    location: "New York",
-    type: "Internship",
-    salary: "Above 500000",
-    status: "OPEN",
-    statusColor: "bg-green-500",
-  },
-  {
-    id: 2,
-    title: "Neurosurgeon",
-    hospital: "The Royal London Hospital",
-    date: "Mar 5th, 2025",
-    location: "London",
-    type: "Full-Time",
-    salary: "Monthly",
-    status: "INTERVIEW",
-    statusColor: "bg-blue-500",
-  },
-  {
-    id: 3,
-    title: "Pediatrician",
-    hospital: "Cleveland Clinic",
-    date: "Feb 25th, 2025",
-    location: "France",
-    type: "Part-Time",
-    salary: "Weekly",
-    status: "PENDING",
-    statusColor: "bg-yellow-500",
-  },
-  {
-    id: 4,
-    title: "Orthopedic Surgeon",
-    hospital: "Stanford Health Care",
-    date: "Apr 1st, 2025",
-    location: "California",
-    type: "Internship",
-    salary: "Monthly",
-    status: "CLOSED",
-    statusColor: "bg-red-500",
-  },
-  {
-    id: 5,
-    title: "General Physician",
-    hospital: "Mount Sinai Hospital",
-    date: "Jan 30th, 2025",
-    location: "Chicago",
-    type: "Full-Time",
-    salary: "Hourly",
-    status: "OPEN",
-    statusColor: "bg-green-500",
-  },
-  {
-    id: 6,
-    title: "Eye Surgent",
-    hospital: "LENOX HILL HOSPITAL",
-    date: "Jan 30th, 2025",
-    location: "New York",
-    type: "Full-Time",
-    salary: "Weekly",
-    status: "OPEN",
-    statusColor: "bg-green-500",
-  },
-  {
-    id: 7,
-    title: "Dermatologist",
-    hospital: "UCLA Medical Center",
-    date: "Feb 15th, 2025",
-    location: "Los Angeles",
-    type: "Part-Time",
-    salary: "Hourly",
-    status: "OPEN",
-    statusColor: "bg-green-500",
-    description:
-      "Diagnose and treat various skin conditions using modern therapies and advanced treatments.",
-  },
-  {
-    id: 8,
-    title: "Ophthalmologist",
-    hospital: "Bascom Palmer Eye Institute",
-    date: "Mar 20th, 2025",
-    location: "Miami",
-    type: "Internship",
-    salary: "Monthly",
-    status: "INTERVIEW",
-    statusColor: "bg-blue-500",
-    description:
-      "Provide comprehensive eye care, including corrective surgeries and treatment for eye diseases.",
-  },
-  {
-    id: 9,
-    title: "Radiologist",
-    hospital: "Massachusetts General Hospital",
-    date: "Apr 12th, 2025",
-    location: "Boston",
-    type: "Full-Time",
-    salary: "Above 300000",
-    status: "PENDING",
-    statusColor: "bg-yellow-500",
-    description:
-      "Interpret medical images to diagnose diseases and collaborate with specialists for optimal patient care.",
-  },
-  {
-    id: 10,
-    title: "Cardiologist",
-    hospital: "Huoshenshan Hospital",
-    date: "Jan 30th, 2024",
-    location: "China",
-    type: "Part-Time",
-    salary: "Monthly",
-    status: "OPEN",
-    statusColor: "bg-green-500",
-  },
-  {
-    id: 11,
-    title: "Dentist",
-    hospital: "France Med Dental Clinic",
-    date: "Dec 30th, 2024",
-    location: "France",
-    type: "Part-Time",
-    salary: "Hourly",
-    status: "OPEN",
-    statusColor: "bg-green-500",
-  },
-  {
-    id: 12,
-    title: "Plastic Surgent",
-    hospital: "Melbourne Private Hospital",
-    date: "jan 30th, 2025",
-    location: "Melbourne",
-    type: "Part-Time",
-    salary: "Hourly",
-    status: "OPEN",
-    statusColor: "bg-green-500",
-  },
-];
+import Sidebar from "../components/NavBar/Sidebar";
 
 const JobInternshipSearch = () => {
   const [filters, setFilters] = useState({
@@ -155,7 +14,27 @@ const JobInternshipSearch = () => {
     salary: "",
   });
 
-  // ✅ Fixed type for both input and select elements
+  const [jobs, setJobs] = useState([]); // State to store jobs fetched from the backend
+  const [loading, setLoading] = useState(true); // State to handle loading
+  const [error, setError] = useState(""); // State to handle errors
+
+  // Fetch jobs from the backend
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get("http://localhost:3000/JobPost/viewJobs");
+        setJobs(response.data); // Save the fetched jobs to state
+        setLoading(false);
+      } catch (err: any) {
+        setError("Failed to fetch jobs. Please try again later.");
+        setLoading(false);
+      }
+    };
+
+    fetchJobs();
+  }, []);
+
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFilters((prev) => ({
@@ -175,32 +54,31 @@ const JobInternshipSearch = () => {
     });
   };
 
-  // ✅ Fix: Allow partial matching for "field" filtering
-  const filterBySearchText = (job: typeof doctorJobs[0]) => {
+  const filterBySearchText = (job: any) => {
     return !filters.searchText || job.title.toLowerCase().includes(filters.searchText.toLowerCase());
   };
 
-  const filterByHospital = (job: typeof doctorJobs[0]) => {
+  const filterByHospital = (job: any) => {
     return !filters.hospital || job.hospital.toLowerCase().includes(filters.hospital.toLowerCase());
   };
 
-  const filterByLocation = (job: typeof doctorJobs[0]) => {
+  const filterByLocation = (job: any) => {
     return !filters.location || job.location.toLowerCase().includes(filters.location.toLowerCase());
   };
 
-  const filterByField = (job: typeof doctorJobs[0]) => {
+  const filterByField = (job: any) => {
     return !filters.field || job.title.toLowerCase().includes(filters.field.toLowerCase());
   };
 
-  const filterByType = (job: typeof doctorJobs[0]) => {
+  const filterByType = (job: any) => {
     return !filters.type || job.type.toLowerCase() === filters.type.toLowerCase();
   };
 
-  const filterBySalary = (job: typeof doctorJobs[0]) => {
+  const filterBySalary = (job: any) => {
     return !filters.salary || job.salary.toLowerCase() === filters.salary.toLowerCase();
   };
 
-  const filteredJobs = doctorJobs.filter((job) => {
+  const filteredJobs = jobs.filter((job: any) => {
     return (
       filterBySearchText(job) &&
       filterByHospital(job) &&
@@ -211,11 +89,21 @@ const JobInternshipSearch = () => {
     );
   });
 
+  if (loading) {
+    return <div>Loading jobs...</div>;
+  }
+
+  if (error) {
+    return <div>{error}</div>;
+  }
+
   return (
     <div>
-      <NavBar />
-      <Search filters={filters} onFilterChange={handleFilterChange} onClear={handleClearFilters} />
-      <Jobs jobs={filteredJobs} totalJobs={doctorJobs.length} />
+      <Sidebar />
+      <div className="flex-1 overflow-auto md:pl-64">
+        <Search filters={filters} onFilterChange={handleFilterChange} onClear={handleClearFilters} />
+        <Jobs jobs={filteredJobs} totalJobs={jobs.length} />
+      </div>
     </div>
   );
 };

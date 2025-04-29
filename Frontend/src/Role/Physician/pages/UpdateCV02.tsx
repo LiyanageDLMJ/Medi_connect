@@ -11,8 +11,7 @@ import {
   X,
   Calendar,
 } from "lucide-react";
-import { format } from "date-fns";
-import Sidebar from "../../higherEducation/components/Sidebar";
+import Sidebar from "../components/NavBar/Sidebar";
 import { useNavigate } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";

@@ -1,13 +1,12 @@
 import React from 'react'
 import NavBar from "../components/NavBar/Sidebar";
-
-const Messages = () => {
+const UpdateCV = () => {
   return (
     <div>
-      <NavBar />
-    <div>Messages</div>
+      <NavBar/>
+    <div>updateCV</div>
     </div>
   )
 }
 
-export default Messages
+export default UpdateCV
