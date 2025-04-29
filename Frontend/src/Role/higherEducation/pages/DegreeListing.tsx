@@ -158,7 +158,7 @@ const DegreeListing: React.FC = () => {
     setDateRange([null, null]);
     setAnchorEl(null);
   };
-
+/**/
   let filteredDegrees = degree.filter((deg) => {
     const matchesSearch = deg.degreeName.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = filterStatus === "all" || deg.status === filterStatus;
@@ -188,6 +188,49 @@ const DegreeListing: React.FC = () => {
 
     return matchesSearch && matchesStatus && matchesMode && matchesDuration && matchesTuitionFee && matchesDateRange;
   });
+/**/
+
+
+// const fetchDegrees = async () => {
+//   try {
+//     const params: any = {
+//       searchQuery,
+//       status: filterStatus,
+//       mode: filterMode,
+//       duration: filterDuration,
+//       tuitionFee: filterTuitionFee,
+//       noPagination: "true",
+//     };
+
+//     const [startDate, endDate] = dateRange;
+//     if (startDate) params.startDate = startDate.toISOString();
+//     if (endDate) params.endDate = endDate.toISOString();
+
+//     const response = await axios.get("http://localhost:5000/api/degrees/viewDegrees", { params });
+//     setDegrees(response.data.degrees);
+//   } catch (error) {
+//     console.error("Error fetching degrees:", error);
+//   }
+// };
+
+// useEffect(() => {
+//   fetchDegrees();
+// }, [searchQuery, filterStatus, filterMode, filterDuration, filterTuitionFee, dateRange]);
+// const [filterOptions, setFilterOptions] = useState<FilterOptions>({
+//   statuses: ["all"],
+//   modes: ["all"],
+//   durations: ["all"],
+// });
+
+// // Fetch filter options from the backend
+// const fetchFilterOptions = async () => {
+//   try {
+//     const response = await axios.get("http://localhost:5000/api/degrees/filters");
+//     setFilterOptions(response.data);
+//   } catch (error) {
+//     console.error("Error fetching filter options:", error);
+//   }
+// };
 
   const statuses = ["all", ...Array.from(new Set(degree.map((deg) => deg.status)))];
   const modes = ["all", ...Array.from(new Set(degree.map((deg) => deg.mode)))];
