@@ -20,7 +20,7 @@ import DegreeListing from "./Role/higherEducation/pages/DegreeListing";
 import Dashboard from "./Role/Physician/pages/dashboard";
 
 
-import PostDegree from "./Role/higherEducation/pages/Postdegree";
+import PostDegree from "./Role/higherEducation/pages/PostDegree";
 // import PostDegrees from "./Role/higherEducation/pages/examble";
 import WithFooter from "./Layout/WithFooter";
 import WithoutFooter from "./Layout/WithoutFooter";  
