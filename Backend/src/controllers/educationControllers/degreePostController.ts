@@ -38,7 +38,7 @@ export const createDegree = async (req: Request, res: Response, next: NextFuncti
   }
 };
 
-// Get all degrees with filtering, pagination, and search
+// Get all degrees with filtering (no pagination)
 export const getAllDegrees = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const {
@@ -49,9 +49,7 @@ export const getAllDegrees = async (req: Request, res: Response, next: NextFunct
       tuitionFee = 'all',
       startDate,
       endDate,
-      page = '1',
-      limit = '5',
-      instituteOnly = 'false', // This parameter is irrelevant now but can be kept for future use
+      instituteOnly = 'false',
     } = req.query;
 
     const query: any = {};
@@ -90,21 +88,12 @@ export const getAllDegrees = async (req: Request, res: Response, next: NextFunct
       };
     }
 
-    const pageNum = parseInt(page as string, 10);
-    const limitNum = parseInt(limit as string, 10);
-    const skip = (pageNum - 1) * limitNum;
-
     const total = await Degree.countDocuments(query);
-    const degrees = await Degree.find(query)
-      .skip(skip)
-      .limit(limitNum);
+    const degrees = await Degree.find(query);
 
     res.status(200).json({
       degrees,
       total,
-      page: pageNum,
-      limit: limitNum,
-      totalPages: Math.ceil(total / limitNum),
     });
   } catch (error: any) {
     res.status(500).json({ message: 'Error fetching degrees', error: error.message });
@@ -154,5 +143,24 @@ export const deleteDegree = async (req: Request, res: Response, next: NextFuncti
     res.status(200).json({ message: 'Degree deleted successfully' });
   } catch (error: any) {
     res.status(500).json({ message: 'Error deleting degree', error: error.message });
+  }
+};
+
+
+export const getFilterOptions = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    // Fetch unique values for status, mode, and duration from the database
+    const statuses = await Degree.distinct('status');
+    const modes = await Degree.distinct('mode');
+    const durations = await Degree.distinct('duration');
+
+    // Add "all" as the first option for each filter
+    res.status(200).json({
+      statuses: ['all', ...statuses],
+      modes: ['all', ...modes],
+      durations: ['all', ...durations],
+    });
+  } catch (error: any) {
+    res.status(500).json({ message: 'Error fetching filter options', error: error.message });
   }
 };
