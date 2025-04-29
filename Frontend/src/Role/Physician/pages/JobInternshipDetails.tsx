@@ -14,6 +14,7 @@ const JobInternshipDetails = () => {
       try {
         setLoading(true);
         console.log("Fetching job details for jobId:", jobId); // Debug log
+        console.log("Job ID from URL:", jobId);
         const response = await axios.get(`http://localhost:3000/JobPost/viewJobs/${jobId}`);
         setJob(response.data);
         setLoading(false);

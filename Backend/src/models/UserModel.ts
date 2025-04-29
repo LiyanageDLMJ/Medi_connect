@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'User type is required'],
     enum: {
-      values: ['doctor', 'medical_student', 'recruiter', 'educational_institute'],
+      values: ['Doctor', 'MedicalStudent', 'Recruiter', 'EducationalInstitute'],
       message: '{VALUE} is not a valid user type',
     },
   },
@@ -27,5 +27,5 @@ const userSchema = new mongoose.Schema({
   discriminatorKey: 'userType',
 });
 
-const User = mongoose.model('User', userSchema,"UserModel"); // Export the User model
+const User = mongoose.model('User', userSchema); 
 export default User;

@@ -13,6 +13,7 @@ import path from "path";
 
 
 
+import LoginRegisterRoutes from "./Routes/LoginRegisterRoutes";
 connectDB();
 
 const app = express();
@@ -38,6 +39,8 @@ app.use("/JobSearch", JobSearch);
 app.use("/JobApplication", jobApplicationRoutes);
 app.use('/degrees', degreePostRoutes);
 // Start the server
+app.use("/auth", LoginRegisterRoutes); // Use the centralized login/register routes
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
