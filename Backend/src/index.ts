@@ -8,6 +8,7 @@ import connectDB from "./Config/db";
 import JobSearch from "./Routes/PhysicianRoutes/JobSearchRoutes";
 import jobApplicationRoutes from "./Routes/PhysicianRoutes/jobApplicationRoutes";
 import degreePostRoutes from './Routes/EducationRoutes/DegreePostRoutes';
+import higherEducationRoutes from './Routes/EducationRoutes/higherEducationRoutes';
 import fs from "fs";
 import path from "path";
 
@@ -38,6 +39,7 @@ app.use("/JobPost", RecuiterJobPost);
 app.use("/JobSearch", JobSearch);
 app.use("/JobApplication", jobApplicationRoutes);
 app.use("/degrees", degreePostRoutes);
+app.use("/higherDegrees", higherEducationRoutes);
 // Start the server
 app.use("/auth", LoginRegisterRoutes); // Use the centralized login/register routes
 app.listen(PORT, () => {
