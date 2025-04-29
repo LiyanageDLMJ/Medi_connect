@@ -1,55 +1,47 @@
 "use client";
 import { useNavigate } from "react-router-dom";
-import React, { useState } from "react";
+import React from "react";
+import { useFormContext } from "../../../context/FormContext";
 import {
   Bell,
   ChevronDown,
   ChevronLeft,
-  ChevronRight,
   Menu,
   Search,
   User,
 } from "lucide-react";
 import Sidebar from "../components/NavBar/Sidebar";
-import UpdateCV02 from "./UpdateCV02";
-
-interface ProfileFormData {
-  JobTitle: string;
-  EmploymentPeriod: string;
-  HospitalInstitution: string;
-}
 
 export default function UpdateCV03() {
+  const { formData, setFormData } = useFormContext();
   const navigate = useNavigate();
-  const [formData, setFormData] = useState<ProfileFormData>({
-    JobTitle: "",
-    EmploymentPeriod: "",
-    HospitalInstitution: "",
-  });
 
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  if (e.target.files && e.target.files[0]) {
-    setSelectedFile(e.target.files[0]);
-  }
-};
-
-  const handleNext = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setMessage(null);
-
+    console.log("FormData before submission:", formData);
+    
     try {
+      // Create a cleaned copy of the form data
+      const formDataCopy = { ...formData };
+      
+      // Remove fields that shouldn't be sent to the backend
+      if ("additionalCertifications" in formDataCopy) {
+        delete formDataCopy.additionalCertifications;
+      }
+      
+      // Handle certification input array properly
+      if (!formDataCopy.certificationInput) {
+        formDataCopy.certificationInput = []; // Ensure it's an array if undefined
+      }
+      
+      console.log("FormData prepared for submission:", formDataCopy);
+      
+      // Send as JSON instead of FormData for consistency
       const response = await fetch(
         "http://localhost:3000/CvdoctorUpdate/addDoctorCv",
         {
@@ -57,28 +49,21 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(formDataCopy),
         }
       );
 
       if (response.ok) {
-        const result = await response.json();
-        setMessage("Doctor CV added successfully!");
-        console.log("Form submitted successfully:", result);
-
-        navigate("/physician/update-cv03");
+        console.log("Data submitted successfully");
+        navigate("/success"); // Redirect to a success page
       } else {
-        const error = await response.json();
-        setMessage(
-          error.message || "Failed to add Doctor CV. Please try again."
-        );
-        console.error("Error submitting form:", error);
+        const errorData = await response.json().catch(() => null);
+        console.error("Failed to submit data", errorData);
+        // You could add error handling UI here
       }
-    } catch (err) {
-      setMessage("An error occurred. Please try again.");
-      console.error("Error:", err);
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.error("Error submitting data:", error);
+      // You could add error handling UI here
     }
   };
 
@@ -111,7 +96,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             </div>
             <div className="flex items-center gap-1 cursor-pointer">
               <img
-                src="/placeholder.svg?height=24&width=24"
+                src="/api/placeholder/24/24"
                 alt="English flag"
                 className="w-6 h-6 rounded"
               />
@@ -141,7 +126,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
           {/* Form */}
           <form
-            onSubmit={handleNext}
+            onSubmit={handleSubmit}
             className="bg-white p-8 rounded-lg shadow-sm"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -156,9 +141,9 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                   </label>
                   <input
                     id="JobTitle"
-                    name="JobTitle"
+                    name="jobTitle"
                     type="text"
-                    value={formData.JobTitle}
+                    value={formData.jobTitle || ''}
                     onChange={handleInputChange}
                     className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
                     required
@@ -174,16 +159,14 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                   </label>
                   <input
                     id="HospitalInstitution"
-                    name="HospitalInstitution"
+                    name="hospitalInstitution"
                     type="text"
-                    value={formData.HospitalInstitution}
+                    value={formData.hospitalInstitution || ''}
                     onChange={handleInputChange}
                     className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
                     required
                   />
                 </div>
-
-                
               </div>
 
               {/* Right Column */}
@@ -197,66 +180,36 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                   </label>
                   <input
                     id="EmploymentPeriod"
-                    name="EmploymentPeriod"
+                    name="employmentPeriod"
                     type="text"
-                    value={formData.EmploymentPeriod}
+                    value={formData.employmentPeriod || ''}
                     onChange={handleInputChange}
                     className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
                     required
                   />
                 </div>
-
-                <div>
-                  <div className="space-y-2">
-                    <label
-                      htmlFor="resume"
-                      className="block text-sm font-medium"
-                    >
-                      Upload Resume (PDF)*
-                    </label>
-                    <input
-                      id="resume"
-                      name="resume"
-                      type="file"
-                      accept=".pdf"
-                      onChange={handleFileChange}
-                      className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
-                      required
-                    />
-                  </div>
-                </div>
               </div>
+
+              
             </div>
 
-            {/* Next Button */}
+            {/* Submit Button */}
             <div className="mt-8 flex justify-between">
-              <button className="flex items-center justify-center w-10 h-10 rounded-md border">
+              <button
+                type="button"
+                onClick={() => navigate("/physician/update-cv02")}
+                className="flex items-center justify-center w-10 h-10 rounded-md border"
+              >
                 <ChevronLeft className="h-5 w-5" />
               </button>
               <button
                 type="submit"
                 className="px-6 py-2 bg-blue-500 text-white rounded-md"
-                disabled={loading}
               >
-                {loading ? "Processing..." : "Submit"}
+                Submit
               </button>
             </div>
           </form>
-
-          {/* Message */}
-          {message && (
-            <div className="mt-4 text-center">
-              <p
-                className={`text-sm ${
-                  message.includes("successfully")
-                    ? "text-green-500"
-                    : "text-red-500"
-                }`}
-              >
-                {message}
-              </p>
-            </div>
-          )}
         </main>
       </div>
     </div>

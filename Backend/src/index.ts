@@ -18,6 +18,10 @@ app.use(cors());
 // Middleware to parse JSON
 app.use(express.json());
 
+
+// Middleware for parsing URL-encoded data
+app.use(express.urlencoded({ extended: true }));
+
 // Routes
 app.use("/api", router);
 app.use("/CvdoctorUpdate", CvDocRouter);

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import {
   Bell,
   ChevronDown,
@@ -9,38 +9,22 @@ import {
   Search,
   User,
   X,
-  Calendar,
 } from "lucide-react";
 import Sidebar from "../components/NavBar/Sidebar";
 import { useNavigate } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { format } from "date-fns";
 import { useFormContext } from "../../../context/FormContext";
 
-// Define the interface for form data
-interface ProfileFormData {
-  medicalDegree: string;
-  university: string;
-  specialization: string;
-  experience: string;
-  additionalCertifications: string[];
-
-  medicalLicenseNumber: string;
-  medicalLicenseIssuer: string;
-}
-
 export default function UpdateCV02() {
+  const { formData, setFormData } = useFormContext();
   const navigate = useNavigate();
-  const [formData, setFormData] = useState<ProfileFormData>({
-    medicalDegree: "",
-    university: "",
-    specialization: "",
-    experience: "",
-    additionalCertifications: [],
 
-    medicalLicenseNumber: "",
-    medicalLicenseIssuer: "",
-  });
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleDateChange = (date: Date | null) => {
     if (date) {
@@ -48,50 +32,39 @@ export default function UpdateCV02() {
         ...prev,
         graduationDate: format(date, "MM/dd/yyyy"),
       }));
-      setStartDate(date);
     }
-  };
-
-  const [certificationInput, setCertificationInput] = useState("");
-
-  const handleInputChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const addCertification = () => {
     if (
-      certificationInput &&
-      !formData.additionalCertifications.includes(certificationInput)
+      formData.additionalCertifications.trim() &&
+      !formData.certificationInput.includes(formData.additionalCertifications.trim())
     ) {
       setFormData((prev) => ({
         ...prev,
-        additionalCertifications: [
-          ...prev.additionalCertifications,
-          certificationInput,
+        certificationInput: [
+          ...prev.certificationInput,
+          formData.additionalCertifications.trim(),
         ],
+        additionalCertifications: "",
       }));
-      setCertificationInput("");
     }
   };
 
   const removeCertification = (cert: string) => {
     setFormData((prev) => ({
       ...prev,
-      additionalCertifications: prev.additionalCertifications.filter(
-        (c) => c !== cert
-      ),
+      certificationInput: prev.certificationInput.filter((c) => c !== cert),
     }));
   };
-  const [startDate, setStartDate] = useState(new Date());
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
+    navigate("/physician/update-cv03");
+  };
+
+  const handleBack = () => {
+    navigate("/physician/update-cv01");
   };
 
   return (
@@ -149,11 +122,9 @@ export default function UpdateCV02() {
 
         {/* Main Content */}
         <main className="max-w-6xl mx-auto p-6">
-         
-
           {/* Form */}
           <form
-            onSubmit={handleSubmit}
+            onSubmit={handleNext}
             className="bg-white p-8 rounded-lg shadow-sm"
           >
             <div className="bg-white p-6 rounded-md shadow-sm">
@@ -168,6 +139,7 @@ export default function UpdateCV02() {
                     value={formData.medicalDegree}
                     onChange={handleInputChange}
                     className="w-full p-2 border rounded-md bg-gray-50"
+                    required
                   >
                     <option value="">Select Degree</option>
                     <option value="MBBS">MBBS</option>
@@ -185,6 +157,7 @@ export default function UpdateCV02() {
                     value={formData.university}
                     onChange={handleInputChange}
                     className="w-full p-2 border rounded-md bg-gray-50"
+                    required
                   >
                     <option value="">Select University</option>
                     <option value="University of Merathwa">
@@ -203,6 +176,7 @@ export default function UpdateCV02() {
                     value={formData.specialization}
                     onChange={handleInputChange}
                     className="w-full p-2 border rounded-md bg-gray-50"
+                    required
                   >
                     <option value="">Select Specialization</option>
                     <option value="Cardiology">Cardiology</option>
@@ -221,9 +195,11 @@ export default function UpdateCV02() {
                     onChange={handleInputChange}
                     className="w-full p-2 border rounded-md bg-gray-50"
                     placeholder="Years of Experience"
+                    required
                   />
                 </div>
 
+                {/* Additional Certifications */}
                 <div>
                   <label className="block text-sm mb-1">
                     Additional Certifications
@@ -231,13 +207,14 @@ export default function UpdateCV02() {
                   <div className="relative flex items-center gap-2">
                     <input
                       type="text"
-                      value={certificationInput}
-                      onChange={(e) => setCertificationInput(e.target.value)}
+                      name="additionalCertifications"
+                      value={formData.additionalCertifications}
+                      onChange={handleInputChange}
                       className="w-full p-2 border rounded-md bg-gray-50"
                       placeholder="Enter Certification"
                     />
                     <button
-                      type="button" // Prevent form submission
+                      type="button"
                       onClick={addCertification}
                       className="px-4 py-2 bg-blue-500 text-white rounded-md"
                     >
@@ -245,7 +222,7 @@ export default function UpdateCV02() {
                     </button>
                   </div>
                   <div className="flex flex-wrap gap-2 mt-2">
-                    {formData.additionalCertifications.map((cert, index) => (
+                    {formData.certificationInput.map((cert, index) => (
                       <div
                         key={index}
                         className="flex items-center gap-1 px-2 py-1 rounded-md bg-blue-100 text-blue-700 text-xs"
@@ -267,7 +244,8 @@ export default function UpdateCV02() {
                   </label>
                   <DatePicker
                     showIcon
-                    selected={startDate}
+                    name="graduationDate"
+                    selected={formData.graduationDate ? new Date(formData.graduationDate) : null}
                     onChange={handleDateChange}
                     dateFormat="MM/dd/yyyy"
                     className="w-full p-2 border rounded-md bg-gray-50"
@@ -310,7 +288,8 @@ export default function UpdateCV02() {
               {/* Navigation Buttons */}
               <div className="flex justify-between mt-10">
                 <button
-                  onClick={() => navigate("/physician/update-cv03")}
+                  type="button"
+                  onClick={handleBack}
                   className="flex items-center justify-center w-10 h-10 rounded-md border"
                 >
                   <ChevronLeft className="h-5 w-5" />

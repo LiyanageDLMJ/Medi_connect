@@ -1,7 +1,7 @@
 
 const mongoose = require('mongoose');
 
-const URI = "mongodb+srv://liyanagedlmj22:Mokshitha2002@cvupdate.hivx4.mongodb.net/?retryWrites=true&w=majority&appName=CvUpdate";
+const URI = "mongodb+srv://liyanagedlmj22:Mokshitha2002@cvupdate.hivx4.mongodb.net/MediConnect?retryWrites=true&w=majority&appName=CvUpdate";
 
 const connectDB=async()=>{
     try{

@@ -12,7 +12,9 @@ interface FormData {
   university: string;
   specialization: string;
   experience: string;
-  additionalCertifications: string[];
+  certificationInput: string[];
+  additionalCertifications: string; 
+  graduationDate: string; 
   medicalLicenseNumber: string;
   medicalLicenseIssuer: string;
   jobTitle: string;
@@ -37,7 +39,9 @@ const defaultFormData: FormData = {
   university: "",
   specialization: "",
   experience: "",
-  additionalCertifications: [],
+  certificationInput: [],
+  additionalCertifications: "", 
+  graduationDate: "",
   medicalLicenseNumber: "",
   medicalLicenseIssuer: "",
   jobTitle: "",

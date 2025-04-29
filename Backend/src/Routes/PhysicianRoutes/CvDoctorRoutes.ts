@@ -1,6 +1,8 @@
 import express from 'express';
 import CvDoctorUpdate from '../../models/CvUpdate';
 const router = express.Router();
+const multer = require("multer");
+const upload = multer();
 const docCvController=require('../../controllers/physicianControllers/cvController');
 
 router.get("/viewDoctorsCv",docCvController.viewDoctorsCv);

@@ -19,9 +19,11 @@ import WithFooter from "./Layout/WithFooter"; // Adjust the path as needed
 import DegreeListing from "./Role/higherEducation/pages/DegreeListing";
 import Dashborad from "./Role/higherEducation/pages/dashborad";
 import Dashboard from "./Role/Physician/pages/dashboard";
+import { FormProvider } from "./context/FormContext";
 const App = () => {
   return (
-    <>
+    <FormProvider>
+    
       <Routes>
 
       {/* With Footer Routes */}
@@ -64,7 +66,7 @@ const App = () => {
         <Route path="/deshboard" element={<Dashborad />} />
       </Route>
     </Routes>
-    </>
+    </FormProvider>
   );
 };
 
