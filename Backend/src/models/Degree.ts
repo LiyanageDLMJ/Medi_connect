@@ -10,7 +10,6 @@ export interface IDegree extends Document {
   applicantsApplied: number;
   duration: string;
   tuitionFee: string;
-  institute: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -68,28 +67,13 @@ const DegreeSchema: Schema = new Schema(
       required: [true, 'Tuition fee is required'],
       trim: true,
     },
-    institute: {
-      type: Schema.Types.ObjectId,
-      ref: 'User',
-      required: [true, 'Institute is required'],
-    },
   },
   {
     timestamps: true,
   }
 );
 
-// Validate that institute references a valid EducationalInstitute
-DegreeSchema.pre('save', async function (this: HydratedDocument<IDegree>, next) {
-  const User = mongoose.model('User');
-  const institute = await User.findById(this.institute);
-  if (!institute || institute.userType !== 'educational_institute') {
-    return next(new Error('Institute must be a valid educational institute'));
-  }
-  next();
-});
-
-// Switch to the 'test' database and define the model
+// Switch to the 'EducationalInstitution' database and define the model
 const db = mongoose.connection.useDb('EducationalInstitution');
 const Degree = db.model<IDegree>('Degree', DegreeSchema, 'Degrees');
 
