@@ -22,6 +22,7 @@ const recruiterSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Use discriminator for Recruiter
-const Recruiter = User.discriminator('Recruiter', recruiterSchema,"Recruiters");
+
+const Recruiter = User.discriminator('Recruiter', recruiterSchema);
 
 export default Recruiter;

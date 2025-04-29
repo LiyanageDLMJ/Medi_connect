@@ -6,6 +6,7 @@ import CvDocRouter from "./Routes/PhysicianRoutes/CvDoctorRoutes";
 import RecuiterJobPost from "./Routes/RecuiterRoutes/JobPostRoutes";
 import connectDB from "./Config/db";
 import JobSearch from "./Routes/PhysicianRoutes/JobSearchRoutes";
+import LoginRegisterRoutes from "./Routes/LoginRegisterRoutes";
 connectDB();
 
 
@@ -18,6 +19,7 @@ app.use("/api", router);
 app.use("/CvdoctorUpdate", CvDocRouter);
 app.use("/JobPost", RecuiterJobPost);
 app.use("/JobSearch", JobSearch);
+app.use("/auth", LoginRegisterRoutes); // Use the centralized login/register routes
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });

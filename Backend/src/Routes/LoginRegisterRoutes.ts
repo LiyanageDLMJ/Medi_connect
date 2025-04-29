@@ -4,9 +4,9 @@ import { register, login } from '../controllers/AuthControllers/UserController';
 const router = express.Router();
 
 // Route for user registration
-router.post('/register', register);
+router.post('/register', register as express.RequestHandler);
 
 // Route for user login
-router.post('/login', login);
+router.post('/login', login as express.RequestHandler);
 
 export default router;
