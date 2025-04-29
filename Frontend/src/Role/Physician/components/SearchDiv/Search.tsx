@@ -20,9 +20,14 @@ interface SearchProps {
 
 const Search: React.FC<SearchProps> = ({ filters, onFilterChange, onClear }) => {
   return (
-    <div className="searchDiv grid gap-10 bg-gray-200 rounded-[8px] p-[3rem] w-[90%] mx-auto">
-      <SearchForm filters={filters} onFilterChange={onFilterChange} />
-      <SearchFilters filters={filters} onFilterChange={onFilterChange} onClear={onClear} />
+    <div className="flex flex-col gap-4">
+        <div className="searchDiv flex items-center justify-center bg-gradient-to-tr from-[#2E5FB7] to-[#1a365d] rounded-[8px] h-[120px] w-[95%] mx-auto">
+        <h2 className="text-center text-4xl font-bold text-white">Find your dream Job here</h2>
+      </div>
+      <div className="searchDiv grid gap-10 bg-gray-200 rounded-[8px] p-[3rem] w-[95%] mx-auto">
+        <SearchForm filters={filters} onFilterChange={onFilterChange} />
+        <SearchFilters filters={filters} onFilterChange={onFilterChange} onClear={onClear} />
+      </div>
     </div>
   );
 };

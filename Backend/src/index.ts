@@ -6,6 +6,10 @@ import CvDocRouter from "./Routes/PhysicianRoutes/CvDoctorRoutes";
 import RecuiterJobPost from "./Routes/RecuiterRoutes/JobPostRoutes";
 import connectDB from "./Config/db";
 import JobSearch from "./Routes/PhysicianRoutes/JobSearchRoutes";
+import jobApplicationRoutes from "./Routes/PhysicianRoutes/jobApplicationRoutes";
+import degreePostRoutes from './Routes/EducationRoutes/DegreePostRoutes';
+import fs from "fs";
+import path from "path";
 
 connectDB();
 
@@ -18,12 +22,19 @@ app.use(cors());
 // Middleware to parse JSON
 app.use(express.json());
 
+// Create uploads folder if it doesn't exist
+const uploadDir = path.join(__dirname, "../uploads");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
+
 // Routes
 app.use("/api", router);
 app.use("/CvdoctorUpdate", CvDocRouter);
 app.use("/JobPost", RecuiterJobPost);
 app.use("/JobSearch", JobSearch);
-
+app.use("/JobApplication", jobApplicationRoutes);
+app.use('/api/degrees', degreePostRoutes);
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

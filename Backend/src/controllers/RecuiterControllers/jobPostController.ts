@@ -62,3 +62,19 @@ export const deleteJob = async (req: Request, res: Response) => {
   }
 };
 
+// Get a single job by ID
+export const getJobById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const job = await JobPost.findById(id); // Use findById to fetch by _id
+
+    if (!job) {
+      return res.status(404).json({ message: "Job not found" });
+    }
+
+    res.status(200).json(job);
+  } catch (error: any) {
+    res.status(500).json({ message: "Failed to fetch job details", error: error.message });
+  }
+};
+

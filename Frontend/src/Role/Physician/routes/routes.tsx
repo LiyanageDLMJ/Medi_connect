@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import NavBar from "../components/NavBar/Sidebar";
 import JobInternshipSearch from "../pages/JobInternshipSearch";
 import JobApplicationForm from "../pages/JobApplicationForm";
+import JobInternshipDetails from "../pages/JobInternshipDetails";
 import Footer from "../../../Components/FooterDiv/Footer";
 import Dashboard from "../pages/dashboard";
 import UserProfile from "../pages/YourProfile";
@@ -23,6 +24,7 @@ const routes = () => {
         <Route path="/update-cv02" element={<UpdateCV02 />} />
         <Route path="/update-cv03" element={<UpdateCV03 />} />
        <Route path="/job-internship" element={<JobInternshipSearch />} />
+       <Route path="/job-internship/:jobId" element={<JobInternshipDetails />} />
        <Route path="/physician/job-application" element={<JobApplicationForm />} />
        <Route path="/higher-education" element={<HigherEducation />} />
        <Route path="/messages" element={<Messages />} />

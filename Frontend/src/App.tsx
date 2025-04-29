@@ -3,6 +3,7 @@ import Login from "./LoginRegister/login/Login";
 import JobInternshipSearch from "./Role/Physician/pages/JobInternshipSearch";
 import HigherEducationSearch from "./Role/Physician/pages/HigherEducationSearch";
 import JobApplicationForm from "./Role/Physician/pages/JobApplicationForm";
+import JobInternshipDetails from "./Role/Physician/pages/JobInternshipDetails";
 import ViewApplications from "./Role/higherEducation/pages/ViewApplications";
 import Register from "./LoginRegister/register/Register";
 import JobPost from "./Role/Recuiter/pages/JobPost";
@@ -19,7 +20,7 @@ import DegreeListing from "./Role/higherEducation/pages/DegreeListing";
 import Dashboard from "./Role/Physician/pages/dashboard";
 
 
-import PostDegree from "./Role/higherEducation/pages/PostDegree";
+import PostDegree from "./Role/higherEducation/pages/Postdegree";
 // import PostDegrees from "./Role/higherEducation/pages/examble";
 import WithFooter from "./Layout/WithFooter";
 import WithoutFooter from "./Layout/WithoutFooter";  
@@ -46,6 +47,12 @@ const App = () => {
           <Route path="higher-education" element={<HigherEducationSearch />} />
           <Route path="job-internship" element={<JobInternshipSearch />} />
           <Route path="job-application" element={<JobApplicationForm />} />
+          <Route path="job-internship/:jobId" element={<JobInternshipDetails />} />
+          <Route path="update-cv01" element={<UpdateCV01 />} />
+          <Route path="update-cv02" element={<UpdateCV02 />} />
+          <Route path="update-cv03" element={<UpdateCV03 />} />
+          <Route path="job-details/:jobId" element={<JobInternshipDetails />} />
+      
       
         </Route>
 
@@ -58,7 +65,7 @@ const App = () => {
         </Route>
 
         {/* Recruiter Routes */}
-        <Route path="/recuiter">
+        <Route path="/recruiter">
           <Route path="jobPost" element={<JobPost />} />
           <Route path="JobListing" element={<JobListing />} />
         </Route>
