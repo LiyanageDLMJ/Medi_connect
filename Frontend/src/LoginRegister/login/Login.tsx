@@ -101,7 +101,7 @@ const LoginForm = styled.form`
 `;
 
 const LoginButton = styled.button`
-  background: #2E5FB7;
+  background:rgb(238, 19, 143);
   color: white;
   padding: 0.75rem;
   border: none;

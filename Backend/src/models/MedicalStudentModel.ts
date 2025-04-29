@@ -18,7 +18,7 @@ const medicalStudentSchema = new mongoose.Schema({
   },
 }, { timestamps: true });
 
-// Use discriminator for Medical Student
+
 const MedicalStudent = User.discriminator('MedicalStudent', medicalStudentSchema);
 
 export default MedicalStudent;

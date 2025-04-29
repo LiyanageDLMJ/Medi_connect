@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 
 interface Job {
-  id: number;
+  jobId: string;
   title: string;
   hospitalName: string;
   postedDate: string;
@@ -46,7 +46,7 @@ const Jobs: React.FC<JobsProps> = ({ jobs, totalJobs }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {jobs.map((job) => (
           <div
-            key={job.id}
+            key={job.jobId} // Use jobId as the unique identifier from the backend
             className="bg-gray-100 shadow-lg rounded-lg p-6 transition duration-300 hover:bg-blue-200 hover:shadow-xl"
           >
             {/* Job Title & Hospital */}
@@ -89,7 +89,12 @@ const Jobs: React.FC<JobsProps> = ({ jobs, totalJobs }) => {
 
             {/* Buttons */}
             <div className="mt-4 flex gap-4">
-              <button className="btn btn-details">Details</button>
+              <button
+                className="btn btn-details"
+                onClick={() => navigate(`/physician/job-details/${job.jobId}`)} // Use jobId here as well
+              >
+                Details
+              </button>
               <button className="btn btn-apply" onClick={() => navigate("/physician/job-application")}>
                 Apply
               </button>
@@ -104,7 +109,7 @@ const Jobs: React.FC<JobsProps> = ({ jobs, totalJobs }) => {
 Jobs.propTypes = {
   jobs: PropTypes.arrayOf(
     PropTypes.shape({
-      id: PropTypes.number.isRequired,
+      jobId: PropTypes.number.isRequired,
       title: PropTypes.string.isRequired,
       hospitalName: PropTypes.string.isRequired,
       postedDate: PropTypes.string.isRequired,
