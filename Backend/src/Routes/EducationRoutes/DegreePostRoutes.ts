@@ -6,7 +6,7 @@ import {
   updateDegree,
   deleteDegree,
   getFilterOptions,
-} from '../../controllers/educationControllers/degreePostController';
+} from '../../controllers/educationControllers/degreeListingController';
 
 // Define a type for async route handlers (same as in degreePostController.ts)
 type AsyncRequestHandler = (req: Request, res: Response, next: NextFunction) => Promise<void>;
