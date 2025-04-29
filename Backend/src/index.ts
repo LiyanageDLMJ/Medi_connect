@@ -11,6 +11,8 @@ import degreePostRoutes from './Routes/EducationRoutes/DegreePostRoutes';
 import fs from "fs";
 import path from "path";
 
+
+
 connectDB();
 
 const app = express();
