@@ -5,6 +5,7 @@ import {
   getDegreeById,
   updateDegree,
   deleteDegree,
+  getFilterOptions,
 } from '../../controllers/educationControllers/degreePostController';
 
 // Define a type for async route handlers (same as in degreePostController.ts)
@@ -31,5 +32,5 @@ router.put('/updateDegree/:id', asyncHandler(updateDegree));
 
 // Route to delete a degree by ID
 router.delete('/deleteDegree/:id', asyncHandler(deleteDegree));
-
+router.get('/filters', getFilterOptions);
 export default router;
