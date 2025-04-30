@@ -553,4 +553,10 @@ const PostDegree: React.FC = () => {
   );
 };
 
+// // For uploading Images
+// import { imageUpload } from "../middlewares/upload";
+// router.post("/upload-image", imageUpload.single("image"), (req, res) => {
+//   res.send({ message: "Image uploaded", path: req.file?.path });
+// });
+
 export default PostDegree;
