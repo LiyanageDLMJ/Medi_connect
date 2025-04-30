@@ -1,92 +1,126 @@
-import React from 'react'
+import React from 'react';
 
-function JobViewPopup() {
+
+interface JobViewPopupProps {
+  job: {
+    jobId: string;
+    title: string;
+    department: string;
+    jobType: string;
+    hospitalName: string;
+    location: string;
+    description: string;
+    requirements: string;
+    salaryRange?: string;
+    status: string;
+    postedDate: string;
+  };
+  onClose: () => void;
+}
+
+function JobViewPopup({ job, onClose }: JobViewPopupProps) {
   return (
-    <>
-    
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl shadow-lg w-full max-w-md overflow-hidden">
+    <div className="fixed inset-0 overflow-y-scroll  flex items-center justify-center p-4 z-50" style={{backgroundColor: '#0000006f'}}>
+      <div className="bg-white rounded-xl shadow-lg w-full max-w-2xl overflow-hidden  ">
         {/* Modal Header */}
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-800">Amélie Laurent</h2>
-          <p className="text-sm text-gray-500">amelie@untitledui.com</p>
+        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-800">{job.title}</h2>
+            <p className="text-sm text-gray-500">
+              {job.hospitalName} • {job.department}
+            </p>
+          </div>
+          <button 
+            onClick={onClose}
+            className="text-gray-400 cursor-pointer hover:text-gray-500"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
 
         {/* Modal Content */}
         <div className="p-6 space-y-6">
-          {/* Profile Photo Section */}
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-xl font-medium">
-                AL
-              </div>
-              <button className="absolute -bottom-1 -right-1 bg-white p-1.5 rounded-full shadow border border-gray-200 hover:bg-gray-50 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-                </svg>
-              </button>
-            </div>
-            <span className="text-sm text-gray-500">Click to replace</span>
-          </div>
-
-          {/* Form Fields */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* Job Meta Information */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-              <input
-                type="text"
-                defaultValue="Amélie"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
-              />
+              <h3 className="text-sm font-medium text-gray-500">Job Type</h3>
+              <p className="mt-1 text-sm text-gray-900">{job.jobType}</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-              <input
-                type="text"
-                defaultValue="Laurent"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
-              />
+              <h3 className="text-sm font-medium text-gray-500">Location</h3>
+              <p className="mt-1 text-sm text-gray-900">{job.location}</p>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-gray-500">Status</h3>
+              <p className="mt-1 text-sm">
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  job.status === 'OPEN' ? 'bg-green-100 text-green-800' :
+                  job.status === 'CLOSED' ? 'bg-gray-100 text-gray-800' :
+                  'bg-blue-100 text-blue-800'
+                }`}>
+                  {job.status}
+                </span>
+              </p>
             </div>
           </div>
 
+          {job.salaryRange && (
+            <div>
+              <h3 className="text-sm font-medium text-gray-500">Salary Range</h3>
+              <p className="mt-1 text-sm text-gray-900">{job.salaryRange}</p>
+            </div>
+          )}
+
+          {/* Job Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email address</label>
-            <input
-              type="email"
-              defaultValue="amelie@untitledui.com"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
-            />
+            <h3 className="text-sm font-medium text-gray-500">Job Description</h3>
+            <p className="mt-1 text-sm text-gray-900 whitespace-pre-line">{job.description ? job.description: "No description Found"}</p>
           </div>
 
+          {/* Requirements */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
-            <div className="flex rounded-lg overflow-hidden">
-              <span className="inline-flex items-center px-3 py-2 bg-gray-50 border border-gray-300 text-gray-500 text-sm">
-                untitledui.com/
-              </span>
-              <input
-                type="text"
-                defaultValue="amelie"
-                className="flex-1 px-3 py-2 border-t border-b border-r border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
-              />
-            </div>
+            <h3 className="text-sm font-medium text-gray-500">Requirements</h3>
+            <p className=" mt-1 text-sm text-gray-900 list-disc list-inside space-y-1" >
+              {job.requirements.split('\n').map((requirement, index) => (
+                <p key={index} >{requirement}</p>
+              ))}
+            </p>
+          </div>
+
+          {/* Posted Date */}
+          <div>
+            <h3 className="text-sm font-medium text-gray-500">Posted Date</h3>
+            <p className="mt-1 text-sm text-gray-900">
+              {new Date(job.postedDate).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
+            </p>
           </div>
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
-          <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-            Cancel
+        <div className="px-6 py-4 bg-gray-50 border-t  border-gray-200 flex justify-end">
+        <button
+           
+            className="px-4 py-2 text-sm cursor-pointer me-3 font-medium text-white bg-red-600 border border-gray-300 rounded-lg  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+          >
+            Delete
           </button>
-          <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-            Save changes
+          
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm cursor-pointer font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+          >
+            Close
           </button>
         </div>
       </div>
     </div>
-    
-    </>
-  )
+  );
 }
 
-export default JobViewPopup
+export default JobViewPopup;

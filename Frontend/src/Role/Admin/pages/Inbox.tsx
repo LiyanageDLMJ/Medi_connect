@@ -1,12 +1,13 @@
 import React from 'react';
+import UserViewPopup from '../components/UserManagement/UserViewPopup';
 
-const Inbox: React.FC = () => {
+function Inbox() {
   return (
-    <div>
-      <h2>Inbox</h2>
-      <p>This is the inbox component.</p>
+    <div className="p-6 bg-white rounded-lg shadow-sm">
+      <h1 className="text-2xl font-bold mb-4">Inbox</h1>
+       
     </div>
   );
-};
+}
 
 export default Inbox;
