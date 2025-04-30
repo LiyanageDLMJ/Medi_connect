@@ -40,6 +40,8 @@ app.use("/JobSearch", JobSearch);
 app.use("/JobApplication", jobApplicationRoutes);
 app.use("/degrees", degreeListingRoutes);
 app.use("/higherDegrees", higherEducationRoutes);
+app.use('/images', express.static('src/image'));
+
 // Start the server
 app.use("/auth", LoginRegisterRoutes); // Use the centralized login/register routes
 app.listen(PORT, () => {
