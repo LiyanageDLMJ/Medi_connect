@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, HydratedDocument } from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IDegree extends Document {
   courseId: number;          // Added for HigherEducationSearch
@@ -49,7 +49,7 @@ const DegreeSchema: Schema = new Schema(
     },
     applicationDeadline: {
       type: Date,
-      required: [false, 'Application deadline is required'],
+      required: [true, 'Application deadline is required'],
       validate: {
         validator: (value: Date) => value > new Date(),
         message: 'Application deadline must be in the future',
