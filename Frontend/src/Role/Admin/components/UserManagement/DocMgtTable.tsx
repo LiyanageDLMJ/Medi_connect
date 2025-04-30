@@ -159,13 +159,7 @@ function DocMgtTable() {
           </span>
         </div>
       )}
-
-      {/* Loading Spinner */}
-      {isLoading && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center z-50">
-          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-blue-500"></div>
-        </div>
-      )}
+ 
 
       <div className="p-6 bg-white rounded-lg shadow-sm">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
@@ -294,12 +288,7 @@ function DocMgtTable() {
                   >
                     View
                   </button>
-                  <button 
-                    onClick={() => handleDeleteUser(user._id)}
-                    className="text-red-600 hover:text-red-900"
-                  >
-                    Delete
-                  </button>
+                 
                 </td>
               </tr>
             ))}
@@ -345,8 +334,7 @@ function DocMgtTable() {
 
       {/* User View Popup */}
       {isViewPopupOpen && selectedUser && (
-        <UserViewPopup 
-          user={selectedUser} 
+        <UserViewPopup user={selectedUser} 
           onClose={handleCloseUserView} 
           onDelete={handleDeleteUser}
         />

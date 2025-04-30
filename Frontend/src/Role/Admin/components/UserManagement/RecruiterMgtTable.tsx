@@ -26,55 +26,7 @@ const users = [
       groups: "Falcons, Stallions",
       status: "Active",
     },
-    {
-      name: "Scott Walter",
-      email: "scot1987@gmail.com",
-      role: "Super Admin",
-      groups: "Falcons, Stallions",
-      status: "Active",
-    },
-    {
-      name: "Chris Bowen",
-      email: "chris.bowen@gmail.com",
-      role: "Admin",
-      groups: "Falcons, Stallions",
-      status: "Inactive",
-    },
-    {
-      name: "Tracy Aksam",
-      email: "tracy.aksam@gmail.com",
-      role: "Admin",
-      groups: "Falcons, Stallions",
-      status: "Inactive",
-    },
-    {
-      name: "Natali Emanuel",
-      email: "natali@gmail.com",
-      role: "Contributor",
-      groups: "Falcons, Stallions",
-      status: "Active",
-    },
-    {
-      name: "Dan Spanser",
-      email: "dan@gmail.com",
-      role: "Contributor",
-      groups: "Falcons, Stallions",
-      status: "Inactive",
-    },
-    {
-      name: "Tonye Gabril",
-      email: "Tonye@gmail.com",
-      role: "Admin",
-      groups: "Falcons, Stallions",
-      status: "Active",
-    },
-    {
-      name: "Erin Holland",
-      email: "erin@gmail.com",
-      role: "Super Admin",
-      groups: "Falcons, Stallions",
-      status: "Active",
-    },
+    
   ];
 
 
@@ -250,9 +202,7 @@ function RecruiterMgtTable() {
                     <button className="text-blue-600 hover:text-blue-900 mr-3">
                       View
                     </button>
-                    <button className="text-red-600 hover:text-red-900">
-                      Delete
-                    </button>
+                    
                   </td>
                 </tr>
               ))}
