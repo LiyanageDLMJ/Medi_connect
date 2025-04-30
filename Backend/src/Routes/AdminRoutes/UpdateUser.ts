@@ -63,4 +63,25 @@ router.get("/institutes", async (req: Request, res: Response) => {
   }
 });
 
+
+
+router.get("/users/count", async (req: Request, res: Response) => {
+  try {
+    const total = await User.countDocuments();
+    const doctorCount = await User.countDocuments({ userType: "Doctor" });
+    const studentCount = await User.countDocuments({ userType: "MedicalStudent" });
+    const instituteCount = await User.countDocuments({ userType: "EducationalInstitute" });
+
+    res.json({
+      total,
+      doctorCount,
+      studentCount,
+      instituteCount,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 export default router;
