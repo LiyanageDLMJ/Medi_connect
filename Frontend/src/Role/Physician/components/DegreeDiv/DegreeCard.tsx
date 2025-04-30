@@ -31,10 +31,12 @@ const DegreeCard: React.FC<DegreeCardProps> = ({ degrees, totalDegrees }) => {
           <div key={degree.courseId} className="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200">
             <div className="relative">
               <img
-                src={degree.image || "https://via.placeholder.com/150"} // Fallback image
-                alt={degree.degreeName}
+src={`http://localhost:3000/images/${degree.image}`} // Full path to backend image
+  // alt={degree.degreeName}
                 className="w-full h-48 object-cover rounded-lg pt-4 px-4 pb-0 bg-white"
               />
+
+
               <span className={`absolute top-5 right-6 px-3 py-1 text-white text-sm font-semibold rounded ${degree.statusColor}`}>
                 {degree.status.toLowerCase()}
               </span>
