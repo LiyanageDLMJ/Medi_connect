@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { FiFilter, FiGlobe } from "react-icons/fi";
 import { FaCalendarAlt } from "react-icons/fa";
@@ -17,10 +17,14 @@ import {
 import DatePicker from "react-datepicker";
 import TopBar from "../components/TopBar";
 import "react-datepicker/dist/react-datepicker.css";
+import axios from "axios";
 
+// Interface for Degree, aligned with backend schema (Degree.ts)
 interface Degree {
-  id: number;
+  _id: string; // MongoDB ObjectId
+  courseId: number;
   degreeName: string;
+  institution: string;
   status: string;
   mode: string;
   applicationDeadline: string;
@@ -29,97 +33,28 @@ interface Degree {
   applicantsApplied: number;
   duration: string;
   tuitionFee: string;
+  image?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Interface for filter options from backend
+interface FilterOptions {
+  statuses: string[];
+  modes: string[];
+  durations: string[];
 }
 
 const DegreeListing: React.FC = () => {
   const navigate = useNavigate();
-  const [degree, setDegree] = useState<Degree[]>([
-    {
-      id: 1,
-      degreeName: "Software Engineering",
-      status: "Open",
-      mode: "Online",
-      applicationDeadline: "2024-03-20",
-      eligibility: "Bachelor's in Computer Science or equivalent",
-      seatsAvailable: 3,
-      applicantsApplied: 23,
-      duration: "4 Years",
-      tuitionFee: "$15,000 per year",
-    },
-    {
-      id: 2,
-      degreeName: "UI/UX Design",
-      status: "Closed",
-      mode: "Offline",
-      applicationDeadline: "2024-03-10",
-      eligibility: "Bachelor's degree in Design or related field",
-      seatsAvailable: 1,
-      applicantsApplied: 15,
-      duration: "2 Years",
-      tuitionFee: "$10,000 per year",
-    },
-    {
-      id: 3,
-      degreeName: "Data Science",
-      status: "Open",
-      mode: "Hybrid",
-      applicationDeadline: "2024-04-05",
-      eligibility: "Bachelor's in Mathematics, Statistics, or CS",
-      seatsAvailable: 5,
-      applicantsApplied: 12,
-      duration: "3 Years",
-      tuitionFee: "$12,500 per year",
-    },
-    {
-      id: 4,
-      degreeName: "Cyber Security",
-      status: "Closed",
-      mode: "Offline",
-      applicationDeadline: "2024-02-28",
-      eligibility: "Bachelor's in IT or Security-related field",
-      seatsAvailable: 2,
-      applicantsApplied: 18,
-      duration: "3 Years",
-      tuitionFee: "$14,000 per year",
-    },
-    {
-      id: 5,
-      degreeName: "Artificial Intelligence",
-      status: "Open",
-      mode: "Online",
-      applicationDeadline: "2024-05-15",
-      eligibility: "Bachelor's in Computer Science or AI specialization",
-      seatsAvailable: 4,
-      applicantsApplied: 10,
-      duration: "4 Years",
-      tuitionFee: "$16,000 per year",
-    },
-    {
-      id: 6,
-      degreeName: "Artificial Intelligence",
-      status: "Open",
-      mode: "Online",
-      applicationDeadline: "2024-05-15",
-      eligibility: "Bachelor's in Computer Science or AI specialization",
-      seatsAvailable: 4,
-      applicantsApplied: 10,
-      duration: "4 Years",
-      tuitionFee: "$16,000 per year",
-    },
-    {
-      id: 7,
-      degreeName: "Artificial Intelligence",
-      status: "Open",
-      mode: "Online",
-      applicationDeadline: "2024-05-15",
-      eligibility: "Bachelor's in Computer Science or AI specialization",
-      seatsAvailable: 4,
-      applicantsApplied: 10,
-      duration: "4 Years",
-      tuitionFee: "$16,000 per year",
-    },
-  ]);
-
+  const [degrees, setDegrees] = useState<Degree[]>([]);
+  const [filterOptions, setFilterOptions] = useState<FilterOptions>({
+    statuses: ["all"],
+    modes: ["all"],
+    durations: ["all"],
+  });
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterMode, setFilterMode] = useState<string>("all");
@@ -129,7 +64,57 @@ const DegreeListing: React.FC = () => {
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+  const [menuOpen, setMenuOpen] = useState<string | null>(null);
 
+  // Fetch degrees from the backend
+  const fetchDegrees = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const params: any = {
+        searchQuery,
+        status: filterStatus,
+        mode: filterMode,
+        duration: filterDuration,
+        tuitionFee: filterTuitionFee,
+      };
+
+      const [startDate, endDate] = dateRange;
+      if (startDate) params.startDate = startDate.toISOString();
+      if (endDate) params.endDate = endDate.toISOString();
+
+      const response = await axios.get("http://localhost:3000/degrees/viewDegrees", { params });
+      setDegrees(response.data.degrees);
+    } catch (error: any) {
+      setError("Failed to fetch degrees. Please try again later.");
+      console.error("Error fetching degrees:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch filter options from the backend
+  const fetchFilterOptions = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.get("http://localhost:3000/degrees/filters");
+      setFilterOptions(response.data);
+    } catch (error: any) {
+      setError("Failed to fetch filter options. Please try again later.");
+      console.error("Error fetching filter options:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch data on component mount and when filters change
+  useEffect(() => {
+    fetchDegrees();
+    fetchFilterOptions();
+  }, [searchQuery, filterStatus, filterMode, filterDuration, filterTuitionFee, dateRange]);
+
+  // Format date for display
   const formatDate = (date: Date | string) => {
     return new Intl.DateTimeFormat("en-US", {
       year: "numeric",
@@ -138,17 +123,12 @@ const DegreeListing: React.FC = () => {
     }).format(new Date(date));
   };
 
-  const [menuOpen, setMenuOpen] = useState<number | null>(null);
-
-  const handleMenuToggle = (id: number) => {
+  // Handle menu toggle for actions (Edit, Delete, View Details)
+  const handleMenuToggle = (id: string) => {
     setMenuOpen(menuOpen === id ? null : id);
   };
 
-  const parseTuitionFee = (fee: string): number => {
-    const numericPart = fee.replace(/[^0-9.]/g, "");
-    return parseFloat(numericPart) || 0;
-  };
-
+  // Clear all filters
   const clearFilters = () => {
     setSearchQuery("");
     setFilterStatus("all");
@@ -158,83 +138,30 @@ const DegreeListing: React.FC = () => {
     setDateRange([null, null]);
     setAnchorEl(null);
   };
-/**/
-  let filteredDegrees = degree.filter((deg) => {
-    const matchesSearch = deg.degreeName.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = filterStatus === "all" || deg.status === filterStatus;
-    const matchesMode = filterMode === "all" || deg.mode === filterMode;
-    const matchesDuration = filterDuration === "all" || deg.duration === filterDuration;
 
-    const tuitionFeeValue = parseTuitionFee(deg.tuitionFee);
-    let matchesTuitionFee = true;
-    if (filterTuitionFee !== "all") {
-      if (filterTuitionFee === "upTo10000") {
-        matchesTuitionFee = tuitionFeeValue <= 10000;
-      } else if (filterTuitionFee === "10001to15000") {
-        matchesTuitionFee = tuitionFeeValue > 10000 && tuitionFeeValue <= 15000;
-      } else if (filterTuitionFee === "above15000") {
-        matchesTuitionFee = tuitionFeeValue > 15000;
-      }
+  // Handle delete degree
+  const handleDelete = async (id: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      await axios.delete(`http://localhost:3000/degrees/deleteDegree/${id}`);
+      setDegrees((prevDegrees) => prevDegrees.filter((deg) => deg._id !== id));
+      setMenuOpen(null);
+    } catch (error: any) {
+      setError("Failed to delete degree. Please try again later.");
+      console.error("Error deleting degree:", error);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    const deadlineDate = new Date(deg.applicationDeadline).getTime();
-    const [startDate, endDate] = dateRange;
-    let matchesDateRange = true;
-    if (startDate && endDate) {
-      const startTime = startDate.getTime();
-      const endTime = endDate.getTime();
-      matchesDateRange = deadlineDate >= startTime && deadlineDate <= endTime;
-    }
+  // Handle view details
+  const handleViewDetails = (degree: Degree) => {
+    console.log("View Details for:", degree);
+    setMenuOpen(null);
+  };
 
-    return matchesSearch && matchesStatus && matchesMode && matchesDuration && matchesTuitionFee && matchesDateRange;
-  });
-/**/
-
-
-// const fetchDegrees = async () => {
-//   try {
-//     const params: any = {
-//       searchQuery,
-//       status: filterStatus,
-//       mode: filterMode,
-//       duration: filterDuration,
-//       tuitionFee: filterTuitionFee,
-//       noPagination: "true",
-//     };
-
-//     const [startDate, endDate] = dateRange;
-//     if (startDate) params.startDate = startDate.toISOString();
-//     if (endDate) params.endDate = endDate.toISOString();
-
-//     const response = await axios.get("http://localhost:5000/api/degrees/viewDegrees", { params });
-//     setDegrees(response.data.degrees);
-//   } catch (error) {
-//     console.error("Error fetching degrees:", error);
-//   }
-// };
-
-// useEffect(() => {
-//   fetchDegrees();
-// }, [searchQuery, filterStatus, filterMode, filterDuration, filterTuitionFee, dateRange]);
-// const [filterOptions, setFilterOptions] = useState<FilterOptions>({
-//   statuses: ["all"],
-//   modes: ["all"],
-//   durations: ["all"],
-// });
-
-// // Fetch filter options from the backend
-// const fetchFilterOptions = async () => {
-//   try {
-//     const response = await axios.get("http://localhost:5000/api/degrees/filters");
-//     setFilterOptions(response.data);
-//   } catch (error) {
-//     console.error("Error fetching filter options:", error);
-//   }
-// };
-
-  const statuses = ["all", ...Array.from(new Set(degree.map((deg) => deg.status)))];
-  const modes = ["all", ...Array.from(new Set(degree.map((deg) => deg.mode)))];
-  const durations = ["all", ...Array.from(new Set(degree.map((deg) => deg.duration))).sort()];
+  // Tuition fee filter options
   const tuitionFeeRanges = [
     { value: "all", label: "All Fees" },
     { value: "upTo10000", label: "Up to $10,000" },
@@ -248,11 +175,6 @@ const DegreeListing: React.FC = () => {
 
   const handleFilterClose = () => {
     setAnchorEl(null);
-  };
-
-  const handleViewDetails = (degree: Degree) => {
-    console.log("View Details for:", degree);
-    setMenuOpen(null);
   };
 
   const [startDate, endDate] = dateRange;
@@ -270,10 +192,7 @@ const DegreeListing: React.FC = () => {
           <div className="flex items-center bg-white px-3 py-1 rounded-t-lg border-gray-200">
             <div className="flex items-center justify-start w-1/2">
               <div className="space-y-2 md:space-y-3">
-                <h1
-                  className="text-5xl font-semibold m-0 text-[50px]"
-                  style={{ fontSize: "50px" }}
-                >
+                <h1 className="text-5xl font-semibold m-0 text-[50px]" style={{ fontSize: "50px" }}>
                   Degree Listing
                 </h1>
                 <p className="text-gray-600 text-base m-0 px-1">{subtitleText}</p>
@@ -348,7 +267,7 @@ const DegreeListing: React.FC = () => {
                   className="flex items-center gap-1 text-gray-700 border px-3 py-1.5 rounded-md hover:bg-gray-100"
                   onClick={clearFilters}
                 >
-                  Clear 
+                  Clear
                 </button>
                 <Menu
                   anchorEl={anchorEl}
@@ -366,7 +285,7 @@ const DegreeListing: React.FC = () => {
                         onChange={(e) => setFilterStatus(e.target.value as string)}
                         label="Filter by Status"
                       >
-                        {statuses.map((status) => (
+                        {filterOptions.statuses.map((status) => (
                           <MenuItem key={status} value={status}>
                             {status === "all" ? "All Statuses" : status}
                           </MenuItem>
@@ -380,7 +299,7 @@ const DegreeListing: React.FC = () => {
                         onChange={(e) => setFilterMode(e.target.value as string)}
                         label="Filter by Mode"
                       >
-                        {modes.map((mode) => (
+                        {filterOptions.modes.map((mode) => (
                           <MenuItem key={mode} value={mode}>
                             {mode === "all" ? "All Modes" : mode}
                           </MenuItem>
@@ -394,7 +313,7 @@ const DegreeListing: React.FC = () => {
                         onChange={(e) => setFilterDuration(e.target.value as string)}
                         label="Filter by Duration"
                       >
-                        {durations.map((duration) => (
+                        {filterOptions.durations.map((duration) => (
                           <MenuItem key={duration} value={duration}>
                             {duration === "all" ? "All Durations" : duration}
                           </MenuItem>
@@ -421,10 +340,14 @@ const DegreeListing: React.FC = () => {
             </div>
           </div>
           <div className="px-4 mt-4 overflow-x-auto">
+            {loading && <p>Loading...</p>}
+            {error && <p className="text-red-500">{error}</p>}
+            {!loading && !error && degrees.length === 0 && <p>No degrees found.</p>}
             <table className="min-w-full bg-white border border-gray-200 rounded-b-lg">
               <thead className="bg-white border-b border-gray-200">
                 <tr>
                   <th className="p-3 text-left">Degree Name</th>
+                  <th className="p-3 text-left">Institution</th>
                   <th className="p-3 text-center">Duration</th>
                   <th className="p-3 text-center">Mode</th>
                   <th className="p-3 text-center">Application Deadline</th>
@@ -436,12 +359,13 @@ const DegreeListing: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredDegrees.map((degree, index) => (
+                {degrees.map((degree, index) => (
                   <tr
-                    key={degree.id}
-                    className={`${index % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
+                    key={degree._id}
+                    className={`${index % 2 === 0 ? "bg-white" : "bg-gray-100"}`}
                   >
                     <td className="p-3">{degree.degreeName}</td>
+                    <td className="p-3">{degree.institution}</td>
                     <td className="p-3 text-center">{degree.duration}</td>
                     <td className="p-3 text-center">{degree.mode}</td>
                     <td className="p-3 text-center">{formatDate(degree.applicationDeadline)}</td>
@@ -460,23 +384,19 @@ const DegreeListing: React.FC = () => {
                       </span>
                     </td>
                     <td className="p-3 text-center relative">
-                      <button onClick={() => handleMenuToggle(degree.id)}>
+                      <button onClick={() => handleMenuToggle(degree._id)}>
                         <BsThreeDotsVertical className="text-gray-600 hover:text-gray-800" />
                       </button>
-                      {menuOpen === degree.id && (
+                      {menuOpen === degree._id && (
                         <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-200 shadow-lg rounded-lg z-10">
                           <button
-                            onClick={() => console.log("Edit", degree.id)}
+                            onClick={() => console.log("Edit", degree._id)}
                             className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
                           >
                             Edit
                           </button>
                           <button
-                            onClick={() =>
-                              setDegree((prevDegrees) =>
-                                prevDegrees.filter((deg) => deg.id !== degree.id)
-                              )
-                            }
+                            onClick={() => handleDelete(degree._id)}
                             className="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-100"
                           >
                             Delete
