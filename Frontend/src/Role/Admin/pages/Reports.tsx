@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pie, Bar } from 'react-chartjs-2';
 import { useEffect, useState } from 'react';
+
 import {
   Chart as ChartJS,
   ArcElement,
@@ -59,7 +60,7 @@ const MedicalDashboard: React.FC = () => {
   };
 
   // 1. Job Listings by Specialty (Pie Chart)
-  
+
 
 
 
@@ -91,20 +92,19 @@ const MedicalDashboard: React.FC = () => {
     GeneralPhysicianCount: 0,
     PulmonologistCount: 0,
     OrthopedicsCount: 0,
-    
+
   });
 
- 
-  const [allUsers, setAllUsers] = useState({
-    email:String,
-    userType:String,
-    location:String,
-    specialty:String,
-    createdAt:String,
-    updatedAt:String,
-    
-    
-  });
+  type UserType = {
+    email: string;
+    userType: string;
+    location: string;
+    specialty: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+
+  const [allUsers, setAllUsers] = useState<UserType[]>([]);
 
 
 
@@ -142,7 +142,7 @@ const MedicalDashboard: React.FC = () => {
       .then((data) => setAllUsers(data))
       .catch((err) => setError(err.message));
   }, []);
- 
+
 
 
   const specialtyData: ChartData<'pie'> = {
@@ -210,7 +210,7 @@ const MedicalDashboard: React.FC = () => {
       ],
       borderColor: '#fff',
       borderWidth: 2,
-    }] 
+    }]
   };
 
   //  Field of Study  
@@ -235,7 +235,7 @@ const MedicalDashboard: React.FC = () => {
   const pieOptions: ChartOptions<'pie'> = {
     responsive: true,
     plugins: {
-      legend: { 
+      legend: {
         position: 'right',
         labels: {
           padding: 20,
@@ -254,7 +254,7 @@ const MedicalDashboard: React.FC = () => {
       }
     },
     scales: {
-      y: { 
+      y: {
         beginAtZero: true,
         grid: {
           drawBorder: false
@@ -277,7 +277,7 @@ const MedicalDashboard: React.FC = () => {
       }
     },
     scales: {
-      x: { 
+      x: {
         beginAtZero: true,
         grid: {
           drawBorder: false
@@ -293,7 +293,7 @@ const MedicalDashboard: React.FC = () => {
 
   const donutOptions: ChartOptions<'pie'> = {
     plugins: {
-      legend: { 
+      legend: {
         position: 'bottom',
         labels: {
           padding: 20,
@@ -303,7 +303,7 @@ const MedicalDashboard: React.FC = () => {
       }
     }
   };
-  
+
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -381,12 +381,12 @@ const MedicalDashboard: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Doctors Listings by Specialty */}
           <div className="bg-white p-6 rounded-xl px-10 shadow-lg">
-           <div>
-           <h2 className="text-xl font-semibold mb-4 text-gray-700">Doctors Listings by Specialty</h2>
-            <div className="h-96">
-              <Pie data={specialtyData} options={pieOptions} />
+            <div>
+              <h2 className="text-xl font-semibold mb-4 text-gray-700">Doctors Listings by Specialty</h2>
+              <div className="h-96">
+                <Pie data={specialtyData} options={pieOptions} />
+              </div>
             </div>
-           </div>
           </div>
 
           {/* Medical Students by Field */}
@@ -452,11 +452,10 @@ const MedicalDashboard: React.FC = () => {
         {/* Latest User List */}
         <div className="mb-8">
           <h3 className="text-xl font-semibold mb-4 text-gray-700">Latest Users</h3>
-          <div className="overflow-x-auto bg-white rounded-xl shadow-lg">
+          <div className="overflow-x-auto bg-white mt-4 rounded-xl shadow-lg">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User Type</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
@@ -464,60 +463,53 @@ const MedicalDashboard: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                <tr className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                        <span className="text-indigo-600 font-medium">CB</span>
+                {allUsers.slice(0, 10).map((user) => (
+                  <tr key={user.email} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                          <svg
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M12 12C14.7614 12 17 9.76142 17 7C17 4.23858 14.7614 2 12 2C9.23858 2 7 4.23858 7 7C7 9.76142 9.23858 12 12 12Z"
+                              fill="#3B82F6"
+                            />
+                            <path
+                              d="M12 14C7.58172 14 4 17.5817 4 22H20C20 17.5817 16.4183 14 12 14Z"
+                              fill="#3B82F6"
+                            />
+                          </svg>
+                        </div>
+                         
                       </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">Christine Brooks</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">christine@example.com</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Doctor</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">New York, USA</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">04 Sep 2023</td>
-                </tr>
-                <tr className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                        <span className="text-blue-600 font-medium">JM</span>
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">John Michael</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">john@example.com</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Student</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">London, UK</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">02 Sep 2023</td>
-                </tr>
-                <tr className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
-                        <span className="text-purple-600 font-medium">AS</span>
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">Alexa Smith</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">alexa@example.com</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">Institute</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Berlin, Germany</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">01 Sep 2023</td>
-                </tr>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.userType === "Doctor"
+                            ? "bg-green-100 text-green-800"
+                            : user.userType === "MedicalStudent"
+                              ? "bg-blue-100 text-blue-800"
+                              : user.userType === "EducationalInstitute"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-gray-100 text-gray-800"
+                          }`}
+                      >
+                        {user.userType}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.location}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(user.createdAt).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+
               </tbody>
             </table>
           </div>

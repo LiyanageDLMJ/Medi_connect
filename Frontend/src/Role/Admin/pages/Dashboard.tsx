@@ -11,9 +11,9 @@ import ManageStudents from "./ManageUsers/ManageStudents";
 import ManageInstitutes from "./ManageUsers/ManageInstitute";
 import ManageRecruiters from "./ManageUsers/ManageRecruiters";
 
-import AdminSettings from "./Settings/admins";
-import ProfileSettings from "./Settings/profile";
-import SystemSettings from "./Settings/system";
+import AdminSettings from "./Settings/Admins";
+import ProfileSettings from "./Settings/Profile";
+import SystemSettings from "./Settings/System";
 
 import Reports from "./Reports";
 import JobListings from "./JobListing";
@@ -25,7 +25,7 @@ const Dashboard = () => {
     switch (location.pathname) {
       case "/":
       case "/admin/dashboard":
-        return <DashboardHome />;
+        return <Reports />;
       case "/admin/dashboard/users/doctors":
         return <ManageDoctors />;
       case "/admin/dashboard/users/students":
