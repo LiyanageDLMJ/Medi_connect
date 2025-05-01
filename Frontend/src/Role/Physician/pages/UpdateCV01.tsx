@@ -1,70 +1,33 @@
 "use client";
 import { useNavigate } from "react-router-dom";
 import React, { useState } from "react";
-import { Bell, ChevronDown, ChevronLeft, ChevronRight, Menu, Search, User } from "lucide-react";
+import {
+  Bell,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Menu,
+  Search,
+  User,
+} from "lucide-react";
 import Sidebar from "../components/NavBar/Sidebar";
+import { useFormContext } from "../../../context/FormContext";
 import UpdateCV02 from "./UpdateCV02";
 
-interface ProfileFormData {
-  yourName: string;
-  professionalTitle: string;
-  currentLocation: string;
-  linkedinLink: string;
-  careerSummary: string;
-  contactPhone: string;
-  contactEmail: string;
-}
-
 export default function UpdateCV01() {
-  const navigate = useNavigate(); 
-  const [formData, setFormData] = useState<ProfileFormData>({
-    yourName: "",
-    professionalTitle: "",
-    currentLocation: "",
-    linkedinLink: "",
-    careerSummary: "",
-    contactPhone: "",
-    contactEmail: "",
-  });
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const { formData, setFormData } = useFormContext();
+  const navigate = useNavigate();
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleNext = async (e: React.FormEvent) => {
+  const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setMessage(null);
-
-    try {
-      const response = await fetch("http://localhost:3000/CvdoctorUpdate/addDoctorCv", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        setMessage("Doctor CV added successfully!");
-        console.log("Form submitted successfully:", result);
-
-        navigate("/physician/update-cv02"); 
-      } else {
-        const error = await response.json();
-        setMessage(error.message || "Failed to add Doctor CV. Please try again.");
-        console.error("Error submitting form:", error);
-      }
-    } catch (err) {
-      setMessage("An error occurred. Please try again.");
-      console.error("Error:", err);
-    } finally {
-      setLoading(false);
-    }
+    navigate("/physician/update-cv02");
   };
 
   return (
@@ -95,7 +58,11 @@ export default function UpdateCV01() {
               </span>
             </div>
             <div className="flex items-center gap-1 cursor-pointer">
-              <img src="/placeholder.svg?height=24&width=24" alt="English flag" className="w-6 h-6 rounded" />
+              <img
+                src="/placeholder.svg?height=24&width=24"
+                alt="English flag"
+                className="w-6 h-6 rounded"
+              />
               <span className="text-sm font-medium">English</span>
               <ChevronDown className="w-4 h-4" />
             </div>
@@ -108,31 +75,31 @@ export default function UpdateCV01() {
 
           {/* Tabs */}
           <div className="flex border-b mb-8">
-            <button
-              className="flex items-center gap-2 px-6 py-4 border-b-2 border-blue-500 text-blue-500"
-            >
+            <button className="flex items-center gap-2 px-6 py-4 border-b-2 border-blue-500 text-blue-500">
               <User className="w-5 h-5" />
               <span>Basic Details</span>
             </button>
-            <button
-              className="flex items-center gap-2 px-6 py-4 text-gray-600"
-            >
+            <button className="flex items-center gap-2 px-6 py-4 text-gray-600">
               <span>Update CV</span>
             </button>
-            <button
-              className="flex items-center gap-2 px-6 py-4 text-gray-600"
-            >
+            <button className="flex items-center gap-2 px-6 py-4 text-gray-600">
               <span>Profile Settings</span>
             </button>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleNext} className="bg-white p-8 rounded-lg shadow-sm">
+          <form
+            onSubmit={handleNext}
+            className="bg-white p-8 rounded-lg shadow-sm"
+          >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Left Column */}
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <label htmlFor="yourName" className="block text-sm font-medium">
+                  <label
+                    htmlFor="yourName"
+                    className="block text-sm font-medium"
+                  >
                     Your Name*
                   </label>
                   <input
@@ -147,7 +114,10 @@ export default function UpdateCV01() {
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="currentLocation" className="block text-sm font-medium">
+                  <label
+                    htmlFor="currentLocation"
+                    className="block text-sm font-medium"
+                  >
                     Current Location*
                   </label>
                   <input
@@ -162,7 +132,10 @@ export default function UpdateCV01() {
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="linkedinLink" className="block text-sm font-medium">
+                  <label
+                    htmlFor="linkedinLink"
+                    className="block text-sm font-medium"
+                  >
                     LinkedIn Link
                   </label>
                   <input
@@ -176,7 +149,10 @@ export default function UpdateCV01() {
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="contactPhone" className="block text-sm font-medium">
+                  <label
+                    htmlFor="contactPhone"
+                    className="block text-sm font-medium"
+                  >
                     Contact (Phone)*
                   </label>
                   <input
@@ -194,7 +170,10 @@ export default function UpdateCV01() {
               {/* Right Column */}
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <label htmlFor="professionalTitle" className="block text-sm font-medium">
+                  <label
+                    htmlFor="professionalTitle"
+                    className="block text-sm font-medium"
+                  >
                     Professional Title*
                   </label>
                   <input
@@ -209,7 +188,10 @@ export default function UpdateCV01() {
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="careerSummary" className="block text-sm font-medium">
+                  <label
+                    htmlFor="careerSummary"
+                    className="block text-sm font-medium"
+                  >
                     Career Summary*
                   </label>
                   <textarea
@@ -223,7 +205,10 @@ export default function UpdateCV01() {
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="contactEmail" className="block text-sm font-medium">
+                  <label
+                    htmlFor="contactEmail"
+                    className="block text-sm font-medium"
+                  >
                     Contact (Email)*
                   </label>
                   <input
@@ -240,28 +225,15 @@ export default function UpdateCV01() {
             </div>
 
             {/* Next Button */}
-            <div className="mt-8 flex justify-between">
-              <button className="flex items-center justify-center w-10 h-10 rounded-md border">
-                <ChevronLeft className="h-5 w-5" />
-              </button>
+            <div className="mt-8 flex justify-end">
               <button
                 type="submit"
                 className="px-6 py-2 bg-blue-500 text-white rounded-md"
-                disabled={loading}
               >
-                {loading ? "Processing..." : "Next"}
+                Next
               </button>
             </div>
           </form>
-
-          {/* Message */}
-          {message && (
-            <div className="mt-4 text-center">
-              <p className={`text-sm ${message.includes("successfully") ? "text-green-500" : "text-red-500"}`}>
-                {message}
-              </p>
-            </div>
-          )}
         </main>
       </div>
     </div>

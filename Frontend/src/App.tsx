@@ -1,5 +1,5 @@
 import { Routes, Route, Outlet } from "react-router-dom";
-import Login from "./LoginRegister/login/Login";
+
 import JobInternshipSearch from "./Role/Physician/pages/JobInternshipSearch";
 import HigherEducationSearch from "./Role/Physician/pages/HigherEducationSearch";
 import JobApplicationForm from "./Role/Physician/pages/JobApplicationForm";
@@ -15,19 +15,21 @@ import Messages from "./Role/higherEducation/pages/Messages";
 import "react-datepicker/dist/react-datepicker.css";
 import Home from "./LoginRegister/Home/Home";
 import ForgotPassword from "./LoginRegister/login/ForgetPassword";
+import Login from "./LoginRegister/login/Login";
+import Footer from "./Components/FooterDiv/Footer"; // Adjust the path as needed
+import WithFooter from "./Layout/WithFooter"; // Adjust the path as needed
 import DegreeListing from "./Role/higherEducation/pages/DegreeListing";
-
+import Dashborad from "./Role/higherEducation/pages/dashborad";
 import Dashboard from "./Role/Physician/pages/dashboard";
 
 
+import { FormProvider } from "./context/FormContext";
+import { Cvcompare } from "./Role/Physician/pages/Cvcompare";
 import PostDegree from "./Role/higherEducation/pages/PostDegree";
-// import PostDegrees from "./Role/higherEducation/pages/examble";
-import WithFooter from "./Layout/WithFooter";
-import WithoutFooter from "./Layout/WithoutFooter";  
-import Dashborad from "./Role/higherEducation/pages/dashborad";
 const App = () => {
   return (
-    <>
+    <FormProvider>
+    
       <Routes>
 
       {/* With Footer Routes */}
@@ -52,8 +54,8 @@ const App = () => {
           <Route path="update-cv02" element={<UpdateCV02 />} />
           <Route path="update-cv03" element={<UpdateCV03 />} />
           <Route path="job-details/:jobId" element={<JobInternshipDetails />} />
-      
-      
+          <Route path="Cvcompare" element={<Cvcompare />} />
+
         </Route>
 
         {/* Higher Education Routes */}
@@ -62,6 +64,7 @@ const App = () => {
           <Route path="view-applications" element={<ViewApplications />} />
           <Route path="degree-listing" element={<DegreeListing />} />
           <Route path="deshboard" element={<Dashborad />} />
+
         </Route>
 
         {/* Recruiter Routes */}
@@ -77,7 +80,7 @@ const App = () => {
 
       </Route>
     </Routes>
-    </>
+    </FormProvider>
   );
 };
 

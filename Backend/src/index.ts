@@ -32,6 +32,10 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
 }
 
+
+// Middleware for parsing URL-encoded data
+app.use(express.urlencoded({ extended: true }));
+
 // Routes
 app.use("/api", router);
 app.use("/CvdoctorUpdate", CvDocRouter);
