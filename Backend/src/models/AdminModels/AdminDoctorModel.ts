@@ -43,4 +43,7 @@ const db = mongoose.connection.useDb('MediConnect');
 const User = db.model("User", userSchema, "users");
 
 export default User;
+
+
+
     
