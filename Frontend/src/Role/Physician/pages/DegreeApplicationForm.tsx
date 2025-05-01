@@ -1,4 +1,3 @@
-// src/Role/Physician/pages/DegreeApplicationForm.tsx
 import React, { useState, FormEvent, ChangeEvent } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -16,7 +15,6 @@ interface FormData {
   linkedIn: string;
   portfolio: string;
   additionalInfo: string;
-  document: File | null;
 }
 
 const initialFormData: FormData = {
@@ -27,7 +25,6 @@ const initialFormData: FormData = {
   linkedIn: "",
   portfolio: "",
   additionalInfo: "",
-  document: null,
 };
 
 const DegreeApplicationForm: React.FC = () => {
@@ -35,7 +32,7 @@ const DegreeApplicationForm: React.FC = () => {
   const location = useLocation();
   const { degree, degreeId } = (location.state as { degree: Degree; degreeId: string }) || {
     degree: { name: "Master of Computer Science", institution: "University of XYZ" },
-    degreeId: "1",
+    degreeId: "1", // Default courseId as a number string
   };
 
   const [formData, setFormData] = useState<FormData>(initialFormData);
@@ -50,40 +47,33 @@ const DegreeApplicationForm: React.FC = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files ? e.target.files[0] : null;
-    if (file && file.size > 10 * 1024 * 1024) {
-      alert("File size exceeds 10MB limit.");
-      return;
-    }
-    setFormData((prev) => ({ ...prev, document: file }));
-  };
-
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     setSuccess(null);
 
-    const formDataToSend = new FormData();
-    Object.entries(formData).forEach(([key, value]) => {
-      if (value !== null) {
-        formDataToSend.append(key, value);
-      }
-    });
-    formDataToSend.append("degreeId", degreeId);
-    formDataToSend.append("degreeName", degree.name);
-    formDataToSend.append("institution", degree.institution);
-
     try {
+         // Convert degreeId to number
+    const numericDegreeId = Number(degreeId);
+    if (isNaN(numericDegreeId)) {
+      throw new Error('Invalid degree ID format');
+    } 
+    
       const response = await fetch("http://localhost:3000/degreeApplications/apply", {
         method: "POST",
-        body: formDataToSend,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          degreeId,
+          degreeName: degree.name,
+          institution: degree.institution,
+        }),
       });
-      if (!response.ok) {
-        throw new Error("Failed to submit application");
-      }
       const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to submit application");
+      }
       setSuccess(result.message);
       setFormData(initialFormData);
       setTimeout(() => navigate(-1), 2000);
@@ -242,39 +232,6 @@ const DegreeApplicationForm: React.FC = () => {
               <div className="flex justify-between mt-2 text-sm text-gray-500">
                 <span>Maximum {ADDITIONAL_INFO_MAX_LENGTH} characters</span>
                 <span>{formData.additionalInfo.length}/{ADDITIONAL_INFO_MAX_LENGTH}</span>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Attach Your Resume/CV
-              </label>
-              <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-blue-400 transition duration-200">
-                <div className="space-y-1 text-center">
-                  <input
-                    type="file"
-                    name="document"
-                    accept=".pdf,.doc,.docx"
-                    onChange={handleFileChange}
-                    className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                    required
-                    aria-label="Upload Resume/CV"
-                  />
-                  <p className="text-xs text-gray-500">PDF, DOC, or DOCX up to 10MB</p>
-                  {formData.document && (
-                    <p className="text-sm text-gray-600">
-                      Selected: {formData.document.name}{" "}
-                      <button
-                        type="button"
-                        onClick={() => setFormData((prev) => ({ ...prev, document: null }))}
-                        className="text-red-500 hover:text-red-700"
-                        aria-label="Remove selected file"
-                      >
-                        Remove
-                      </button>
-                    </p>
-                  )}
-                </div>
               </div>
             </div>
 
