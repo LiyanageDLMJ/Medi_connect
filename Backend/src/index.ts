@@ -7,9 +7,12 @@ import RecuiterJobPost from "./Routes/RecuiterRoutes/JobPostRoutes";
 import connectDB from "./Config/db";
 import JobSearch from "./Routes/PhysicianRoutes/JobSearchRoutes";
 import jobApplicationRoutes from "./Routes/PhysicianRoutes/jobApplicationRoutes";
-import degreePostRoutes from './Routes/EducationRoutes/DegreePostRoutes';
+import degreeListingRoutes from './Routes/EducationRoutes/DegreeListingRoutes';
+import higherEducationRoutes from './Routes/EducationRoutes/higherEducationRoutes';
 import fs from "fs";
 import path from "path";
+
+
 
 import LoginRegisterRoutes from "./Routes/LoginRegisterRoutes";
 connectDB();
@@ -29,13 +32,22 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
 }
 
+
+// Middleware for parsing URL-encoded data
+app.use(express.urlencoded({ extended: true }));
+
 // Routes
 app.use("/api", router);
 app.use("/CvdoctorUpdate", CvDocRouter);
 app.use("/JobPost", RecuiterJobPost);
 app.use("/JobSearch", JobSearch);
 app.use("/JobApplication", jobApplicationRoutes);
-app.use('/api/degrees', degreePostRoutes);
+app.use("/degrees", degreeListingRoutes);
+app.use("/higherDegrees", higherEducationRoutes);
+// app.use('/images', express.static('src/image'));
+app.use('/image', express.static(path.join(__dirname, "../image")));
+
+
 // Start the server
 app.use("/auth", LoginRegisterRoutes); // Use the centralized login/register routes
 app.listen(PORT, () => {

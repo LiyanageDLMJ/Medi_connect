@@ -1,4 +1,5 @@
 import { Routes, Route, Outlet } from "react-router-dom";
+
 import JobInternshipSearch from "./Role/Physician/pages/JobInternshipSearch";
 import HigherEducationSearch from "./Role/Physician/pages/HigherEducationSearch";
 import JobApplicationForm from "./Role/Physician/pages/JobApplicationForm";
@@ -20,9 +21,15 @@ import WithFooter from "./Layout/WithFooter"; // Adjust the path as needed
 import DegreeListing from "./Role/higherEducation/pages/DegreeListing";
 import Dashborad from "./Role/higherEducation/pages/dashborad";
 import Dashboard from "./Role/Physician/pages/dashboard";
+
+
+import { FormProvider } from "./context/FormContext";
+import { Cvcompare } from "./Role/Physician/pages/Cvcompare";
+import PostDegree from "./Role/higherEducation/pages/PostDegree";
 const App = () => {
   return (
-    <>
+    <FormProvider>
+    
       <Routes>
 
       {/* With Footer Routes */}
@@ -47,6 +54,8 @@ const App = () => {
           <Route path="update-cv02" element={<UpdateCV02 />} />
           <Route path="update-cv03" element={<UpdateCV03 />} />
           <Route path="job-details/:jobId" element={<JobInternshipDetails />} />
+          <Route path="Cvcompare" element={<Cvcompare />} />
+
         </Route>
 
         {/* Higher Education Routes */}
@@ -55,19 +64,23 @@ const App = () => {
           <Route path="view-applications" element={<ViewApplications />} />
           <Route path="degree-listing" element={<DegreeListing />} />
           <Route path="deshboard" element={<Dashborad />} />
+
         </Route>
 
         {/* Recruiter Routes */}
         <Route path="/recruiter">
           <Route path="jobPost" element={<JobPost />} />
-          <Route path="jobListing" element={<JobListing />} />
+          <Route path="JobListing" element={<JobListing />} />
         </Route>
 
-        {/* Duplicate dashboard route (optional) */}
-        <Route path="/deshboard" element={<Dashborad />} />
+      
+        
+        <Route path="/postdegree" element={<PostDegree />} />
+ 
+
       </Route>
     </Routes>
-    </>
+    </FormProvider>
   );
 };
 

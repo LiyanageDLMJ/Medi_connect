@@ -1,16 +1,13 @@
 import { AiOutlineCloseCircle, AiOutlineSearch } from "react-icons/ai";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { FaUniversity } from "react-icons/fa";
-import { SlLocationPin } from "react-icons/sl";
 
 interface SearchFilters {
   searchText: string;
   institution: string;
-  location: string;
-  field: string;
-  degreeType: string;
-  tuition: string;
-  
+  duration: string;
+  mode: string;
+  tuitionFee: string;
 }
 
 interface SearchProps {
@@ -20,13 +17,44 @@ interface SearchProps {
 }
 
 const Search: React.FC<SearchProps> = ({ filters, onFilterChange, onClear }) => {
+  const [durationOptions, setDurationOptions] = useState<string[]>([]);
+  const [modeOptions, setModeOptions] = useState<string[]>([]);
+  const [tuitionFeeOptions] = useState<string[]>(["Below 10,000", "10,000-30,000", "Above 30,000"]);
+
+  useEffect(() => {
+    const fetchFilterOptions = async () => {
+      try {
+        const response = await fetch("http://localhost:3000/higherDegrees/filters");
+        const data = await response.json();
+        setDurationOptions(data.durations || []);
+        setModeOptions(data.modes || []);
+      } catch (error) {
+        console.error("Error fetching filter options:", error);
+      }
+    };
+    fetchFilterOptions();
+  }, []);
+
   return (
     <div className="searchDiv grid gap-10 bg-gray-200 rounded-[8px] p-[3rem] w-[90%] mx-auto">
       <SearchForm filters={filters} onFilterChange={onFilterChange} />
-      <SearchFilters filters={filters} onFilterChange={onFilterChange} onClear={onClear} />
+      <SearchFilters
+        filters={filters}
+        onFilterChange={onFilterChange}
+        onClear={onClear}
+        durationOptions={durationOptions}
+        modeOptions={modeOptions}
+        tuitionFeeOptions={tuitionFeeOptions}
+      />
     </div>
   );
 };
+
+interface SearchFiltersProps extends SearchProps {
+  durationOptions: string[];
+  modeOptions: string[];
+  tuitionFeeOptions: string[];
+}
 
 const SearchForm: React.FC<{ filters: SearchFilters; onFilterChange: (e: React.ChangeEvent<HTMLInputElement>) => void }> = ({ filters, onFilterChange }) => (
   <form onSubmit={(e) => e.preventDefault()}>
@@ -43,13 +71,6 @@ const SearchForm: React.FC<{ filters: SearchFilters; onFilterChange: (e: React.C
         name="institution"
         value={filters.institution}
         placeholder="Search by Institution..."
-        onFilterChange={onFilterChange}
-      />
-      <SearchInput
-        icon={<SlLocationPin className="text-[25px] icon" />}
-        name="location"
-        value={filters.location}
-        placeholder="Search by Location..."
         onFilterChange={onFilterChange}
       />
       <button type="submit" className="button">
@@ -79,12 +100,11 @@ const SearchInput: React.FC<{ icon: React.ReactNode; name: string; value: string
   </div>
 );
 
-const SearchFilters: React.FC<{ filters: SearchFilters; onFilterChange: (e: React.ChangeEvent<HTMLSelectElement>) => void; onClear: () => void }> = ({ filters, onFilterChange, onClear }) => (
+const SearchFilters: React.FC<SearchFiltersProps> = ({ filters, onFilterChange, onClear, durationOptions, modeOptions, tuitionFeeOptions }) => (
   <div className="secondDiv flex items-center gap-10 justify-center">
-    <FilterSelect label="Field " name="field" value={filters.field} options={["Engineering", "Medicine", "Business", "Science", "Arts"]} onFilterChange={onFilterChange} />
-    <FilterSelect label="Type" name="degreeType" value={filters.degreeType} options={["Bachelor's", "Master's", "PhD", "Diploma"]} onFilterChange={onFilterChange} />
-    <FilterSelect label="Fees" name="tuition" value={filters.tuition} options={["Below 10,000", "10,000-30,000", "Above 30,000"]} onFilterChange={onFilterChange} />
-    <FilterSelect label="Location" name="location" value={filters.location} options={["France", "UK", "USA", "Germany", "Australia"]} onFilterChange={onFilterChange} />
+    <FilterSelect label="Duration" name="duration" value={filters.duration} options={durationOptions} onFilterChange={onFilterChange} />
+    <FilterSelect label="Mode" name="mode" value={filters.mode} options={modeOptions} onFilterChange={onFilterChange} />
+    <FilterSelect label="Fees" name="tuitionFee" value={filters.tuitionFee} options={tuitionFeeOptions} onFilterChange={onFilterChange} />
     <span onClick={onClear} className="text-[#a1a1a1] cursor-pointer">
       Clear All
     </span>
