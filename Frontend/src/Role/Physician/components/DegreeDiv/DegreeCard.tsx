@@ -1,10 +1,9 @@
-// src/Role/Physician/pages/DegreeCard.tsx
 import { FaUniversity, FaClock, FaMoneyBillAlt, FaGlobe } from "react-icons/fa";
 import PropTypes from "prop-types";
-import { Link } from "react-router-dom"; // Import Link for navigation
+import { Link } from "react-router-dom";
 
 interface Degree {
-  courseId: number | string; // Allow string for compatibility with DegreeApplicationForm
+  courseId: number | string;
   degreeName: string;
   institution: string;
   duration: string;
@@ -21,17 +20,15 @@ interface DegreeCardProps {
 }
 
 const DegreeCard: React.FC<DegreeCardProps> = ({ degrees, totalDegrees }) => {
-  // Helper function to construct the correct image URL
   const getImagePath = (imagePath?: string): string => {
-    console.log(`getImagePath called with imagePath: ${imagePath}`); // Debug log
+    console.log(`getImagePath called with imagePath: ${imagePath}`);
     if (!imagePath) {
       console.log("Image path is undefined, using fallback image");
-      return "/assets/images/default-image.jpg"; // Fallback image
+      return "/assets/images/default-image.jpg";
     }
-    // Ensure the path doesn't have duplicate '/image/' segments
-    const cleanedPath = imagePath.replace(/^\/image\//, ""); // Remove '/image/' prefix if present
-    const finalUrl = `http://localhost:3000/image/${cleanedPath}`; // Construct the correct URL
-    console.log(`Constructed image URL: ${finalUrl}`); // Debug log
+    const cleanedPath = imagePath.replace(/^\/image\//, "");
+    const finalUrl = `http://localhost:3000/image/${cleanedPath}`;
+    console.log(`Constructed image URL: ${finalUrl}`);
     return finalUrl;
   };
 
@@ -47,10 +44,10 @@ const DegreeCard: React.FC<DegreeCardProps> = ({ degrees, totalDegrees }) => {
           <div key={degree.courseId} className="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200">
             <div className="relative">
               <img
-                src={getImagePath(degree.image)} // Use the helper function to get the correct path
+                src={getImagePath(degree.image)}
                 alt={degree.degreeName}
                 className="w-full h-48 object-cover rounded-lg pt-4 px-4 pb-0 bg-white"
-                onError={(e) => (e.currentTarget.src = "/assets/images/default-image.jpg")} // Fallback image on error
+                onError={(e) => (e.currentTarget.src = "/assets/images/default-image.jpg")}
               />
               <span
                 className={`absolute top-5 right-6 px-3 py-1 text-white text-sm font-semibold rounded ${degree.statusColor}`}
@@ -80,10 +77,10 @@ const DegreeCard: React.FC<DegreeCardProps> = ({ degrees, totalDegrees }) => {
             </div>
             <div className="p-4 border-t flex justify-end">
               <Link
-                to="/physician/degreeapplication"
+                to="/physician/degreeapplication" // Update to match your route
                 state={{
                   degree: { name: degree.degreeName, institution: degree.institution },
-                  degreeId: degree.courseId.toString(), // Convert to string for compatibility
+                  degreeId: degree.courseId.toString(),
                 }}
               >
                 <button className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2">
@@ -101,7 +98,7 @@ const DegreeCard: React.FC<DegreeCardProps> = ({ degrees, totalDegrees }) => {
 DegreeCard.propTypes = {
   degrees: PropTypes.arrayOf(
     PropTypes.shape({
-      courseId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired, // Update PropTypes to allow string
+      courseId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
       degreeName: PropTypes.string.isRequired,
       institution: PropTypes.string.isRequired,
       duration: PropTypes.string.isRequired,
