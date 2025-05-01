@@ -19,20 +19,19 @@ interface DegreeCardProps {
 }
 
 const DegreeCard: React.FC<DegreeCardProps> = ({ degrees, totalDegrees }) => {
-  // Helper function to clean the image path
+  // Helper function to construct the correct image URL
   const getImagePath = (imagePath?: string): string => {
     console.log(`getImagePath called with imagePath: ${imagePath}`); // Debug log
     if (!imagePath) {
       console.log("Image path is undefined, using fallback image");
       return "/assets/images/default-image.jpg"; // Fallback image
     }
-    // Remove the 'image/' prefix (without leading slash) to avoid duplication
-    const cleanedPath = imagePath.replace(/^image\//, "");
-    const finalUrl = `http://localhost:3000/image/${cleanedPath}`;
+    // Ensure the path doesn't have duplicate '/image/' segments
+    const cleanedPath = imagePath.replace(/^\/image\//, ""); // Remove '/image/' prefix if present
+    const finalUrl = `http://localhost:3000/image/${cleanedPath}`; // Construct the correct URL
     console.log(`Constructed image URL: ${finalUrl}`); // Debug log
     return finalUrl;
   };
-
 
   return (
     <div className="p-8">
@@ -47,7 +46,7 @@ const DegreeCard: React.FC<DegreeCardProps> = ({ degrees, totalDegrees }) => {
             <div className="relative">
               <img
                 src={getImagePath(degree.image)} // Use the helper function to get the correct path
-                alt={degree.degreeName} // Uncommented for accessibility
+                alt={degree.degreeName}
                 className="w-full h-48 object-cover rounded-lg pt-4 px-4 pb-0 bg-white"
                 onError={(e) => (e.currentTarget.src = "/assets/images/default-image.jpg")} // Fallback image on error
               />
