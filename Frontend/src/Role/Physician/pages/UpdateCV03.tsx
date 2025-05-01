@@ -1,6 +1,6 @@
 "use client";
 import { useNavigate } from "react-router-dom";
-import React from "react";
+import React, { useState } from "react";
 import { useFormContext } from "../../../context/FormContext";
 import {
   Bell,
@@ -15,10 +15,20 @@ import Sidebar from "../components/NavBar/Sidebar";
 export default function UpdateCV03() {
   const { formData, setFormData } = useFormContext();
   const navigate = useNavigate();
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Add the file change handler
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      setResumeFile(file);
+      console.log("Resume file selected:", file.name);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,6 +36,9 @@ export default function UpdateCV03() {
     console.log("FormData before submission:", formData);
     
     try {
+      // For file uploads, we need to use FormData instead of JSON
+      const formDataToSubmit = new FormData();
+      
       // Create a cleaned copy of the form data
       const formDataCopy = { ...formData };
       
@@ -39,17 +52,29 @@ export default function UpdateCV03() {
         formDataCopy.certificationInput = []; // Ensure it's an array if undefined
       }
       
-      console.log("FormData prepared for submission:", formDataCopy);
+      // Add all form fields to the FormData
+      Object.entries(formDataCopy).forEach(([key, value]) => {
+        if (key === "certificationInput" && Array.isArray(value)) {
+          formDataToSubmit.append(key, JSON.stringify(value));
+        } else if (value !== null && value !== undefined) {
+          formDataToSubmit.append(key, String(value));
+        }
+      });
       
-      // Send as JSON instead of FormData for consistency
+      // Add the resume file if it exists
+      if (resumeFile) {
+        formDataToSubmit.append("resume", resumeFile);
+      }
+      
+      console.log("FormData prepared for submission");
+      
+      // Send as multipart/form-data
       const response = await fetch(
         "http://localhost:3000/CvdoctorUpdate/addDoctorCv",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formDataCopy),
+          // No Content-Type header - browser will set it with the boundary
+          body: formDataToSubmit,
         }
       );
 
@@ -188,9 +213,30 @@ export default function UpdateCV03() {
                     required
                   />
                 </div>
-              </div>
 
-              
+                <div className="space-y-2">
+                  <label
+                    htmlFor="resume"
+                    className="block text-sm font-medium"
+                  >
+                    Upload Resume (PDF)*
+                  </label>
+                  <input
+                    id="resume"
+                    name="resume"
+                    type="file"
+                    accept=".pdf"
+                    onChange={handleFileChange}
+                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
+                    required
+                  />
+                  {resumeFile && (
+                    <p className="text-sm text-green-600">
+                      File selected: {resumeFile.name}
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Submit Button */}

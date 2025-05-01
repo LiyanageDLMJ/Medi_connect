@@ -12,6 +12,8 @@ import Messages from "../pages/Messages";
 import UpdateCV01 from "../pages/UpdateCV01";
 import UpdateCV02 from "../pages/UpdateCV02";
 import UpdateCV03 from "../pages/UpdateCV03";
+import { Cvcompare } from "../pages/Cvcompare";
+
 
 const routes = () => {
   return (
@@ -28,6 +30,7 @@ const routes = () => {
        <Route path="/physician/job-application" element={<JobApplicationForm />} />
        <Route path="/higher-education" element={<HigherEducation />} />
        <Route path="/messages" element={<Messages />} />
+       <Route path="/cvCompare" element={<Cvcompare />} />
        
 
       </Routes>

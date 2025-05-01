@@ -21,6 +21,7 @@ import DegreeListing from "./Role/higherEducation/pages/DegreeListing";
 import Dashborad from "./Role/higherEducation/pages/dashborad";
 import Dashboard from "./Role/Physician/pages/dashboard";
 import { FormProvider } from "./context/FormContext";
+import { Cvcompare } from "./Role/Physician/pages/Cvcompare";
 const App = () => {
   return (
     <FormProvider>
@@ -49,6 +50,8 @@ const App = () => {
           <Route path="update-cv02" element={<UpdateCV02 />} />
           <Route path="update-cv03" element={<UpdateCV03 />} />
           <Route path="job-details/:jobId" element={<JobInternshipDetails />} />
+          <Route path="Cvcompare" element={<Cvcompare />} />
+
         </Route>
 
         {/* Higher Education Routes */}
@@ -57,6 +60,7 @@ const App = () => {
           <Route path="view-applications" element={<ViewApplications />} />
           <Route path="degree-listing" element={<DegreeListing />} />
           <Route path="deshboard" element={<Dashborad />} />
+
         </Route>
 
         {/* Recruiter Routes */}

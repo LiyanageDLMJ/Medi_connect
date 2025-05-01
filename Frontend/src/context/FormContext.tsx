@@ -20,6 +20,7 @@ interface FormData {
   jobTitle: string;
   employmentPeriod: string;
   hospitalInstitution: string;
+  resumePdfUrl: string;
 }
 
 interface FormContextType {
@@ -47,6 +48,7 @@ const defaultFormData: FormData = {
   jobTitle: "",
   employmentPeriod: "",
   hospitalInstitution: "",
+  resumePdfUrl: "",
 };
 
 const FormContext = createContext<FormContextType | undefined>(undefined);
