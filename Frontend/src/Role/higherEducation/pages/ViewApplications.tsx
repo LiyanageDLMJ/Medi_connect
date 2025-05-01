@@ -1,4 +1,3 @@
-// src/pages/ViewApplications.tsx
 import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar"; // Adjust path as needed
 import TopBar from "../components/TopBar"; // Adjust path as needed
@@ -32,15 +31,15 @@ const ViewApplications: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch('http://localhost:3000/degreeApplications/view');
+        const response = await fetch("http://localhost:3000/degreeApplications/view");
         if (!response.ok) {
-          throw new Error('Failed to fetch applications');
+          throw new Error("Failed to fetch applications");
         }
         const data = await response.json();
         setApplications(data);
       } catch (err: unknown) {
-        const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
-        console.error('Error fetching applications:', err);
+        const errorMessage = err instanceof Error ? err.message : "An unknown error occurred";
+        console.error("Error fetching applications:", err);
         setError(errorMessage);
       } finally {
         setLoading(false);
@@ -98,7 +97,15 @@ const ViewApplications: React.FC = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={`px-2 py-1 text-xs font-semibold text-white rounded ${
-                            application.status === 'PENDING' ? 'bg-yellow-500' : 'bg-gray-500'
+                            application.status === "Submitted"
+                              ? "bg-yellow-500"
+                              : application.status === "PENDING"
+                              ? "bg-yellow-500"
+                              : application.status === "ACCEPTED"
+                              ? "bg-green-500"
+                              : application.status === "REJECTED"
+                              ? "bg-red-500"
+                              : "bg-gray-500"
                           }`}
                         >
                           {application.status}
