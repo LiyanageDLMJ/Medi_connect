@@ -1,5 +1,5 @@
 import React from "react";
-import DocMgtTable from "../../components/UserManagement/DocMgttable";
+import DocMgtTable from "../../components/UserManagement/DocMgtTable";
 
 function ManageDoctors() {
   return (

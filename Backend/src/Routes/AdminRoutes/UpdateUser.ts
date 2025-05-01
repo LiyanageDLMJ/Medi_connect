@@ -33,6 +33,20 @@ router.get("/users", async (req: Request, res: Response) => {
   }
 });
 
+
+router.get("/allUsers", async (req: Request, res: Response) => {
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+
+
+
 // New route to get only doctors
 router.get("/doctors", async (req: Request, res: Response) => {
   try {
@@ -65,23 +79,81 @@ router.get("/institutes", async (req: Request, res: Response) => {
 
 
 
+
+router.get("/jobCount", async (req: Request, res: Response) => {
+  try {
+    const jobs = await Job.countDocuments();
+    const fullTimeCount = await Job.countDocuments({ jobType: "Full-Time" });
+    const partTimeCount = await Job.countDocuments({ jobType: "Part-Time" });
+    const internCount = await Job.countDocuments({ jobType: "Internship" });
+    
+    const CardiologistCount = await Job.countDocuments({ title: "Cardiologist" });
+    const PediatricianCount = await Job.countDocuments({ title: "Pediatrician" });
+    const GeneralPhysicianCount = await Job.countDocuments({ title: "General Physician" });
+    const PulmonologistCount = await Job.countDocuments({ title: "Neurosurgeon" });
+    const OrthopedicsCount = await Job.countDocuments({ title: "Orthopedics" });
+     
+    
+    res.json({
+      totalJobs: jobs,
+      fullTimeCount,
+      partTimeCount,
+      internCount,
+      CardiologistCount,
+      PediatricianCount,
+      GeneralPhysicianCount,
+      PulmonologistCount,
+      OrthopedicsCount
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 router.get("/users/count", async (req: Request, res: Response) => {
   try {
     const total = await User.countDocuments();
     const doctorCount = await User.countDocuments({ userType: "Doctor" });
     const studentCount = await User.countDocuments({ userType: "MedicalStudent" });
     const instituteCount = await User.countDocuments({ userType: "EducationalInstitute" });
+    const recruiterCount = await User.countDocuments({ userType: "Recruiter" });
+    
+    const CardiologistCount = await User.countDocuments({ specialty: "Cardiologist" });
+    const PediatricianCount = await User.countDocuments({ specialty: "Pediatrician" });
+    const GeneralPhysicianCount = await User.countDocuments({ specialty: "GeneralPhysician" });
+    const PulmonologistCount = await User.countDocuments({ specialty: "Pulmonologist" });
+    const EndocrinologistCount = await User.countDocuments({ specialty: "Endocrinologist" });
+    
+    const BiomedicineCount = await User.countDocuments({ fieldOfStudy: "Biomedicine" });
+    const DentistryCount = await User.countDocuments({ fieldOfStudy: "Dentistry" });
+    const ClinicalChemistryCount = await User.countDocuments({ fieldOfStudy: "ClinicalChemistry" });
+    const GeneralMedicineCount = await User.countDocuments({ fieldOfStudy: "General Medicine" });
+
 
     res.json({
       total,
       doctorCount,
       studentCount,
       instituteCount,
+      recruiterCount,
+      CardiologistCount,
+      PediatricianCount,
+      GeneralPhysicianCount,
+      PulmonologistCount,
+      EndocrinologistCount,
+      BiomedicineCount,
+      DentistryCount,
+      ClinicalChemistryCount,
+      GeneralMedicineCount,
     });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 });
+
+
+
 
 
 export default router;

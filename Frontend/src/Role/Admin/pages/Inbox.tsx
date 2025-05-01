@@ -6,7 +6,16 @@ function UserCountDashboard() {
     doctorCount: 0,
     studentCount: 0,
     instituteCount: 0,
+    recruiterCount: 0,
+    CardiologistCount: 0,
+    PediatricianCount: 0,
+    GeneralPhysicianCount: 0,
+    PulmonologistCount: 0,
+    EndocrinologistCount: 0,
   });
+
+
+
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -30,6 +39,12 @@ function UserCountDashboard() {
           <li>Doctors: {counts.doctorCount}</li>
           <li>Medical Students: {counts.studentCount}</li>
           <li>Educational Institutes: {counts.instituteCount}</li>
+          <li>Recruiters: {counts.recruiterCount}</li>
+          <li>Cardiologist: {counts.CardiologistCount}</li>
+          <li>Pediatrician: {counts.PediatricianCount}</li>
+          <li>GeneralPhysician: {counts.GeneralPhysicianCount}</li>
+          <li>Pulmonologist: {counts.PulmonologistCount}</li>
+          <li>Endocrinologist: {counts.EndocrinologistCount}</li>
         </ul>
       )}
     </div>
