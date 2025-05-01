@@ -80,6 +80,10 @@ const BasicInfoSection = ({ register, errors }: FormSectionProps) => (
           <option value="Dermatology">Dermatology</option>
           <option value="Emergency">Emergency Medicine</option>
           <option value="Neurology">Neurology</option>
+          <option value="Gastroenterology">Gastroenterology</option>
+          <option value="Pulmonology">Pulmonology</option>
+          <option value="Nephrology">Nephrology</option>
+          <option value="Endocrinology">Endocrinology</option>
           <option value="Obstetrics">Obstetrics & Gynecology</option>
           <option value="Urology">Urology</option>
           <option value="Other">Other</option>
