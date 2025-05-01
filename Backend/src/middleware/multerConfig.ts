@@ -24,22 +24,28 @@ const upload = multer({
   },
   limits: { fileSize: 5 * 1024 * 1024 }, // Limit file size to 5MB
 });
-
+// Configure multer for image uploads
 const imageStorage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "image"),
-  filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
-}); 
+  destination: (req, file, cb) => {
+    cb(null, "image");
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
+});
 
-
-const imageUpload = multer({
+export const imageUpload = multer({
   storage: imageStorage,
   fileFilter: (req, file, cb) => {
-    const types = ["image/jpeg", "image/png", "image/jpg"];
-    types.includes(file.mimetype)
-      ? cb(null, true)
-      : cb(new Error("Only image files are allowed"));
+    console.log(`Uploading file: ${file.originalname}, Size: ${file.size} bytes, Type: ${file.mimetype}`); // Debug log
+    const types = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
+    if (types.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only image files (JPEG, PNG, JPG, WebP) are allowed"));
+    }
   },
-  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+  limits: { fileSize: 5 * 1024 * 1024 }, // Increased to 5MB to match frontend expectation
 });
 
 export default upload;
