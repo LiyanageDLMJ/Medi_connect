@@ -49,6 +49,7 @@ export const createDegree: AsyncRequestHandler = async (req, res, next) => {
 
     const newDegree: IDegree = new Degree(degreeData);
     console.log("Degree object before save:", newDegree);
+    
 
     const savedDegree = await newDegree.save();
     console.log("Degree saved successfully:", savedDegree);
