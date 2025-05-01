@@ -1,8 +1,10 @@
+// src/Role/Physician/pages/DegreeCard.tsx
 import { FaUniversity, FaClock, FaMoneyBillAlt, FaGlobe } from "react-icons/fa";
 import PropTypes from "prop-types";
+import { Link } from "react-router-dom"; // Import Link for navigation
 
 interface Degree {
-  courseId: number;
+  courseId: number | string; // Allow string for compatibility with DegreeApplicationForm
   degreeName: string;
   institution: string;
   duration: string;
@@ -77,9 +79,17 @@ const DegreeCard: React.FC<DegreeCardProps> = ({ degrees, totalDegrees }) => {
               </div>
             </div>
             <div className="p-4 border-t flex justify-end">
-              <button className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2">
-                Apply →
-              </button>
+              <Link
+                to="/physician/degreeapplication"
+                state={{
+                  degree: { name: degree.degreeName, institution: degree.institution },
+                  degreeId: degree.courseId.toString(), // Convert to string for compatibility
+                }}
+              >
+                <button className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+                  Apply →
+                </button>
+              </Link>
             </div>
           </div>
         ))}
@@ -91,7 +101,7 @@ const DegreeCard: React.FC<DegreeCardProps> = ({ degrees, totalDegrees }) => {
 DegreeCard.propTypes = {
   degrees: PropTypes.arrayOf(
     PropTypes.shape({
-      courseId: PropTypes.number.isRequired,
+      courseId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired, // Update PropTypes to allow string
       degreeName: PropTypes.string.isRequired,
       institution: PropTypes.string.isRequired,
       duration: PropTypes.string.isRequired,
