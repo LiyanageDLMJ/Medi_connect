@@ -19,6 +19,21 @@ interface DegreeCardProps {
 }
 
 const DegreeCard: React.FC<DegreeCardProps> = ({ degrees, totalDegrees }) => {
+  // Helper function to clean the image path
+  const getImagePath = (imagePath?: string): string => {
+    console.log(`getImagePath called with imagePath: ${imagePath}`); // Debug log
+    if (!imagePath) {
+      console.log("Image path is undefined, using fallback image");
+      return "/assets/images/default-image.jpg"; // Fallback image
+    }
+    // Remove the 'image/' prefix (without leading slash) to avoid duplication
+    const cleanedPath = imagePath.replace(/^image\//, "");
+    const finalUrl = `http://localhost:3000/image/${cleanedPath}`;
+    console.log(`Constructed image URL: ${finalUrl}`); // Debug log
+    return finalUrl;
+  };
+
+
   return (
     <div className="p-8">
       <h2 className="text-xl font-semibold mb-4">
@@ -31,13 +46,14 @@ const DegreeCard: React.FC<DegreeCardProps> = ({ degrees, totalDegrees }) => {
           <div key={degree.courseId} className="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200">
             <div className="relative">
               <img
-src={`http://localhost:3000/images/${degree.image}`} // Full path to backend image
-  // alt={degree.degreeName}
+                src={getImagePath(degree.image)} // Use the helper function to get the correct path
+                alt={degree.degreeName} // Uncommented for accessibility
                 className="w-full h-48 object-cover rounded-lg pt-4 px-4 pb-0 bg-white"
+                onError={(e) => (e.currentTarget.src = "/assets/images/default-image.jpg")} // Fallback image on error
               />
-
-
-              <span className={`absolute top-5 right-6 px-3 py-1 text-white text-sm font-semibold rounded ${degree.statusColor}`}>
+              <span
+                className={`absolute top-5 right-6 px-3 py-1 text-white text-sm font-semibold rounded ${degree.statusColor}`}
+              >
                 {degree.status.toLowerCase()}
               </span>
             </div>
