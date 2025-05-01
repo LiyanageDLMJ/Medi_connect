@@ -10,7 +10,7 @@ import jobApplicationRoutes from "./Routes/PhysicianRoutes/jobApplicationRoutes"
 
 import DegreeApplicationRoutes from "./Routes/PhysicianRoutes/degreeApplicationRoutes";
 
-// import ViewDegreeApplicationRoutes from "./Routes/EducationRoutes/ViewDegreeApplicationRoutes";
+import viewDegreeApplicationRoutes from "./Routes/EducationRoutes/ViewDegreeApplicationRoutes";
 import degreeListingRoutes from './Routes/EducationRoutes/DegreeListingRoutes';
 import higherEducationRoutes from './Routes/EducationRoutes/higherEducationRoutes';
 import fs from "fs";
@@ -49,7 +49,7 @@ app.use("/JobApplication", jobApplicationRoutes);
 app.use("/degrees", degreeListingRoutes);
 app.use("/higherDegrees", higherEducationRoutes);
 app.use('/degreeApplications', DegreeApplicationRoutes);
-// app.use('/viewDegreeApplications', ViewDegreeApplicationRoutes);
+app.use('/viewDegreeApplications', viewDegreeApplicationRoutes);
 // app.use('/images', express.static('src/image'));
 app.use('/image', express.static(path.join(__dirname, "../image")));
 
