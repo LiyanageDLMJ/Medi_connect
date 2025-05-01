@@ -9,30 +9,33 @@ import {
   Select,
   MenuItem,
   FormControl,
-  FormControlLabel,
-  Checkbox,
+  InputLabel,
   SelectChangeEvent,
 } from "@mui/material";
-// Import Material-UI icons for the steps
-import WorkOutlineIcon from "@mui/icons-material/WorkOutline"; // For "Degree Information"
-import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined"; // For "Degree Description"
-import CardGiftcardOutlinedIcon from "@mui/icons-material/CardGiftcardOutlined"; // For "Perks & Benefits"
+import WorkOutlineIcon from "@mui/icons-material/WorkOutline";
+import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
+import CardGiftcardOutlinedIcon from "@mui/icons-material/CardGiftcardOutlined";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import axios from "axios";
 
-// Interface for degree data
+// Interface for degree data, aligned with the backend Degree model
 interface DegreeFormData {
+  courseId?: number; // Auto-incremented by backend
   degreeName: string;
+  institution: string;
   status: string;
-  mode: string[];
+  mode: string;
   duration: string;
   seatsAvailable: number;
+  applicantsApplied?: number; // Will be set to 0 by backend
   applicationDeadline: Date | null;
   tuitionFee: string;
   eligibility: string;
-  description: string;
-  skillsRequired: string;
-  perks: string;
+  description?: string;
+  skillsRequired?: string;
+  perks?: string;
+  image?: string;
 }
 
 const PostDegree: React.FC = () => {
@@ -41,8 +44,9 @@ const PostDegree: React.FC = () => {
   // State for form data
   const [formData, setFormData] = useState<DegreeFormData>({
     degreeName: "",
+    institution: "",
     status: "Open",
-    mode: [],
+    mode: "Online",
     duration: "4 Years",
     seatsAvailable: 0,
     applicationDeadline: null,
@@ -53,34 +57,54 @@ const PostDegree: React.FC = () => {
     perks: "",
   });
 
+  // State for image file and preview
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
   // State for current step
   const [currentStep, setCurrentStep] = useState(1);
 
   // State for form errors
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
+  // State for submission status
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
   // Handle form input changes for TextField and Select
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name as string]: value }));
-    setErrors((prev) => ({ ...prev, [name as string]: "" }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-  // Handle checkbox changes for mode
-  const handleModeChange = (mode: string) => {
-    setFormData((prev) => {
-      const newModes = prev.mode.includes(mode)
-        ? prev.mode.filter((m) => m !== mode)
-        : [...prev.mode, mode];
-      return { ...prev, mode: newModes };
-    });
+  // Handle image file change with validation
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+      if (!validTypes.includes(file.type)) {
+        setError("Please upload a JPEG, JPG, PNG, or WebP image.");
+        return;
+      }
+      // Validate file size (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setError("Image size must be less than 5MB.");
+        return;
+      }
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+      setError(null); // Clear any previous errors
+    }
   };
 
   // Handle date change for application deadline
   const handleDateChange = (date: Date | null) => {
     setFormData((prev) => ({ ...prev, applicationDeadline: date }));
+    setErrors((prev) => ({ ...prev, applicationDeadline: "" }));
   };
 
   // Validation for each step
@@ -89,15 +113,21 @@ const PostDegree: React.FC = () => {
 
     if (step === 1) {
       if (!formData.degreeName) newErrors.degreeName = "Degree name is required";
+      if (!formData.institution) newErrors.institution = "Institution is required";
       if (!formData.status) newErrors.status = "Status is required";
-      if (formData.mode.length === 0) newErrors.mode = "At least one mode is required";
+      if (!formData.mode) newErrors.mode = "Mode is required";
       if (!formData.duration) newErrors.duration = "Duration is required";
       if (formData.seatsAvailable <= 0) newErrors.seatsAvailable = "Seats must be greater than 0";
       if (!formData.applicationDeadline) newErrors.applicationDeadline = "Application deadline is required";
+      if (formData.applicationDeadline && formData.applicationDeadline <= new Date()) {
+        newErrors.applicationDeadline = "Application deadline must be in the future";
+      }
       if (!formData.tuitionFee) newErrors.tuitionFee = "Tuition fee is required";
     } else if (step === 2) {
       if (!formData.eligibility) newErrors.eligibility = "Eligibility criteria are required";
       if (!formData.description) newErrors.description = "Degree description is required";
+    } else if (step === 3) {
+      if (!formData.perks) newErrors.perks = "Perks & benefits are required";
     }
 
     setErrors(newErrors);
@@ -107,7 +137,7 @@ const PostDegree: React.FC = () => {
   // Handle next step
   const handleNextStep = () => {
     if (validateStep(currentStep)) {
-      setCurrentStep((prev) => Math.min(prev + 1, 3));
+      setCurrentStep((prev) => Math.min(prev + 1, 4));
     }
   };
 
@@ -117,11 +147,43 @@ const PostDegree: React.FC = () => {
   };
 
   // Handle form submission
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (validateStep(currentStep)) {
-      console.log("Degree Posted:", formData);
-      alert("Degree posted successfully!");
-      navigate("/degreelist");
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Create FormData for multipart/form-data submission
+        const formDataToSend = new FormData();
+        Object.entries(formData).forEach(([key, value]) => {
+          if (value !== null && value !== undefined) {
+            if (key === "applicationDeadline" && value instanceof Date) {
+              formDataToSend.append(key, value.toISOString());
+            } else {
+              formDataToSend.append(key, value.toString());
+            }
+          }
+        });
+
+        // Append the image file if selected
+        if (imageFile) {
+          formDataToSend.append("image", imageFile);
+        }
+
+        // Send the request to the backend
+        const response = await axios.post("http://localhost:3000/degrees/postDegree", formDataToSend, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+
+        console.log("Degree posted successfully:", response.data);
+        navigate("/higher-education/degree-listing"); // Redirect to the degree listing page
+      } catch (err: any) {
+        const errorMessage = err.response?.data?.message || "Failed to post degree. Please try again.";
+        setError(errorMessage);
+        console.error("Error posting degree:", err);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -142,6 +204,11 @@ const PostDegree: React.FC = () => {
       step: 3,
       icon: <CardGiftcardOutlinedIcon fontSize="small" />,
     },
+    {
+      label: "Image Upload",
+      step: 4,
+      icon: <CardGiftcardOutlinedIcon fontSize="small" />,
+    },
   ];
 
   return (
@@ -157,7 +224,7 @@ const PostDegree: React.FC = () => {
           {/* Header Section */}
           <div className="flex items-center justify-between bg-white px-4 py-3 rounded-t-lg border-gray-200">
             <div className="flex items-center gap-3">
-              <button onClick={() => navigate("/degreelist")} className="text-gray-600 hover:text-gray-800">
+              <button onClick={() => navigate("/degree-listing")} className="text-gray-600 hover:text-gray-800">
                 <FaArrowLeft className="text-lg" />
               </button>
               <div className="space-y-1">
@@ -179,7 +246,7 @@ const PostDegree: React.FC = () => {
                     }`}
                   >
                     {React.cloneElement(step.icon, {
-                      style: { fontSize: "1.25rem" }, // Adjust icon size
+                      style: { fontSize: "1.25rem" },
                       className: currentStep >= step.step ? "text-white" : "text-gray-500",
                     })}
                   </div>
@@ -197,7 +264,7 @@ const PostDegree: React.FC = () => {
                       currentStep >= step.step ? "text-blue-500" : "text-gray-500"
                     }`}
                   >
-                    Step {step.step}/3
+                    Step {step.step}/4
                   </span>
                   {/* Connecting Line */}
                   {index < steps.length - 1 && (
@@ -243,8 +310,28 @@ const PostDegree: React.FC = () => {
                         InputLabelProps={{ style: { fontSize: "0.875rem" } }}
                       />
                       <p className="text-gray-500 text-xs mt-1">
-                        Degree titles must be descriptive one
+                        Degree titles must be descriptive
                       </p>
+                    </div>
+
+                    {/* Institution */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Institution
+                      </label>
+                      <TextField
+                        name="institution"
+                        value={formData.institution}
+                        onChange={handleInputChange}
+                        variant="outlined"
+                        size="small"
+                        fullWidth
+                        placeholder="e.g. University of Oxford"
+                        error={!!errors.institution}
+                        helperText={errors.institution}
+                        InputProps={{ style: { fontSize: "0.875rem" } }}
+                        InputLabelProps={{ style: { fontSize: "0.875rem" } }}
+                      />
                     </div>
 
                     {/* Status */}
@@ -273,51 +360,35 @@ const PostDegree: React.FC = () => {
                       </FormControl>
                     </div>
 
-                    {/* Mode (using Checkboxes) */}
+                    {/* Mode */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Mode of Study
                       </label>
-                      <div className="flex gap-4">
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              checked={formData.mode.includes("Online")}
-                              onChange={() => handleModeChange("Online")}
-                              size="small"
-                            />
-                          }
-                          label="Online"
-                          sx={{ "& .MuiTypography-root": { fontSize: "0.875rem" } }}
-                        />
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              checked={formData.mode.includes("Offline")}
-                              onChange={() => handleModeChange("Offline")}
-                              size="small"
-                            />
-                          }
-                          label="Offline"
-                          sx={{ "& .MuiTypography-root": { fontSize: "0.875rem" } }}
-                        />
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              checked={formData.mode.includes("Hybrid")}
-                              onChange={() => handleModeChange("Hybrid")}
-                              size="small"
-                            />
-                          }
-                          label="Hybrid"
-                          sx={{ "& .MuiTypography-root": { fontSize: "0.875rem" } }}
-                        />
-                      </div>
-                      {errors.mode && (
-                        <p className="text-red-600 text-xs mt-1">{errors.mode}</p>
-                      )}
+                      <FormControl variant="outlined" size="small" fullWidth>
+                        <Select
+                          name="mode"
+                          value={formData.mode}
+                          onChange={handleInputChange}
+                          style={{ fontSize: "0.875rem" }}
+                          error={!!errors.mode}
+                        >
+                          <MenuItem value="Online" style={{ fontSize: "0.875rem" }}>
+                            Online
+                          </MenuItem>
+                          <MenuItem value="Offline" style={{ fontSize: "0.875rem" }}>
+                            Offline
+                          </MenuItem>
+                          <MenuItem value="Hybrid" style={{ fontSize: "0.875rem" }}>
+                            Hybrid
+                          </MenuItem>
+                        </Select>
+                        {errors.mode && (
+                          <p className="text-red-600 text-xs mt-1">{errors.mode}</p>
+                        )}
+                      </FormControl>
                       <p className="text-gray-500 text-xs mt-1">
-                        You can select multiple modes of study
+                        Select the mode of study for this degree
                       </p>
                     </div>
 
@@ -384,6 +455,7 @@ const PostDegree: React.FC = () => {
                           dateFormat="MMM d, yyyy"
                           className="text-gray-700 text-sm border-none outline-none w-full"
                           popperClassName="z-[1000]"
+                          minDate={new Date()} // Prevent past dates
                         />
                       </div>
                       {errors.applicationDeadline && (
@@ -510,14 +582,57 @@ const PostDegree: React.FC = () => {
                       multiline
                       rows={5}
                       placeholder="e.g., Scholarships, Industry Exposure"
+                      error={!!errors.perks}
+                      helperText={errors.perks}
                       InputProps={{ style: { fontSize: "0.875rem" } }}
                       InputLabelProps={{ style: { fontSize: "0.875rem" } }}
                     />
                   </div>
                 </div>
               )}
+
+              {currentStep === 4 && (
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="text-lg font-semibold">Image Upload</h2>
+                    <p className="text-gray-500 text-sm mt-1">
+                      Upload an image for the degree program (optional)
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Degree Image
+                    </label>
+                    {imagePreview && (
+                      <div className="mt-2">
+                        <img
+                          src={imagePreview}
+                          alt="Degree Preview"
+                          className="h-32 w-32 object-cover rounded-md"
+                        />
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/webp"
+                      onChange={handleImageChange}
+                      className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    />
+                    <p className="text-gray-500 text-xs mt-1">
+                      Accepted formats: JPEG, JPG, PNG, WebP (max 5MB)
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="px-4 mt-4">
+              <p className="text-red-600 text-sm">{error}</p>
+            </div>
+          )}
 
           {/* Navigation Buttons */}
           <div className="px-4 mt-6 flex justify-between">
@@ -525,15 +640,17 @@ const PostDegree: React.FC = () => {
               <button
                 onClick={handlePreviousStep}
                 className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm font-medium"
+                disabled={loading}
               >
                 Previous Step
               </button>
             )}
             <div className="ml-auto">
-              {currentStep < 3 ? (
+              {currentStep < 4 ? (
                 <button
                   onClick={handleNextStep}
                   className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm font-medium"
+                  disabled={loading}
                 >
                   Next Step
                 </button>
@@ -541,8 +658,9 @@ const PostDegree: React.FC = () => {
                 <button
                   onClick={handleSubmit}
                   className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm font-medium"
+                  disabled={loading}
                 >
-                  Post Degree
+                  {loading ? "Posting..." : "Post Degree"}
                 </button>
               )}
             </div>
@@ -552,11 +670,5 @@ const PostDegree: React.FC = () => {
     </div>
   );
 };
-
-// // For uploading Images
-// import { imageUpload } from "../middlewares/upload";
-// router.post("/upload-image", imageUpload.single("image"), (req, res) => {
-//   res.send({ message: "Image uploaded", path: req.file?.path });
-// });
 
 export default PostDegree;
