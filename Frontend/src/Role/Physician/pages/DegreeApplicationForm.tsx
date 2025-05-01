@@ -1,5 +1,5 @@
 import React, { useState, FormEvent, ChangeEvent } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // Define interfaces for type safety
 interface Degree {
@@ -29,18 +29,18 @@ const initialFormData: FormData = {
 
 const DegreeApplicationForm: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-
-
-    const { degree, degreeId } = (location.state as { degree: Degree; degreeId: string }) || {
-    degree: { name: "Master of Computer Science", institution: "University of XYZ" },
-    degreeId: "1", // Default courseId as a number string
+  // Hardcode degree and degreeId for testing
+  const degree: Degree = {
+    name: "Master of Computer Science",
+    institution: "University of XYZ",
   };
+  const degreeId: number = 1; // Default degreeId set to 1 for testing
+
   const ADDITIONAL_INFO_MAX_LENGTH = 500;
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -55,25 +55,27 @@ const DegreeApplicationForm: React.FC = () => {
     setSuccess(null);
 
     try {
-         // Convert degreeId to number
-    const numericDegreeId = Number(degreeId);
-    if (isNaN(numericDegreeId)) {
-      throw new Error('Invalid degree ID format');
-    } 
-    
+      // Validate degreeId (should always pass since it's hardcoded)
+      if (typeof degreeId !== "number" || isNaN(degreeId)) {
+        throw new Error("Invalid degree ID format");
+      }
+
       const response = await fetch("http://localhost:3000/degreeApplications/apply", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
-        degreeId: numericDegreeId,
+          degreeId, // Use hardcoded degreeId
+          degreeName: degree.name,
           institution: degree.institution,
         }),
       });
+
       const result = await response.json();
       if (!response.ok) {
         throw new Error(result.message || "Failed to submit application");
       }
+
       setSuccess(result.message);
       setFormData(initialFormData);
       setTimeout(() => navigate(-1), 2000);
