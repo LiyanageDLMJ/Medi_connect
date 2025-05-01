@@ -7,11 +7,11 @@ import Sidebar from "../components/NavBar/Sidebar";
 const JobInternshipSearch = () => {
   const [filters, setFilters] = useState({
     searchText: "",
-    hospital: "",
+    hospitalName: "",
     location: "",
     field: "",
-    type: "",
-    salary: "",
+    jobType: "",
+    salaryRange: "",
   });
 
   const [jobs, setJobs] = useState([]); // State to store jobs fetched from the backend
@@ -46,11 +46,11 @@ const JobInternshipSearch = () => {
   const handleClearFilters = () => {
     setFilters({
       searchText: "",
-      hospital: "",
+      hospitalName: "",
       location: "",
       field: "",
-      type: "",
-      salary: "",
+      jobType: "",
+      salaryRange: "",
     });
   };
 
@@ -59,7 +59,7 @@ const JobInternshipSearch = () => {
   };
 
   const filterByHospital = (job: any) => {
-    return !filters.hospital || job.hospital.toLowerCase().includes(filters.hospital.toLowerCase());
+    return !filters.hospitalName || job.hospitalName.toLowerCase().includes(filters.hospitalName.toLowerCase());
   };
 
   const filterByLocation = (job: any) => {
@@ -71,11 +71,11 @@ const JobInternshipSearch = () => {
   };
 
   const filterByType = (job: any) => {
-    return !filters.type || job.type.toLowerCase() === filters.type.toLowerCase();
+    return !filters.jobType || job.jobType.toLowerCase() === filters.jobType.toLowerCase();
   };
 
   const filterBySalary = (job: any) => {
-    return !filters.salary || job.salary.toLowerCase() === filters.salary.toLowerCase();
+    return !filters.salaryRange || job.salaryRange.toLowerCase() === filters.salaryRange.toLowerCase();
   };
 
   const filteredJobs = jobs.filter((job: any) => {

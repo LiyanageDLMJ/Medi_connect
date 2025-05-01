@@ -28,7 +28,7 @@ const JobApplicationSchema = new mongoose.Schema({
   },
 });
 
-const db = mongoose.connection.useDb("Jobs");
-const JobApplication = db.model("JobApplication", JobApplicationSchema, "JobApplicantData");
+
+const JobApplication = mongoose.model("JobApplication", JobApplicationSchema);
 
 export default JobApplication;

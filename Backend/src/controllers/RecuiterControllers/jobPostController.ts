@@ -34,12 +34,16 @@ export const addJob = async (req: Request, res: Response) => {
 export const updateJob = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const updatedJob = await JobPost.findByIdAndUpdate(id, req.body, { new: true });
-
+    const updatedJob = await JobPost.findOneAndUpdate(
+      { jobId: parseInt(id) }, // Find by jobId instead of _id
+      req.body,
+      { new: true }
+    );
+    
     if (!updatedJob) {
       return res.status(404).json({ message: "Job not found" });
     }
-
+    
     res.status(200).json({ message: "Job updated successfully", job: updatedJob });
   } catch (error: any) {
     res.status(500).json({ message: "Failed to update job", error: error.message });
