@@ -4,7 +4,7 @@ import JobInternshipSearch from "./Role/Physician/pages/JobInternshipSearch";
 import HigherEducationSearch from "./Role/Physician/pages/HigherEducationSearch";
 import JobApplicationForm from "./Role/Physician/pages/JobApplicationForm";
 import JobInternshipDetails from "./Role/Physician/pages/JobInternshipDetails";
-import ViewApplications from "./Role/higherEducation/pages/ViewApplications";
+
 import Register from "./LoginRegister/register/Register";
 import JobPost from "./Role/Recuiter/pages/JobPost";
 import JobListing from "./Role/Recuiter/pages/JobListing";
@@ -21,6 +21,9 @@ import WithFooter from "./Layout/WithFooter"; // Adjust the path as needed
 import DegreeListing from "./Role/higherEducation/pages/DegreeListing";
 import Dashborad from "./Role/higherEducation/pages/dashborad";
 import Dashboard from "./Role/Physician/pages/dashboard";
+import  DegreeApplication from "./Role/Physician/pages/DegreeApplicationForm"
+
+import  ViewApplications from "./Role/higherEducation/pages/ViewApplications"
 
 
 import { FormProvider } from "./context/FormContext";
@@ -55,6 +58,7 @@ const App = () => {
           <Route path="update-cv03" element={<UpdateCV03 />} />
           <Route path="job-details/:jobId" element={<JobInternshipDetails />} />
           <Route path="Cvcompare" element={<Cvcompare />} />
+          <Route path="degreeapplication" element={<DegreeApplication />} />
 
         </Route>
 
@@ -64,7 +68,7 @@ const App = () => {
           <Route path="view-applications" element={<ViewApplications />} />
           <Route path="degree-listing" element={<DegreeListing />} />
           <Route path="deshboard" element={<Dashborad />} />
-
+    
         </Route>
 
         {/* Recruiter Routes */}
