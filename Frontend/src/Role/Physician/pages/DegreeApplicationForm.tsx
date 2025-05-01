@@ -30,16 +30,17 @@ const initialFormData: FormData = {
 const DegreeApplicationForm: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { degree, degreeId } = (location.state as { degree: Degree; degreeId: string }) || {
-    degree: { name: "Master of Computer Science", institution: "University of XYZ" },
-    degreeId: "1", // Default courseId as a number string
-  };
-
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
+
+
+    const { degree, degreeId } = (location.state as { degree: Degree; degreeId: string }) || {
+    degree: { name: "Master of Computer Science", institution: "University of XYZ" },
+    degreeId: "1", // Default courseId as a number string
+  };
   const ADDITIONAL_INFO_MAX_LENGTH = 500;
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -65,8 +66,7 @@ const DegreeApplicationForm: React.FC = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
-          degreeId,
-          degreeName: degree.name,
+        degreeId: numericDegreeId,
           institution: degree.institution,
         }),
       });
