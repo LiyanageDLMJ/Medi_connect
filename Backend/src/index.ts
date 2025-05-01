@@ -7,6 +7,8 @@ import RecuiterJobPost from "./Routes/RecuiterRoutes/JobPostRoutes";
 import connectDB from "./Config/db";
 import JobSearch from "./Routes/PhysicianRoutes/JobSearchRoutes";
 import jobApplicationRoutes from "./Routes/PhysicianRoutes/jobApplicationRoutes";
+
+import DegreeApplicationRoutes from "./Routes/PhysicianRoutes/DegreeApplicationRoutes";
 import degreeListingRoutes from './Routes/EducationRoutes/DegreeListingRoutes';
 import higherEducationRoutes from './Routes/EducationRoutes/higherEducationRoutes';
 import fs from "fs";
@@ -44,6 +46,7 @@ app.use("/JobSearch", JobSearch);
 app.use("/JobApplication", jobApplicationRoutes);
 app.use("/degrees", degreeListingRoutes);
 app.use("/higherDegrees", higherEducationRoutes);
+app.use('/degreeApplications', DegreeApplicationRoutes);
 // app.use('/images', express.static('src/image'));
 app.use('/image', express.static(path.join(__dirname, "../image")));
 
