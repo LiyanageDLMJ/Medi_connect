@@ -147,7 +147,7 @@ const ViewApplications: React.FC = () => {
                   className="w-full p-2 border border-gray-300 rounded"
                 />
               </div>
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">To Date</label>
                 <input
                   type="date"
@@ -156,7 +156,7 @@ const ViewApplications: React.FC = () => {
                   onChange={handleFilterChange}
                   className="w-full p-2 border border-gray-300 rounded"
                 />
-              </div>
+              </div> */}
 
               {/* Search Filter */}
               <div className="md:col-span-2">
