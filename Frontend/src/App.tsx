@@ -21,6 +21,7 @@ import WithFooter from "./Layout/WithFooter"; // Adjust the path as needed
 import DegreeListing from "./Role/higherEducation/pages/DegreeListing";
 import Dashborad from "./Role/higherEducation/pages/dashborad";
 import Dashboard from "./Role/Physician/pages/dashboard";
+import ViewCandidates from "./Role/Recuiter/pages/VeiwCandidates";
 
 
 import { FormProvider } from "./context/FormContext";
@@ -71,6 +72,9 @@ const App = () => {
         <Route path="/recruiter">
           <Route path="jobPost" element={<JobPost />} />
           <Route path="JobListing" element={<JobListing />} />
+          <Route path="ViewCandidates" element={<ViewCandidates />} />
+          <Route path="Messages" element={<Messages />} />
+          <Route path="Dashborad" element={<Dashborad />} />
         </Route>
 
       

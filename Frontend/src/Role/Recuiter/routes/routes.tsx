@@ -4,6 +4,7 @@ import { Routes, Route } from 'react-router-dom';
 import JobPost from "../pages/JobPost";
 import Dashboard from "../pages/Dashboard";
 import JobListing from "../pages/JobListing";
+import ViewCandidates from "../pages/VeiwCandidates";
 
 const routes = () => {
   return (
@@ -13,6 +14,8 @@ const routes = () => {
       <Route path="/" element={<Dashboard />} />
       <Route path="/jobPost" element={<JobPost />} />
       <Route path="/jobListing" element={<JobListing />} /> 
+      <Route path="ViewCandidates" element={<ViewCandidates />} />
+      
     </Routes>
 
     </div>

@@ -115,20 +115,22 @@ h1 {
 
 /* Details Button - Black */
 .btn-details {
-  background-color: black;
+  background-color:#761bb7;
 }
 
 .btn-details:hover {
-  background-color: #333;
+  background-color: #333333;
 }
 
 /* Apply Button - Purple */
 .btn-apply {
-  background-color: #6a0dad; /* Dark Purple */
+  background-color: #0a6278; 
+  
+  
 }
 
 .btn-apply:hover {
-  background-color: #4b0082; /* Darker Purple */
+  background-color: #761bb7; /* Darker Purple */
 }
 
 /* Pressed Effect */

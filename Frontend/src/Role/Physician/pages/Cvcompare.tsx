@@ -1,4 +1,4 @@
-import Sidebar from "../../higherEducation/components/Sidebar";
+import Sidebar from "../components/NavBar/Sidebar";
 
 import React from "react";
 

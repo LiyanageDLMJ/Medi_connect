@@ -6,7 +6,7 @@ import JobPost from "../../models/Job";
 export const viewJobs = async (req: Request, res: Response) => {
   try {
     const jobs = await JobPost.find();
-    console.log("Jobs Fetched:", jobs); // Debug log
+
     res.status(200).json(jobs);
   } catch (error: any) {
     res.status(500).json({ message: "Failed to fetch jobs", error: error.message });
@@ -24,7 +24,7 @@ export const addJob = async (req: Request, res: Response) => {
     const newJob = new JobPost(jobData);
     await newJob.save();
 
-    res.status(201).json({ message: "Job posted successfully", job: newJob });
+    res.status(201).json({ message: "Job posted successfully", job: newJob, });
   } catch (error: any) {
     res.status(500).json({ message: "Failed to post job", error: error.message });
   }

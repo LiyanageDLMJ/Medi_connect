@@ -12,11 +12,6 @@ import {
   Calendar,
   AlertTriangle,
   ArrowLeft,
-  Pencil,
-  Trash2,
-  Save,
-  X,
-  Check,
 } from "lucide-react"
 
 const JobInternshipDetails = () => {
@@ -24,23 +19,7 @@ const JobInternshipDetails = () => {
   const [job, setJob] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
-  const [updateSuccess, setUpdateSuccess] = useState(false)
-  const [updateError, setUpdateError] = useState("")
-
-  // Form state for editing
-  const [editForm, setEditForm] = useState({
-    title: "",
-    hospitalName: "",
-    description: "",
-    requirements: "",
-    location: "",
-    jobType: "",
-    salaryRange: "",
-    status: "",
-    urgent: false,
-  })
 
   const navigate = useNavigate()
 
@@ -50,18 +29,6 @@ const JobInternshipDetails = () => {
         setLoading(true)
         const response = await axios.get(`http://localhost:3000/JobPost/viewJobs/${jobId}`)
         setJob(response.data)
-        // Initialize edit form with current job data
-        setEditForm({
-          title: response.data.title || "",
-          hospitalName: response.data.hospitalName || "",
-          description: response.data.description || "",
-          requirements: response.data.requirements || "",
-          location: response.data.location || "",
-          jobType: response.data.jobType || "",
-          salaryRange: response.data.salaryRange || "",
-          status: response.data.status || "Open",
-          urgent: response.data.urgent || false,
-        })
         setLoading(false)
       } catch (err: any) {
         setError("Failed to fetch job details. Please try again later.")
@@ -76,90 +43,7 @@ const JobInternshipDetails = () => {
     window.history.back()
   }
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setEditForm({
-      ...editForm,
-      [name]: value,
-    })
-  }
-
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, checked } = e.target
-    setEditForm({
-      ...editForm,
-      [name]: checked,
-    })
-  }
-
-  // Update the handleUpdateJob function to match the exact API endpoint format shown in Postman
-  const handleUpdateJob = async () => {
-    if (isEditing) {
-      // Save the changes
-      try {
-        setUpdateError("")
-        setUpdateSuccess(false)
-
-        // Format the data to match what the API expects
-        const jobData = {
-          title: editForm.title,
-          hospitalName: editForm.hospitalName,
-          description: editForm.description,
-          requirements: editForm.requirements,
-          location: editForm.location,
-          jobType: editForm.jobType,
-          salaryRange: editForm.salaryRange,
-          status: editForm.status,
-          urgent: editForm.urgent,
-        }
-
-        // Use the exact endpoint format from Postman
-        const response = await axios.put(`http://localhost:3000/JobPost/updateJobs/${jobId}`, jobData)
-
-        if (response.data) {
-          // Update the job with the response data
-          setJob(response.data.job || response.data)
-          setUpdateSuccess(true)
-          setTimeout(() => setUpdateSuccess(false), 3000)
-          setIsEditing(false)
-        }
-      } catch (err: any) {
-        setUpdateError(err.response?.data?.message || "Failed to update job. Please try again.")
-        console.error("Error updating job:", err)
-      }
-    } else {
-      // Enter edit mode
-      setIsEditing(true)
-    }
-  }
-
-  const cancelEdit = () => {
-    // Reset form to current job data
-    setEditForm({
-      title: job.title || "",
-      hospitalName: job.hospitalName || "",
-      description: job.description || "",
-      requirements: job.requirements || "",
-      location: job.location || "",
-      jobType: job.jobType || "",
-      salaryRange: job.salaryRange || "",
-      status: job.status || "Open",
-      urgent: job.urgent || false,
-    })
-    setIsEditing(false)
-    setUpdateError("")
-  }
-
-  const handleDeleteJob = async () => {
-    try {
-      await axios.delete(`http://localhost:3000/JobPost/deleteJobs/${job._id}`)
-      alert("Job deleted successfully")
-      navigate("/jobs")
-    } catch (err: any) {
-      alert("Failed to delete job. Please try again.")
-      console.error("Error deleting job:", err)
-    }
-  }
+  // No edit or delete functions needed
 
   if (loading) {
     return (
@@ -236,6 +120,8 @@ const JobInternshipDetails = () => {
     return new Date(dateString).toLocaleDateString(undefined, options)
   }
 
+  // No role checking needed
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
@@ -248,19 +134,7 @@ const JobInternshipDetails = () => {
           Back to Jobs
         </button>
 
-        {updateSuccess && (
-          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md flex items-center gap-2 text-green-800">
-            <Check className="h-4 w-4" />
-            Job updated successfully
-          </div>
-        )}
-
-        {updateError && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md flex items-center gap-2 text-red-800">
-            <AlertTriangle className="h-4 w-4" />
-            {updateError}
-          </div>
-        )}
+        {/* No update messages needed */}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
@@ -268,134 +142,38 @@ const JobInternshipDetails = () => {
             <div className="bg-white border rounded-lg shadow-sm">
               <div className="p-6 pb-3">
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  {isEditing ? (
-                    <div className="w-full">
-                      <div className="mb-4">
-                        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-                          Job Title
-                        </label>
-                        <input
-                          type="text"
-                          id="title"
-                          name="title"
-                          value={editForm.title}
-                          onChange={handleInputChange}
-                          className="w-full p-2 border border-gray-300 rounded-md"
-                        />
-                      </div>
-                      <div className="mb-4">
-                        <label htmlFor="hospitalName" className="block text-sm font-medium text-gray-700 mb-1">
-                          Hospital Name
-                        </label>
-                        <input
-                          type="text"
-                          id="hospitalName"
-                          name="hospitalName"
-                          value={editForm.hospitalName}
-                          onChange={handleInputChange}
-                          className="w-full p-2 border border-gray-300 rounded-md"
-                        />
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
-                            Status
-                          </label>
-                          <select
-                            id="status"
-                            name="status"
-                            value={editForm.status}
-                            onChange={handleInputChange}
-                            className="w-full p-2 border border-gray-300 rounded-md"
-                          >
-                            <option value="Open">Open</option>
-                            <option value="Closed">Closed</option>
-                            <option value="Filled">Filled</option>
-                          </select>
-                        </div>
-                        <div className="flex items-center mt-6">
-                          <input
-                            type="checkbox"
-                            id="urgent"
-                            name="urgent"
-                            checked={editForm.urgent}
-                            onChange={handleCheckboxChange}
-                            className="h-4 w-4 text-blue-600 border-gray-300 rounded"
-                          />
-                          <label htmlFor="urgent" className="ml-2 block text-sm text-gray-700">
-                            Mark as Urgent
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <div>
-                        <h1 className="text-2xl md:text-3xl font-bold">{job.title}</h1>
-                        <p className="text-gray-500 mt-1 flex items-center">
-                          <Building2 className="h-4 w-4 mr-1" />
-                          {job.hospitalName}
-                        </p>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        <span
-                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                            job.status === "Open" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
-                          }`}
-                        >
-                          {job.status}
-                        </span>
-                        {job.urgent && (
-                          <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-red-100 text-red-800">
-                            <AlertTriangle className="h-3 w-3 mr-1" />
-                            Urgent
-                          </span>
-                        )}
-                      </div>
-                    </>
-                  )}
+                  <div>
+                    <h1 className="text-2xl md:text-3xl font-bold">{job.title}</h1>
+                    <p className="text-gray-500 mt-1 flex items-center">
+                      <Building2 className="h-4 w-4 mr-1" />
+                      {job.hospitalName}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                        job.status === "Open" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      {job.status}
+                    </span>
+                    {job.urgent && (
+                      <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-red-100 text-red-800">
+                        <AlertTriangle className="h-3 w-3 mr-1" />
+                        Urgent
+                      </span>
+                    )}
+                  </div>
+                
                 </div>
               </div>
               <hr className="border-gray-200" />
               <div className="p-6">
-                {isEditing ? (
-                  <>
-                    <div className="mb-4">
-                      <label htmlFor="description" className="block text-lg font-semibold mb-2">
-                        Job Description
-                      </label>
-                      <textarea
-                        id="description"
-                        name="description"
-                        value={editForm.description}
-                        onChange={handleInputChange}
-                        rows={6}
-                        className="w-full p-2 border border-gray-300 rounded-md"
-                      />
-                    </div>
-                    <div className="mb-4">
-                      <label htmlFor="requirements" className="block text-lg font-semibold mb-2">
-                        Requirements
-                      </label>
-                      <textarea
-                        id="requirements"
-                        name="requirements"
-                        value={editForm.requirements}
-                        onChange={handleInputChange}
-                        rows={6}
-                        className="w-full p-2 border border-gray-300 rounded-md"
-                      />
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <h3 className="text-lg font-semibold mb-3">Job Description</h3>
-                    <p className="text-gray-700 whitespace-pre-line mb-6">{job.description}</p>
+                <h3 className="text-lg font-semibold mb-3">Job Description</h3>
+                <p className="text-gray-700 whitespace-pre-line mb-6">{job.description}</p>
 
-                    <h3 className="text-lg font-semibold mb-3">Requirements</h3>
-                    <p className="text-gray-700 whitespace-pre-line">{job.requirements}</p>
-                  </>
-                )}
+                <h3 className="text-lg font-semibold mb-3">Requirements</h3>
+                <p className="text-gray-700 whitespace-pre-line">{job.requirements}</p>
               </div>
             </div>
           </div>
@@ -407,87 +185,37 @@ const JobInternshipDetails = () => {
                 <h2 className="text-xl font-semibold">Job Details</h2>
               </div>
               <div className="p-4 space-y-4">
-                {isEditing ? (
-                  <>
-                    <div>
-                      <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
-                        Location
-                      </label>
-                      <input
-                        type="text"
-                        id="location"
-                        name="location"
-                        value={editForm.location}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border border-gray-300 rounded-md"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="jobType" className="block text-sm font-medium text-gray-700 mb-1">
-                        Job Type
-                      </label>
-                      <select
-                        id="jobType"
-                        name="jobType"
-                        value={editForm.jobType}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border border-gray-300 rounded-md"
-                      >
-                        <option value="Full-time">Full-time</option>
-                        <option value="Part-time">Part-time</option>
-                        <option value="Contract">Contract</option>
-                        <option value="Internship">Internship</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label htmlFor="salaryRange" className="block text-sm font-medium text-gray-700 mb-1">
-                        Salary Range
-                      </label>
-                      <input
-                        type="text"
-                        id="salaryRange"
-                        name="salaryRange"
-                        value={editForm.salaryRange}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border border-gray-300 rounded-md"
-                      />
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex items-start gap-3">
-                      <MapPin className="h-5 w-5 text-gray-500 mt-0.5" />
-                      <div>
-                        <h4 className="font-medium">Location</h4>
-                        <p className="text-gray-600">{job.location}</p>
-                      </div>
-                    </div>
+                <div className="flex items-start gap-3">
+                  <MapPin className="h-5 w-5 text-gray-500 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium">Location</h4>
+                    <p className="text-gray-600">{job.location}</p>
+                  </div>
+                </div>
 
-                    <div className="flex items-start gap-3">
-                      <Briefcase className="h-5 w-5 text-gray-500 mt-0.5" />
-                      <div>
-                        <h4 className="font-medium">Job Type</h4>
-                        <p className="text-gray-600">{job.jobType}</p>
-                      </div>
-                    </div>
+                <div className="flex items-start gap-3">
+                  <Briefcase className="h-5 w-5 text-gray-500 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium">Job Type</h4>
+                    <p className="text-gray-600">{job.jobType}</p>
+                  </div>
+                </div>
 
-                    <div className="flex items-start gap-3">
-                      <DollarSign className="h-5 w-5 text-gray-500 mt-0.5" />
-                      <div>
-                        <h4 className="font-medium">Salary Range</h4>
-                        <p className="text-gray-600">{job.salaryRange}</p>
-                      </div>
-                    </div>
+                <div className="flex items-start gap-3">
+                  <DollarSign className="h-5 w-5 text-gray-500 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium">Salary Range</h4>
+                    <p className="text-gray-600">{job.salaryRange}</p>
+                  </div>
+                </div>
 
-                    <div className="flex items-start gap-3">
-                      <Calendar className="h-5 w-5 text-gray-500 mt-0.5" />
-                      <div>
-                        <h4 className="font-medium">Posted Date</h4>
-                        <p className="text-gray-600">{formatDate(job.postedDate)}</p>
-                      </div>
-                    </div>
-                  </>
-                )}
+                <div className="flex items-start gap-3">
+                  <Calendar className="h-5 w-5 text-gray-500 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium">Posted Date</h4>
+                    <p className="text-gray-600">{formatDate(job.postedDate)}</p>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -510,70 +238,7 @@ const JobInternshipDetails = () => {
               </div>
             )}
 
-            <div className="bg-white border rounded-lg shadow-sm mt-6">
-              <div className="p-4 border-b">
-                <h2 className="text-xl font-semibold">Actions</h2>
-              </div>
-              <div className="p-4 space-y-3">
-                {isEditing ? (
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleUpdateJob}
-                      className="flex-1 flex items-center justify-center gap-2 py-2 px-4 border border-green-500 rounded-md text-white bg-green-500 hover:bg-green-600 transition-colors"
-                    >
-                      <Save className="h-4 w-4" />
-                      Save Changes
-                    </button>
-                    <button
-                      onClick={cancelEdit}
-                      className="flex-1 flex items-center justify-center gap-2 py-2 px-4 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-                    >
-                      <X className="h-4 w-4" />
-                      Cancel
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={handleUpdateJob}
-                    className="w-full flex items-center justify-center gap-2 py-2 px-4 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-                  >
-                    <Pencil className="h-4 w-4" />
-                    Update Job
-                  </button>
-                )}
-
-                {!isEditing &&
-                  (showDeleteConfirm ? (
-                    <div className="border border-red-200 rounded-md p-3 bg-red-50">
-                      <p className="text-sm text-red-800 mb-3">
-                        Are you sure you want to delete this job? This action cannot be undone.
-                      </p>
-                      <div className="flex gap-2 justify-end">
-                        <button
-                          onClick={() => setShowDeleteConfirm(false)}
-                          className="py-1 px-3 bg-gray-100 hover:bg-gray-200 rounded text-gray-800 text-sm transition-colors"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          onClick={handleDeleteJob}
-                          className="py-1 px-3 bg-red-600 hover:bg-red-700 rounded text-white text-sm transition-colors"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => setShowDeleteConfirm(true)}
-                      className="w-full flex items-center justify-center gap-2 py-2 px-4 border border-red-300 rounded-md text-red-700 bg-white hover:bg-red-50 transition-colors"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      Delete Job
-                    </button>
-                  ))}
-              </div>
-            </div>
+            {/* Actions section completely removed */}
           </div>
         </div>
       </div>
