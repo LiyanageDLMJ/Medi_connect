@@ -1,5 +1,5 @@
 import { FaUniversity, FaClock, FaMoneyBillAlt, FaGlobe } from "react-icons/fa";
-import PropTypes from "prop-types";
+import { Link } from "react-router-dom";
 
 interface Degree {
   courseId: number;
@@ -19,18 +19,12 @@ interface DegreeCardProps {
 }
 
 const DegreeCard: React.FC<DegreeCardProps> = ({ degrees, totalDegrees }) => {
-  // Helper function to construct the correct image URL
   const getImagePath = (imagePath?: string): string => {
-    console.log(`getImagePath called with imagePath: ${imagePath}`); // Debug log
     if (!imagePath) {
-      console.log("Image path is undefined, using fallback image");
-      return "/assets/images/default-image.jpg"; // Fallback image
+      return "/assets/images/default-image.jpg";
     }
-    // Ensure the path doesn't have duplicate '/image/' segments
-    const cleanedPath = imagePath.replace(/^\/image\//, ""); // Remove '/image/' prefix if present
-    const finalUrl = `http://localhost:3000/image/${cleanedPath}`; // Construct the correct URL
-    console.log(`Constructed image URL: ${finalUrl}`); // Debug log
-    return finalUrl;
+    const cleanedPath = imagePath.replace(/^\/image\//, "");
+    return `http://localhost:3000/image/${cleanedPath}`;
   };
 
   return (
@@ -45,14 +39,12 @@ const DegreeCard: React.FC<DegreeCardProps> = ({ degrees, totalDegrees }) => {
           <div key={degree.courseId} className="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200">
             <div className="relative">
               <img
-                src={getImagePath(degree.image)} // Use the helper function to get the correct path
+                src={getImagePath(degree.image)}
                 alt={degree.degreeName}
                 className="w-full h-48 object-cover rounded-lg pt-4 px-4 pb-0 bg-white"
-                onError={(e) => (e.currentTarget.src = "/assets/images/default-image.jpg")} // Fallback image on error
+                onError={(e) => (e.currentTarget.src = "/assets/images/default-image.jpg")}
               />
-              <span
-                className={`absolute top-5 right-6 px-3 py-1 text-white text-sm font-semibold rounded ${degree.statusColor}`}
-              >
+              <span className={`absolute top-5 right-6 px-3 py-1 text-white text-sm font-semibold rounded ${degree.statusColor}`}>
                 {degree.status.toLowerCase()}
               </span>
             </div>
@@ -77,32 +69,26 @@ const DegreeCard: React.FC<DegreeCardProps> = ({ degrees, totalDegrees }) => {
               </div>
             </div>
             <div className="p-4 border-t flex justify-end">
-              <button className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2">
-                Apply →
-              </button>
+              <Link
+                to="/physician/degreeapplication"
+                state={{
+                  degree: { 
+                    name: degree.degreeName, 
+                    institution: degree.institution 
+                  },
+                  degreeId: degree.courseId 
+                }}
+              >
+                <button className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+                  Apply →
+                </button>
+              </Link>
             </div>
           </div>
         ))}
       </div>
     </div>
   );
-};
-
-DegreeCard.propTypes = {
-  degrees: PropTypes.arrayOf(
-    PropTypes.shape({
-      courseId: PropTypes.number.isRequired,
-      degreeName: PropTypes.string.isRequired,
-      institution: PropTypes.string.isRequired,
-      duration: PropTypes.string.isRequired,
-      mode: PropTypes.string.isRequired,
-      tuitionFee: PropTypes.string.isRequired,
-      status: PropTypes.string.isRequired,
-      statusColor: PropTypes.string.isRequired,
-      image: PropTypes.string,
-    })
-  ).isRequired,
-  totalDegrees: PropTypes.number.isRequired,
 };
 
 export default DegreeCard;
