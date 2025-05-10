@@ -22,10 +22,15 @@ import LoginRegisterRoutes from "./Routes/LoginRegisterRoutes";
 connectDB();
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-// Enable CORS
-app.use(cors());
+// Configure CORS with specific options
+app.use(cors({
+    origin: ['http://localhost:5173', 'http://localhost:3000'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Middleware to parse JSON
 app.use(express.json());
