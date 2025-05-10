@@ -4,7 +4,7 @@ import { parseTuitionFee } from '../../utils/degreeUtils';
 
 type AsyncRequestHandler = (req: Request, res: Response, next: NextFunction) => Promise<void>;
 
-export const getAllHigherDegrees: AsyncRequestHandler = async (req, res, next) => {
+export const getAllHigherDegrees: AsyncRequestHandler = async (req, res) => {
   try {
     const {
       searchText = '',
