@@ -1,544 +1,224 @@
-"use client"
+"use client";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { FaCheckSquare, FaRegSquare } from "react-icons/fa";
+import Sidebar from "../components/NavBar/Sidebar";
+import { useState } from "react";
+import axios from "axios";
 
-import type React from "react"
-import NavBar from "../components/NavBar/NavBar"
+// Form validation schema using Zod
+const formSchema = z.object({
+  jobId: z.string().min(1, { message: "Job ID is required" }),
+  title: z.string().min(2, { message: "Job title is required" }),
+  department: z.string().min(2, { message: "Department is required" }),
+  hospitalName: z.string().min(2, { message: "Hospital name is required" }),
+  location: z.string().min(2, { message: "Location is required" }),
+  jobType: z.string().min(1, { message: "Job type is required" }),
+  description: z.string().min(10, { message: "Description must be at least 10 characters" }),
+  requirements: z.string().min(10, { message: "Requirements must be at least 10 characters" }),
+  salaryRange: z.string().optional(),
+  urgent: z.boolean().default(false),
+});
 
-import { useState } from "react"
-import styled from "styled-components"
-import { FaCalendarAlt, FaStethoscope } from "react-icons/fa"
+type FormData = z.infer<typeof formSchema>;
 
-// Styled Components
-const FormContainer = styled.div`
-  min-height: 100vh;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #f9fafb;
-  padding: 1rem;
-`
+// Generic input field component
+type FieldProps = {
+  register: any;
+  errors: any;
+  name: keyof FormData;
+  label: string;
+  placeholder: string;
+  type?: "text" | "textarea";
+};
 
-const Card = styled.div`
-  width: 100%;
-  max-width: 800px;
-  background-color: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-`
+const FormField = ({ register, errors, name, label, placeholder, type = "text" }: FieldProps) => (
+  <div>
+    <label className="block font-medium">{label}</label>
+    {type === "textarea" ? (
+      <textarea
+        {...register(name)}
+        placeholder={placeholder}
+        className="w-full border rounded px-3 py-2 min-h-[100px]"
+      />
+    ) : (
+      <input
+        type="text"
+        {...register(name)}
+        placeholder={placeholder}
+        className="w-full border rounded px-3 py-2"
+      />
+    )}
+    {errors[name] && <p className="text-red-500 text-sm">{errors[name].message}</p>}
+  </div>
+);
 
-const CardHeader = styled.div`
- background: linear-gradient(135deg, #2E5FB7 0%, #1a365d 100%);
-  color: white;
-  padding: 1.5rem;
-  border-top-left-radius: 0.5rem;
-  border-top-right-radius: 0.5rem;
-`
+const TextField = (props: FieldProps) => <FormField {...props} type="text" />;
+const TextAreaField = (props: FieldProps) => <FormField {...props} type="textarea" />;
 
-const CardTitle = styled.h2`
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-`
+// Form sections
+type FormSectionProps = {
+  register: any;
+  errors: any;
+  watch?: any;
+  setValue?: any;
+};
 
-const CardDescription = styled.p`
-  color: rgba(255, 255, 255, 0.8);
-  margin-top: 0.5rem;
-`
+const BasicInfoSection = ({ register, errors }: FormSectionProps) => (
+  <>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <TextField register={register} errors={errors} name="jobId" label="Job ID" placeholder="e.g. 1001" />
+      <TextField register={register} errors={errors} name="title" label="Job Title" placeholder="e.g. Cardiologist" />
+    </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label className="block font-medium">Department</label>
+        <select {...register("department")} className="w-full border rounded px-3 py-2">
+          <option value="">Select department</option>
+          <option value="Cardiology">Cardiology</option>
+          <option value="Dermatology">Dermatology</option>
+          <option value="Emergency">Emergency Medicine</option>
+          <option value="Neurology">Neurology</option>
+          <option value="Obstetrics">Obstetrics & Gynecology</option>
+          <option value="Urology">Urology</option>
+          <option value="Other">Other</option>
+        </select>
+        {errors.department && <p className="text-red-500 text-sm">{errors.department.message}</p>}
+      </div>
+      <div>
+        <label className="block font-medium">Job Type</label>
+        <select {...register("jobType")} className="w-full border rounded px-3 py-2">
+          <option value="">Select job type</option>
+          <option value="Full-Time">Full-Time</option>
+          <option value="Part-Time">Part-Time</option>
+          <option value="Internship">Internship</option>
+        </select>
+        {errors.jobType && <p className="text-red-500 text-sm">{errors.jobType.message}</p>}
+      </div>
+    </div>
+    <TextField
+      register={register}
+      errors={errors}
+      name="hospitalName"
+      label="Hospital Name"
+      placeholder="e.g. Memorial General Hospital"
+    />
+    <TextField register={register} errors={errors} name="location" label="Location" placeholder="e.g. New York, NY" />
+  </>
+);
 
-const CardContent = styled.div`
-  padding: 1.5rem;
-  display: grid;
-  gap: 1.5rem;
-`
+const JobDetailsSection = ({ register, errors }: FormSectionProps) => (
+  <>
+    <TextAreaField
+      register={register}
+      errors={errors}
+      name="description"
+      label="Job Description"
+      placeholder="Describe the responsibilities and duties of this position"
+    />
+    <TextAreaField
+      register={register}
+      errors={errors}
+      name="requirements"
+      label="Requirements"
+      placeholder="List qualifications, experience, and credentials required"
+    />
+    <TextField
+      register={register}
+      errors={errors}
+      name="salaryRange"
+      label="Salary Range (Optional)"
+      placeholder="e.g. $200,000 - $250,000"
+    />
+  </>
+);
 
-const CardFooter = styled.div`
-  display: flex;
-  justify-content: space-between;
-  padding: 1.5rem;
-  border-top: 1px solid #e5e7eb;
-`
+const UrgentHiringSection = ({ register, watch, setValue }: FormSectionProps) => (
+  <div className="flex items-center space-x-3 border rounded p-4">
+    <button type="button" onClick={() => setValue("urgent", !watch("urgent"))} className="text-xl">
+      {watch("urgent") ? <FaCheckSquare className="text-blue-600" /> : <FaRegSquare />}
+    </button>
+    <div>
+      <label className="font-medium cursor-pointer">Urgent Hiring</label>
+      <p className="text-sm text-gray-500">Mark this position as urgent to prioritize in listings</p>
+    </div>
+  </div>
+);
 
-const FormGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-`
+export default function JobPostForm() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-const FormRow = styled.div`
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-  
-  @media (min-width: 768px) {
-    grid-template-columns: 1fr 1fr;
-  }
-`
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      jobId: "",
+      title: "",
+      department: "",
+      hospitalName: "",
+      location: "",
+      jobType: "",
+      description: "",
+      requirements: "",
+      salaryRange: "",
+      urgent: false,
+    },
+  });
 
-const Label = styled.label`
-  font-weight: 500;
-  font-size: 0.875rem;
-`
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors },
+    reset,
+  } = form;
 
-const Input = styled.input`
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-  
-  &:focus {
-    outline: none;
-    border-color: #0891b2;
-    box-shadow: 0 0 0 1px #0891b2;
-  }
-`
+  const [message, setMessage] = useState("");
 
-const Textarea = styled.textarea`
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-  min-height: 100px;
-  resize: vertical;
-  
-  &:focus {
-    outline: none;
-    border-color: #0891b2;
-    box-shadow: 0 0 0 1px #0891b2;
-  }
-`
+  async function onSubmit(values: FormData) {
+    setIsSubmitting(true);
 
-const Select = styled.select`
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-  background-color: white;
-  
-  &:focus {
-    outline: none;
-    border-color: #0891b2;
-    box-shadow: 0 0 0 1px #0891b2;
-  }
-`
-
-const RadioGroup = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-`
-
-const RadioLabel = styled.label`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-`
-
-const RadioInput = styled.input`
-  cursor: pointer;
-`
-
-const Button = styled.button<{ variant?: "primary" | "outline" }>`
-  padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  
-  ${(props) =>
-    props.variant === "outline"
-      ? `
-      background-color: transparent;
-      border: 1px solid #d1d5db;
-      color: #374151;
-      
-      &:hover {
-        background-color: #f9fafb;
-      }
-    `
-      : `
-      background: linear-gradient(135deg, #2E5FB7 0%, #1a365d 100%);
-      border: 1px solid #0891b2;
-      color: white;
-      
-      &:hover {
-        background-color: #0e7490;
-      }
-    `}
-`
-
-const RequiredMark = styled.span`
-  color: #ef4444;
-`
-
-export default function DoctorJobPostingForm() {
-  const [formData, setFormData] = useState({
-    jobTitle: "",
-    facilityName: "",
-    locationType: "",
-    location: "",
-    jobType: "",
-    salaryMin: "",
-    salaryMax: "",
-    experienceLevel: "",
-    specialization: "",
-    jobDescription: "",
-    requirements: "",
-    benefits: "",
-    applicationDeadline: "",
-    contactEmail: "",
-    contactPhone: "",
-    boardCertification: false,
-  })
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("Form submitted:", formData)
-    // Here you would typically send the data to your backend
-  }
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target as HTMLInputElement
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
-    }))
-  }
-
-  const handleRadioChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, locationType: value }))
+    try {
+      console.log("Submitting Job Data:", values); // Debug log
+      const response = await axios.post("http://localhost:3000/JobPost/postJobs", values);
+      setMessage("Job posted successfully!");
+      console.log("Response:", response.data);
+      reset();
+    } catch (error: any) {
+      setMessage("Failed to post job. Please try again.");
+      console.error("Error:", error.response?.data || error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
     <div>
-      <NavBar/>
-    
-    <FormContainer>
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            <FaStethoscope /> Create Medical Position
-          </CardTitle>
-          <CardDescription>Post a new physician or medical professional position</CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent>
-            <FormRow>
-              <FormGroup>
-                <Label htmlFor="jobTitle">
-                  Position Title <RequiredMark>*</RequiredMark>
-                </Label>
-                <Input
-                  id="jobTitle"
-                  name="jobTitle"
-                  placeholder="e.g. Cardiologist, Family Physician"
-                  required
-                  value={formData.jobTitle}
-                  onChange={handleChange}
-                />
-              </FormGroup>
-              <FormGroup>
-                <Label htmlFor="facilityName">
-                  Hospital/Facility Name <RequiredMark>*</RequiredMark>
-                </Label>
-                <Input
-                  id="facilityName"
-                  name="facilityName"
-                  placeholder="e.g. Memorial Hospital"
-                  required
-                  value={formData.facilityName}
-                  onChange={handleChange}
-                />
-              </FormGroup>
-            </FormRow>
-
-            <FormGroup>
-              <Label>
-                Practice Setting <RequiredMark>*</RequiredMark>
-              </Label>
-              <RadioGroup>
-                <RadioLabel>
-                  <RadioInput
-                    type="radio"
-                    name="locationType"
-                    value="hospital"
-                    checked={formData.locationType === "hospital"}
-                    onChange={() => handleRadioChange("hospital")}
-                    required
-                  />
-                  Hospital
-                </RadioLabel>
-                <RadioLabel>
-                  <RadioInput
-                    type="radio"
-                    name="locationType"
-                    value="clinic"
-                    checked={formData.locationType === "clinic"}
-                    onChange={() => handleRadioChange("clinic")}
-                  />
-                  Clinic
-                </RadioLabel>
-                <RadioLabel>
-                  <RadioInput
-                    type="radio"
-                    name="locationType"
-                    value="private"
-                    checked={formData.locationType === "private"}
-                    onChange={() => handleRadioChange("private")}
-                  />
-                  Private Practice
-                </RadioLabel>
-                <RadioLabel>
-                  <RadioInput
-                    type="radio"
-                    name="locationType"
-                    value="telehealth"
-                    checked={formData.locationType === "telehealth"}
-                    onChange={() => handleRadioChange("telehealth")}
-                  />
-                  Telehealth
-                </RadioLabel>
-              </RadioGroup>
-            </FormGroup>
-
-            <FormGroup>
-              <Label htmlFor="location">
-                Location <RequiredMark>*</RequiredMark>
-              </Label>
-              <Input
-                id="location"
-                name="location"
-                placeholder="e.g. Boston, MA"
-                required
-                value={formData.location}
-                onChange={handleChange}
-              />
-            </FormGroup>
-
-            <FormRow>
-              <FormGroup>
-                <Label htmlFor="specialization">
-                  Specialization <RequiredMark>*</RequiredMark>
-                </Label>
-                <Select
-                  id="specialization"
-                  name="specialization"
-                  required
-                  value={formData.specialization}
-                  onChange={handleChange}
-                >
-                  <option value="">Select specialization</option>
-                  <option value="cardiology">Cardiology</option>
-                  <option value="dermatology">Dermatology</option>
-                  <option value="emergency">Emergency Medicine</option>
-                  <option value="family">Family Medicine</option>
-                  <option value="internal">Internal Medicine</option>
-                  <option value="neurology">Neurology</option>
-                  <option value="obgyn">Obstetrics & Gynecology</option>
-                  <option value="oncology">Oncology</option>
-                  <option value="pediatrics">Pediatrics</option>
-                  <option value="psychiatry">Psychiatry</option>
-                  <option value="radiology">Radiology</option>
-                  <option value="surgery">Surgery</option>
-                  <option value="other">Other</option>
-                </Select>
-              </FormGroup>
-              <FormGroup>
-                <Label htmlFor="jobType">
-                  Employment Type <RequiredMark>*</RequiredMark>
-                </Label>
-                <Select id="jobType" name="jobType" required value={formData.jobType} onChange={handleChange}>
-                  <option value="">Select employment type</option>
-                  <option value="full-time">Full-time</option>
-                  <option value="part-time">Part-time</option>
-                  <option value="locum">Locum Tenens</option>
-                  <option value="contract">Contract</option>
-                  <option value="fellowship">Fellowship</option>
-                </Select>
-              </FormGroup>
-            </FormRow>
-
-            <FormRow>
-              <FormGroup>
-                <Label htmlFor="experienceLevel">
-                  Experience Level <RequiredMark>*</RequiredMark>
-                </Label>
-                <Select
-                  id="experienceLevel"
-                  name="experienceLevel"
-                  required
-                  value={formData.experienceLevel}
-                  onChange={handleChange}
-                >
-                  <option value="">Select experience level</option>
-                  <option value="resident">Resident</option>
-                  <option value="fellow">Fellow</option>
-                  <option value="attending">Attending</option>
-                  <option value="junior">Junior (1-3 years)</option>
-                  <option value="mid">Mid-Career (4-9 years)</option>
-                  <option value="senior">Senior (10+ years)</option>
-                  <option value="chief">Chief/Director Level</option>
-                </Select>
-              </FormGroup>
-              <FormGroup>
-                <Label htmlFor="boardCertification">Board Certification</Label>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "0.5rem" }}>
-                  <input
-                    type="checkbox"
-                    id="boardCertification"
-                    name="boardCertification"
-                    checked={formData.boardCertification}
-                    onChange={handleChange}
-                  />
-                  <label htmlFor="boardCertification">Board Certification Required</label>
-                </div>
-              </FormGroup>
-            </FormRow>
-
-            <FormRow>
-              <FormGroup>
-                <Label htmlFor="salaryMin">
-                  Minimum Salary <RequiredMark>*</RequiredMark>
-                </Label>
-                <Input
-                  id="salaryMin"
-                  name="salaryMin"
-                  type="number"
-                  placeholder="e.g. 180000"
-                  required
-                  value={formData.salaryMin}
-                  onChange={handleChange}
-                />
-              </FormGroup>
-              <FormGroup>
-                <Label htmlFor="salaryMax">
-                  Maximum Salary <RequiredMark>*</RequiredMark>
-                </Label>
-                <Input
-                  id="salaryMax"
-                  name="salaryMax"
-                  type="number"
-                  placeholder="e.g. 250000"
-                  required
-                  value={formData.salaryMax}
-                  onChange={handleChange}
-                />
-              </FormGroup>
-            </FormRow>
-
-            <FormGroup>
-              <Label htmlFor="jobDescription">
-                Position Description <RequiredMark>*</RequiredMark>
-              </Label>
-              <Textarea
-                id="jobDescription"
-                name="jobDescription"
-                placeholder="Describe the clinical responsibilities, patient load, on-call expectations, etc."
-                required
-                value={formData.jobDescription}
-                onChange={handleChange}
-              />
-            </FormGroup>
-
-            <FormGroup>
-              <Label htmlFor="requirements">
-                Qualifications & Requirements <RequiredMark>*</RequiredMark>
-              </Label>
-              <Textarea
-                id="requirements"
-                name="requirements"
-                placeholder="List required medical licenses, certifications, education, and experience..."
-                required
-                value={formData.requirements}
-                onChange={handleChange}
-              />
-            </FormGroup>
-
-            <FormGroup>
-              <Label htmlFor="benefits">
-                Benefits & Compensation <RequiredMark>*</RequiredMark>
-              </Label>
-              <Textarea
-                id="benefits"
-                name="benefits"
-                placeholder="List malpractice insurance, CME allowance, relocation assistance, loan repayment, etc."
-                required
-                value={formData.benefits}
-                onChange={handleChange}
-              />
-            </FormGroup>
-
-            <FormGroup>
-              <Label htmlFor="applicationDeadline">
-                Application Deadline <RequiredMark>*</RequiredMark>
-              </Label>
-              <div style={{ position: "relative" }}>
-                <Input
-                  id="applicationDeadline"
-                  name="applicationDeadline"
-                  type="date"
-                  required
-                  value={formData.applicationDeadline}
-                  onChange={handleChange}
-                />
-                <FaCalendarAlt
-                  style={{
-                    position: "absolute",
-                    right: "10px",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    pointerEvents: "none",
-                    color: "#6b7280",
-                  }}
-                />
-              </div>
-            </FormGroup>
-
-            <FormRow>
-              <FormGroup>
-                <Label htmlFor="contactEmail">
-                  Contact Email <RequiredMark>*</RequiredMark>
-                </Label>
-                <Input
-                  id="contactEmail"
-                  name="contactEmail"
-                  type="email"
-                  placeholder="e.g. recruitment@hospital.org"
-                  required
-                  value={formData.contactEmail}
-                  onChange={handleChange}
-                />
-              </FormGroup>
-              <FormGroup>
-                <Label htmlFor="contactPhone">Contact Phone</Label>
-                <Input
-                  id="contactPhone"
-                  name="contactPhone"
-                  type="tel"
-                  placeholder="e.g. +1 (555) 123-4567"
-                  value={formData.contactPhone}
-                  onChange={handleChange}
-                />
-              </FormGroup>
-            </FormRow>
-          </CardContent>
-          <CardFooter>
-            <Button type="button" variant="outline">
-              Cancel
-            </Button>
-            <Button type="submit">Post Medical Position</Button>
-          </CardFooter>
-        </form>
-      </Card>
-    </FormContainer>
+      <Sidebar />
+      <div className="flex-1 overflow-auto md:pl-64">
+        <div className="max-w-2xl mx-auto bg-white shadow-md rounded-lg overflow-hidden my-8">
+          <div className="bg-[#184389] px-6 py-4">
+            <h2 className="text-xl font-semibold text-white">Post a Medical Position</h2>
+            <p className="text-sm text-white">Create a new job posting for doctors at your hospital</p>
+          </div>
+          <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
+            <BasicInfoSection register={register} errors={errors} />
+            <JobDetailsSection register={register} errors={errors} />
+            <UrgentHiringSection register={register} errors={errors} watch={watch} setValue={setValue} />
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={`w-full bg-[#184389] text-white font-semibold py-2 rounded transition-all ${
+                isSubmitting ? "opacity-70 cursor-not-allowed" : "hover:bg-blue-800"
+              }`}
+            >
+              {isSubmitting ? "Submitting..." : "Post Job"}
+            </button>
+          </form>
+          {message && <p className="text-center text-red-500">{message}</p>}
+        </div>
+      </div>
     </div>
-  )
+  );
 }
-

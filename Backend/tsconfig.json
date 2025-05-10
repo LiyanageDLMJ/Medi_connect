@@ -1,9 +1,18 @@
 {
   "compilerOptions": {
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "strict": true,
-    "esModuleInterop": true,
-    "resolveJsonModule": true
-  }
+    "typeRoots": ["./node_modules/@types", "./src/types"], // Include custom types
+    "outDir": "./dist", // Output directory for compiled files
+    "rootDir": "./src", // Root directory for source files
+    "strict": true, // Enable strict type checking
+    "esModuleInterop": true, // Allow default imports for CommonJS modules
+    "resolveJsonModule": true, // Allow importing JSON files
+    "skipLibCheck": true, // Skip type checking for library files
+    "forceConsistentCasingInFileNames": true, // Enforce consistent file name casing
+    "module": "commonjs", // Use CommonJS module system
+    "target": "ES6", // Target ECMAScript 6
+    "lib": ["ES6", "DOM"], // Include ES6 and DOM libraries
+    "allowSyntheticDefaultImports": true // Allow default imports for modules without default exports
+  },
+  "include": ["src/**/*"], // Include all files in the src directory
+  "exclude": ["node_modules", "dist"] // Exclude node_modules and dist directories
 }
