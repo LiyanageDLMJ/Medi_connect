@@ -9,6 +9,14 @@ interface FormDataType {
   cv: File | null;
 }
 
+interface FormErrors {
+  name?: string;
+  email?: string;
+  phone?: string;
+  experience?: string;
+  cv?: string;
+}
+
 const initialFormData: FormDataType = {
   name: "",
   email: "",
@@ -19,28 +27,117 @@ const initialFormData: FormDataType = {
 
 export default function JobApplicationForm() {
   const [formData, setFormData] = useState<FormDataType>(initialFormData);
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [touched, setTouched] = useState<Partial<Record<keyof FormDataType, boolean>>>({});
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target;
-    if (type === "file") {
-      const fileInput = e.target as HTMLInputElement;
-      setFormData({
-        ...formData,
-        [name]: fileInput.files ? fileInput.files[0] : null,
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [name]: value,
-      });
+  // Validation function for a single field
+  const validateField = (name: keyof FormDataType, value: string | File | null): string | undefined => {
+    switch (name) {
+      case "name":
+        if (!value) return "Full name is required";
+        if (typeof value === "string" && !/^[a-zA-Z\s]{2,}$/.test(value.trim())) {
+          return "Name must contain only letters and spaces (min 2 characters)";
+        }
+        break;
+      case "email":
+        if (!value) return "Email is required";
+        if (typeof value === "string" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          return "Invalid email format";
+        }
+        break;
+      case "phone":
+        if (!value) return "Phone number is required";
+        if (typeof value === "string" && !/^\+?[\d\s()-]{10,15}$/.test(value.trim())) {
+          return "Invalid phone number format (e.g., +1 (123) 456-7890)";
+        }
+        break;
+      case "experience":
+        if (!value) return "Professional experience is required";
+        if (typeof value === "string" && value.trim().length < 10) {
+          return "Experience must be at least 10 characters long";
+        }
+        break;
+      case "cv":
+        if (!value) return "CV is required";
+        if (value instanceof File) {
+          const allowedTypes = [
+            "application/pdf",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          ];
+          if (!allowedTypes.includes(value.type)) {
+            return "CV must be a PDF, DOC, or DOCX file";
+          }
+          if (value.size > 10 * 1024 * 1024) {
+            return "CV file size exceeds 10MB limit";
+          }
+        }
+        break;
+      default:
+        break;
     }
+    return undefined;
   };
 
+  // Validate all fields (for submission)
+  const validateForm = (): FormErrors => {
+    const newErrors: FormErrors = {};
+    (Object.keys(formData) as (keyof FormDataType)[]).forEach((key) => {
+      const error = validateField(key, formData[key]);
+      if (error) newErrors[key] = error;
+    });
+    return newErrors;
+  };
+
+  // Handle input changes and validate in real-time
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    let updatedValue: string | File | null = value;
+
+    if (type === "file") {
+      const fileInput = e.target as HTMLInputElement;
+      updatedValue = fileInput.files ? fileInput.files[0] : null;
+    }
+
+    // Update form data
+    setFormData((prev) => ({
+      ...prev,
+      [name]: updatedValue,
+    }));
+
+    // Mark field as touched
+    setTouched((prev) => ({
+      ...prev,
+      [name]: true,
+    }));
+
+    // Validate the field in real-time
+    const error = validateField(name as keyof FormDataType, updatedValue);
+    setErrors((prev) => ({
+      ...prev,
+      [name]: error,
+    }));
+  };
+
+  // Handle form submission
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (formData.cv && formData.cv.size > 10 * 1024 * 1024) {
-      alert("File size exceeds 10MB limit.");
+    // Validate all fields
+    const validationErrors = validateForm();
+    setErrors(validationErrors);
+
+    // Mark all fields as touched to show errors
+    setTouched({
+      name: true,
+      email: true,
+      phone: true,
+      experience: true,
+      cv: true,
+    });
+
+    if (Object.keys(validationErrors).length > 0) {
+      alert("Please fix the errors in the form before submitting.");
       return;
     }
 
@@ -62,7 +159,9 @@ export default function JobApplicationForm() {
       const result = await response.json();
       if (response.ok) {
         alert("Application Submitted Successfully!");
-        setFormData(initialFormData); // Reset form after successful submission
+        setFormData(initialFormData); // Reset form
+        setErrors({}); // Clear errors
+        setTouched({}); // Clear touched state
       } else {
         alert(`Submission failed: ${result.message}`);
       }
@@ -70,6 +169,14 @@ export default function JobApplicationForm() {
       console.error("Error submitting application:", error);
       alert("An error occurred while submitting your application.");
     }
+  };
+
+  // Dynamic class names for input fields
+  const getInputClassName = (field: keyof FormDataType) => {
+    if (!touched[field]) {
+      return "border-gray-300";
+    }
+    return errors[field] ? "border-red-500" : "border-green-500";
   };
 
   return (
@@ -91,11 +198,17 @@ export default function JobApplicationForm() {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                  className={`w-full p-3 border ${getInputClassName("name")} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200`}
                   required
                   placeholder="Enter your full name"
                   aria-label="Full Name"
+                  aria-describedby={errors.name ? "name-error" : undefined}
                 />
+                {touched.name && errors.name && (
+                  <p id="name-error" className="text-red-500 text-xs mt-1">
+                    {errors.name}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -105,11 +218,17 @@ export default function JobApplicationForm() {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                  className={`w-full p-3 border ${getInputClassName("email")} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200`}
                   required
                   placeholder="your.email@example.com"
                   aria-label="Email Address"
+                  aria-describedby={errors.email ? "email-error" : undefined}
                 />
+                {touched.email && errors.email && (
+                  <p id="email-error" className="text-red-500 text-xs mt-1">
+                    {errors.email}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -119,11 +238,17 @@ export default function JobApplicationForm() {
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                  className={`w-full p-3 border ${getInputClassName("phone")} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200`}
                   required
                   placeholder="+1 (123) 456-7890"
                   aria-label="Phone Number"
+                  aria-describedby={errors.phone ? "phone-error" : undefined}
                 />
+                {touched.phone && errors.phone && (
+                  <p id="phone-error" className="text-red-500 text-xs mt-1">
+                    {errors.phone}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -132,17 +257,27 @@ export default function JobApplicationForm() {
                   name="experience"
                   value={formData.experience}
                   onChange={handleChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                  className={`w-full p-3 border ${getInputClassName("experience")} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200`}
                   rows={5}
                   required
                   placeholder="Describe your relevant work experience..."
                   aria-label="Professional Experience"
+                  aria-describedby={errors.experience ? "experience-error" : undefined}
                 />
+                {touched.experience && errors.experience && (
+                  <p id="experience-error" className="text-red-500 text-xs mt-1">
+                    {errors.experience}
+                  </p>
+                )}
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Upload CV/Resume</label>
-                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-blue-400 transition duration-200">
+                <div
+                  className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 ${
+                    touched.cv && errors.cv ? "border-red-500" : touched.cv ? "border-green-500" : "border-gray-300"
+                  } border-dashed rounded-lg hover:border-blue-400 transition duration-200`}
+                >
                   <div className="space-y-1 text-center">
                     <input
                       type="file"
@@ -152,10 +287,16 @@ export default function JobApplicationForm() {
                       className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                       required
                       aria-label="Upload CV/Resume"
+                      aria-describedby={errors.cv ? "cv-error" : undefined}
                     />
                     <p className="text-xs text-gray-500">PDF, DOC, or DOCX up to 10MB</p>
                   </div>
                 </div>
+                {touched.cv && errors.cv && (
+                  <p id="cv-error" className="text-red-500 text-xs mt-1">
+                    {errors.cv}
+                  </p>
+                )}
               </div>
 
               <div className="pt-4">
@@ -167,7 +308,6 @@ export default function JobApplicationForm() {
                 </button>
               </div>
             </form>
-
           </div>
         </div>
       </div>
