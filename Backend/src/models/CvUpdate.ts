@@ -13,7 +13,7 @@ const CvUpdateSchema = new Schema({
   university: { type: String, required: true },
   specialization: { type: String, required: true },
   experience: { type: String, required: true },
-  additionalCertifications: [String],
+  certificationInput: [String],
   graduationDate: String,
   medicalLicenseNumber: { type: String, required: true },
   medicalLicenseIssuer: { type: String, required: true },

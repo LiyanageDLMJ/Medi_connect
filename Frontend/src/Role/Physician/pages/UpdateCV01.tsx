@@ -17,16 +17,34 @@ import UpdateCV02 from "./UpdateCV02";
 export default function UpdateCV01() {
   const { formData, setFormData } = useFormContext();
   const navigate = useNavigate();
+  const [phoneError, setPhoneError] = useState<string>("");
+
+  const validatePhoneNumber = (phone: string) => {
+    //phone number validation
+    const phoneRegex = /^(?:\+94|0)[0-9]{9}$/;
+    return phoneRegex.test(phone);
+  };
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
+
+    if (name === "contactPhone") {
+      if (!validatePhoneNumber(value) && value !== "") {
+        setPhoneError(
+          "Please enter a valid phone number (+94XXXXXXXXX or 0XXXXXXXXX)"
+        );
+      } else {
+        setPhoneError("");
+      }
+    }
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("hiiiiiii");
     navigate("/physician/update-cv02");
   };
 
@@ -71,7 +89,7 @@ export default function UpdateCV01() {
 
         {/* Main Content */}
         <main className="max-w-6xl mx-auto p-6">
-          <h1 className="text-2xl font-bold mb-6">Setup Profile</h1>
+          <h1 className="text-2xl font-bold mb-6">Update CV</h1>
 
           {/* Tabs */}
           <div className="flex border-b mb-8">
@@ -100,7 +118,7 @@ export default function UpdateCV01() {
                     htmlFor="yourName"
                     className="block text-sm font-medium"
                   >
-                    Your Name*
+                    Your Full Name*
                   </label>
                   <input
                     id="yourName"
@@ -108,6 +126,7 @@ export default function UpdateCV01() {
                     type="text"
                     value={formData.yourName}
                     onChange={handleInputChange}
+                    placeholder="John Doe"
                     className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
                     required
                   />
@@ -126,6 +145,7 @@ export default function UpdateCV01() {
                     type="text"
                     value={formData.currentLocation}
                     onChange={handleInputChange}
+                    placeholder="City"
                     className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
                     required
                   />
@@ -144,6 +164,7 @@ export default function UpdateCV01() {
                     type="text"
                     value={formData.linkedinLink}
                     onChange={handleInputChange}
+                    placeholder="https://www.linkedin.com/in/yourprofile"
                     className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
                   />
                 </div>
@@ -161,9 +182,15 @@ export default function UpdateCV01() {
                     type="tel"
                     value={formData.contactPhone}
                     onChange={handleInputChange}
-                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
+                    className={`w-full p-3 bg-gray-50 border ${
+                      phoneError ? "border-red-500" : "border-gray-200"
+                    } rounded-md`}
+                    placeholder="+94771234567"
                     required
                   />
+                  {phoneError && (
+                    <p className="text-red-500 text-sm mt-1">{phoneError}</p>
+                  )}
                 </div>
               </div>
 
@@ -182,6 +209,7 @@ export default function UpdateCV01() {
                     type="text"
                     value={formData.professionalTitle}
                     onChange={handleInputChange}
+                    placeholder="cardiologist"
                     className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
                     required
                   />
@@ -199,6 +227,7 @@ export default function UpdateCV01() {
                     name="careerSummary"
                     value={formData.careerSummary}
                     onChange={handleInputChange}
+                    placeholder="A brief summary of your career"
                     className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md h-40 resize-none"
                     required
                   />
@@ -217,6 +246,7 @@ export default function UpdateCV01() {
                     type="email"
                     value={formData.contactEmail}
                     onChange={handleInputChange}
+                    placeholder="example@gmail.com"                     
                     className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
                     required
                   />

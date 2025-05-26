@@ -1,6 +1,7 @@
 /* Ensure Tailwind CSS is installed and configured correctly */
 @import "tailwindcss";
 
+
 /* Custom style for react-datepicker */
 .react-datepicker-popper {
   z-index: 1000 !important;

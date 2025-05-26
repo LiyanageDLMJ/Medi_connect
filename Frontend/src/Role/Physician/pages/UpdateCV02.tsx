@@ -16,14 +16,42 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { format } from "date-fns";
 import { useFormContext } from "../../../context/FormContext";
+import { useState } from "react";
 
 export default function UpdateCV02() {
   const { formData, setFormData } = useFormContext();
   const navigate = useNavigate();
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const [errors, setErrors] = useState({
+    medicalLicenseNumber: "",
+    experience: "",
+  });
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (name === "medicalLicenseNumber" || name === "experience") {
+      // Allow empty string or numbers only
+      if (value !== "" && !/^\d*$/.test(value)) {
+        setErrors((prev) => ({
+          ...prev,
+          [name]: "Please enter numbers only",
+        }));
+        return;
+      }
+      setErrors((prev) => ({
+        ...prev,
+        [name]: "",
+      }));
+    }
+
+    // Update form data with string values
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleDateChange = (date: Date | null) => {
@@ -38,7 +66,9 @@ export default function UpdateCV02() {
   const addCertification = () => {
     if (
       formData.additionalCertifications.trim() &&
-      !formData.certificationInput.includes(formData.additionalCertifications.trim())
+      !formData.certificationInput.includes(
+        formData.additionalCertifications.trim()
+      )
     ) {
       setFormData((prev) => ({
         ...prev,
@@ -60,6 +90,36 @@ export default function UpdateCV02() {
 
   const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate medicalLicenseNumber
+    if (
+      !formData.medicalLicenseNumber ||
+      !/^\d+$/.test(String(formData.medicalLicenseNumber))
+    ) {
+      setErrors((prev) => ({
+        ...prev,
+        medicalLicenseNumber: "Please enter a valid number",
+      }));
+      return;
+    }
+
+    // Validate experience
+    if (!formData.experience || !/^\d+$/.test(String(formData.experience))) {
+      setErrors((prev) => ({
+        ...prev,
+        experience: "Please enter a valid number",
+      }));
+      return;
+    }
+
+    // Convert to numbers only when submitting
+    const numericFormData = {
+      ...formData,
+      medicalLicenseNumber: Number(formData.medicalLicenseNumber),
+      experience: Number(formData.experience),
+    };
+
+    setFormData(numericFormData);
     navigate("/physician/update-cv03");
   };
 
@@ -107,6 +167,9 @@ export default function UpdateCV02() {
         </header>
 
         {/* Tabs */}
+      <main className="max-w-6xl mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-6">Update CV</h1>
+        
         <div className="flex border-b mb-8">
           <button className="flex items-center gap-2 px-6 py-4 border-b-2 border-blue-500 text-blue-500">
             <User className="w-5 h-5" />
@@ -121,7 +184,7 @@ export default function UpdateCV02() {
         </div>
 
         {/* Main Content */}
-        <main className="max-w-6xl mx-auto p-6">
+        <div className="max-w-6xl mx-auto p-6">
           {/* Form */}
           <form
             onSubmit={handleNext}
@@ -138,11 +201,16 @@ export default function UpdateCV02() {
                     name="medicalDegree"
                     value={formData.medicalDegree}
                     onChange={handleInputChange}
-                    className="w-full p-2 border rounded-md bg-gray-50"
+                    className="w-full p-2 border rounded-md bg-gray-50 border-gray-200"
                     required
                   >
                     <option value="">Select Degree</option>
                     <option value="MBBS">MBBS</option>
+                    <option value="MD">MD</option>
+                    <option value="MS">MS</option>
+                    <option value="PhD">PhD</option>
+                    <option value="DNB">DNB</option>
+                    <option value="DM">DM</option>
                   </select>
                 </div>
 
@@ -156,12 +224,21 @@ export default function UpdateCV02() {
                     name="university"
                     value={formData.university}
                     onChange={handleInputChange}
-                    className="w-full p-2 border rounded-md bg-gray-50"
+                    className="w-full p-2 border rounded-md  border-gray-200 bg-gray-50"
                     required
                   >
                     <option value="">Select University</option>
-                    <option value="University of Merathwa">
-                      University of Merathwa
+                    <option value="University of Moratuwa">
+                      University of Moratuwa
+                    </option>
+                    <option value="University of Ruhuna">
+                      University of Ruhuna
+                    </option>
+                    <option value="University of Colombo">
+                      University of Colombo
+                    </option>
+                    <option value="University of Jayawardhanapura">
+                      University of Jayawarshanapura
                     </option>
                   </select>
                 </div>
@@ -175,28 +252,40 @@ export default function UpdateCV02() {
                     name="specialization"
                     value={formData.specialization}
                     onChange={handleInputChange}
-                    className="w-full p-2 border rounded-md bg-gray-50"
+                    className="w-full p-2 border rounded-md  border-gray-200 bg-gray-50"
                     required
                   >
                     <option value="">Select Specialization</option>
                     <option value="Cardiology">Cardiology</option>
+                    <option value="Gastroenterology">Gastroenterology</option>
+                    <option value="Neurology">Neurology</option>
+                    <option value="Pediatrics">Pediatrics</option>
+                    <option value="Oncology">Oncology</option>
+                    <option value="Orthopedics">Orthopedics</option>
                   </select>
                 </div>
 
                 {/* Experience */}
                 <div>
                   <label className="block text-sm mb-1">
-                    Experience<span className="text-red-500">*</span>
+                    Experience year<span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     name="experience"
-                    value={formData.experience}
+                    value={String(formData.experience)}
                     onChange={handleInputChange}
-                    className="w-full p-2 border rounded-md bg-gray-50"
+                    className={`w-full p-2 border rounded-md  border-gray-200 bg-gray-50 ${
+                      errors.experience ? "border-red-500" : ""
+                    }`}
                     placeholder="Years of Experience"
                     required
                   />
+                  {errors.experience && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.experience}
+                    </p>
+                  )}
                 </div>
 
                 {/* Additional Certifications */}
@@ -210,13 +299,13 @@ export default function UpdateCV02() {
                       name="additionalCertifications"
                       value={formData.additionalCertifications}
                       onChange={handleInputChange}
-                      className="w-full p-2 border rounded-md bg-gray-50"
+                      className="w-full p-2 border rounded-md border-gray-200 bg-gray-50"
                       placeholder="Enter Certification"
                     />
                     <button
                       type="button"
                       onClick={addCertification}
-                      className="px-4 py-2 bg-blue-500 text-white rounded-md"
+                      className="px-4 py-2 bg-blue-500 text-white border-gray-200 rounded-md"
                     >
                       Add
                     </button>
@@ -245,10 +334,14 @@ export default function UpdateCV02() {
                   <DatePicker
                     showIcon
                     name="graduationDate"
-                    selected={formData.graduationDate ? new Date(formData.graduationDate) : null}
+                    selected={
+                      formData.graduationDate
+                        ? new Date(formData.graduationDate)
+                        : null
+                    }
                     onChange={handleDateChange}
                     dateFormat="MM/dd/yyyy"
-                    className="w-full p-2 border rounded-md bg-gray-50"
+                    className="w-full p-2 border rounded-md border-gray-200 bg-gray-50"
                   />
                 </div>
 
@@ -261,11 +354,19 @@ export default function UpdateCV02() {
                   <input
                     type="text"
                     name="medicalLicenseNumber"
-                    value={formData.medicalLicenseNumber}
+                    value={String(formData.medicalLicenseNumber)}
                     onChange={handleInputChange}
-                    className="w-full p-2 border rounded-md bg-gray-50"
+                    className={`w-full p-2 border rounded-md  border-gray-200 bg-gray-50 ${
+                      errors.medicalLicenseNumber ? "border-red-500" : ""
+                    }`}
                     placeholder="123456789"
+                    required
                   />
+                  {errors.medicalLicenseNumber && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.medicalLicenseNumber}
+                    </p>
+                  )}
                 </div>
 
                 {/* Medical License Issuer */}
@@ -279,7 +380,7 @@ export default function UpdateCV02() {
                     name="medicalLicenseIssuer"
                     value={formData.medicalLicenseIssuer}
                     onChange={handleInputChange}
-                    className="w-full p-2 border rounded-md bg-gray-50"
+                    className="w-full p-2 border rounded-md border-gray-200 bg-gray-50"
                     placeholder="Medical Board of California"
                   />
                 </div>
@@ -303,7 +404,8 @@ export default function UpdateCV02() {
               </div>
             </div>
           </form>
-        </main>
+        </div>
+      </main>
       </div>
     </div>
   );
