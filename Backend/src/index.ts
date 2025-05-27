@@ -7,18 +7,30 @@ import RecuiterJobPost from "./Routes/RecuiterRoutes/JobPostRoutes";
 import connectDB from "./Config/db";
 import JobSearch from "./Routes/PhysicianRoutes/JobSearchRoutes";
 import jobApplicationRoutes from "./Routes/PhysicianRoutes/jobApplicationRoutes";
-import degreePostRoutes from './Routes/EducationRoutes/DegreePostRoutes';
+
+import DegreeApplicationRoutes from "./Routes/PhysicianRoutes/degreeApplicationRoutes";
+
+import viewDegreeApplicationRoutes from "./Routes/EducationRoutes/ViewDegreeApplicationRoutes";
+import degreeListingRoutes from './Routes/EducationRoutes/DegreeListingRoutes';
+import higherEducationRoutes from './Routes/EducationRoutes/higherEducationRoutes';
 import fs from "fs";
 import path from "path";
+
+
 
 import LoginRegisterRoutes from "./Routes/LoginRegisterRoutes";
 connectDB();
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-// Enable CORS
-app.use(cors());
+// Configure CORS with specific options
+app.use(cors({
+    origin: ['http://localhost:5173', 'http://localhost:3000'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Middleware to parse JSON
 app.use(express.json());
@@ -39,7 +51,14 @@ app.use("/CvdoctorUpdate", CvDocRouter);
 app.use("/JobPost", RecuiterJobPost);
 app.use("/JobSearch", JobSearch);
 app.use("/JobApplication", jobApplicationRoutes);
-app.use('/degrees', degreePostRoutes);
+app.use("/degrees", degreeListingRoutes);
+app.use("/higherDegrees", higherEducationRoutes);
+app.use('/degreeApplications', DegreeApplicationRoutes);
+app.use('/viewDegreeApplications', viewDegreeApplicationRoutes);
+// app.use('/images', express.static('src/image'));
+app.use('/image', express.static(path.join(__dirname, "../image")));
+
+
 // Start the server
 app.use("/auth", LoginRegisterRoutes); // Use the centralized login/register routes
 app.listen(PORT, () => {

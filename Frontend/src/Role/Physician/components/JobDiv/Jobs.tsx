@@ -25,9 +25,9 @@ const getStatusColor = (status: string) => {
     case "PENDING":
       return "bg-orange-500";
     case "INTERVIEW":
-      return "bg-blue-500";
-    case "REJECTED":
-      return "bg-red-500";
+      return "bg-blue-900";
+    case "CLOSED":
+      return "bg-red-700";
     default:
       return "bg-gray-500";
   }

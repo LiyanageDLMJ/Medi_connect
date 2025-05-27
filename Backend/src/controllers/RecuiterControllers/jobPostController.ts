@@ -6,7 +6,7 @@ import JobPost from "../../models/Job";
 export const viewJobs = async (req: Request, res: Response) => {
   try {
     const jobs = await JobPost.find();
-    console.log("Jobs Fetched:", jobs); // Debug log
+
     res.status(200).json(jobs);
   } catch (error: any) {
     res.status(500).json({ message: "Failed to fetch jobs", error: error.message });
@@ -24,7 +24,7 @@ export const addJob = async (req: Request, res: Response) => {
     const newJob = new JobPost(jobData);
     await newJob.save();
 
-    res.status(201).json({ message: "Job posted successfully", job: newJob });
+    res.status(201).json({ message: "Job posted successfully", job: newJob, });
   } catch (error: any) {
     res.status(500).json({ message: "Failed to post job", error: error.message });
   }
@@ -34,12 +34,16 @@ export const addJob = async (req: Request, res: Response) => {
 export const updateJob = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const updatedJob = await JobPost.findByIdAndUpdate(id, req.body, { new: true });
-
+    const updatedJob = await JobPost.findOneAndUpdate(
+      { jobId: parseInt(id) }, // Find by jobId instead of _id
+      req.body,
+      { new: true }
+    );
+    
     if (!updatedJob) {
       return res.status(404).json({ message: "Job not found" });
     }
-
+    
     res.status(200).json({ message: "Job updated successfully", job: updatedJob });
   } catch (error: any) {
     res.status(500).json({ message: "Failed to update job", error: error.message });

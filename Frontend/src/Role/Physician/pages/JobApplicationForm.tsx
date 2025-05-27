@@ -19,6 +19,7 @@ const initialFormData: FormDataType = {
 
 export default function JobApplicationForm() {
   const [formData, setFormData] = useState<FormDataType>(initialFormData);
+  const [successMessage, setSuccessMessage] = useState<string>("");
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
@@ -38,12 +39,27 @@ export default function JobApplicationForm() {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setSuccessMessage("");
 
+    // Check file size (10MB limit)
     if (formData.cv && formData.cv.size > 10 * 1024 * 1024) {
-      alert("File size exceeds 10MB limit.");
+      alert("File size should not exceed 10MB");
+      return;
+    }
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+
+    if (!emailRegex.test(formData.email)) {
+      alert("Please enter a valid email address.");
+      return;
+
+    }
+    if (formData.phone.length !== 10) {
+      alert("Invalid Phone Number");
       return;
     }
 
+
+    // Create FormData object
     const submissionData = new FormData();
     submissionData.append("name", formData.name);
     submissionData.append("email", formData.email);
@@ -57,18 +73,26 @@ export default function JobApplicationForm() {
       const response = await fetch("http://localhost:3000/JobApplication/addApplication", {
         method: "POST",
         body: submissionData,
+        
       });
 
-      const result = await response.json();
-      if (response.ok) {
-        alert("Application Submitted Successfully!");
-        setFormData(initialFormData); // Reset form after successful submission
-      } else {
-        alert(`Submission failed: ${result.message}`);
+      if (!response.ok) {
+        throw new Error("Failed to submit application");
       }
+
+      const result = await response.json();
+      alert("Application submitted successfully!");
+      setSuccessMessage("Application submitted successfully! Your CV has been uploaded.");
+      
+      setFormData(initialFormData);
+
+      setTimeout(() => {
+        setSuccessMessage("");
+      }, 5000);
+      
     } catch (error) {
       console.error("Error submitting application:", error);
-      alert("An error occurred while submitting your application.");
+      alert("Failed to submit application. Please try again.");
     }
   };
 
@@ -166,6 +190,23 @@ export default function JobApplicationForm() {
                   Submit Application
                 </button>
               </div>
+              {/* Add success message display */}
+              {successMessage && (
+                <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-4 rounded">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm text-green-700">
+                        {successMessage}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </form>
 
           </div>

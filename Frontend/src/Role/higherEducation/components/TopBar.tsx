@@ -3,7 +3,7 @@ import { FiGlobe } from "react-icons/fi";
 
 const TopBar: React.FC = () => {
   return (
-    <div className="flex justify-end items-center p-4 pb-0">
+    <div className="flex justify-end items-center p-2 pb-3 shadow-sm">
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
           <FiGlobe className="text-gray-600" />
