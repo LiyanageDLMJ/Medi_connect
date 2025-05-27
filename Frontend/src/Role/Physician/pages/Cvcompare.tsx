@@ -150,7 +150,7 @@ export default function CVComparison() {
         <div className="container mx-auto py-8 px-4">
           <h1 className="text-3xl font-bold mb-8 mt-8">CV Comparison</h1>
 
-          <div className="flex flex-col md:flex-row gap-4 items-center mb-8">
+          <div className="flex flex-col md:flex-row gap-4 items-center mb-30">
             <div className="relative flex-1">
               <Input
                 placeholder="Enter your profile name"
@@ -172,7 +172,7 @@ export default function CVComparison() {
                 </ul>
               )}
             </div>
-            <span className="font-medium">vs</span>
+            <span className="font-medium mr-50">vs</span>
             <div className="relative flex-1">
               <Input
                 placeholder="Enter other profile name"
