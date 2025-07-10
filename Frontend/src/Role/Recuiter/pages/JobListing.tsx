@@ -1,176 +1,611 @@
-import React, { useState } from "react";
-import { BsThreeDotsVertical } from "react-icons/bs";
-import { FiFilter } from "react-icons/fi";
-import { FaCalendarAlt } from "react-icons/fa";
+"use client";
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { FaEdit, FaTrash, FaExclamationCircle, FaCheckSquare, FaRegSquare, FaArrowLeft } from "react-icons/fa";
+import axios from "axios";
 import Sidebar from "../components/NavBar/Sidebar";
-import {
-  TextField,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
-  Box,
-  Menu,
-} from "@mui/material";
-import DatePicker from "react-datepicker";
-import TopBar from "../components/Topbar";
 
+// Job interface to match the database schema
 interface Job {
-  id: number;
-  jobTitle: string;
-  status: string;
-  mode: string;
-  applicationDeadline: string;
-  experience: string;
-  positions: number;
-  applicantsApplied: number;
-  salary: string;
-  hospital: string;
+  _id: string;
+  jobId: string;
+  title: string;
   department: string;
-  specialty: string;
+  hospitalName: string;
+  location: string;
+  jobType: string;
+  description: string;
+  requirements: string;
+  salaryRange?: string;
+  urgent: boolean;
+  createdAt: string;
 }
 
-const JobListing: React.FC = () => {
-  const [jobs, setJobs] = useState<Job[]>([/* same job data without location */]);
+// Form validation schema using Zod
+const formSchema = z.object({
+  jobId: z.string().min(1, { message: "Job ID is required" }),
+  title: z.string().min(2, { message: "Job title is required" }),
+  department: z.string().min(2, { message: "Department is required" }),
+  hospitalName: z.string().min(2, { message: "Hospital name is required" }),
+  location: z.string().min(2, { message: "Location is required" }),
+  jobType: z.string().min(1, { message: "Job type is required" }),
+  description: z.string().min(10, { message: "Description must be at least 10 characters" }),
+  requirements: z.string().min(10, { message: "Requirements must be at least 10 characters" }),
+  salaryRange: z.string().optional(),
+  urgent: z.boolean().default(false),
+});
 
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [filterMode, setFilterMode] = useState<string>("all");
-  const [filterExperience, setFilterExperience] = useState<string>("all");
-  const [filterSalary, setFilterSalary] = useState<string>("all");
-  const [filterSpecialty, setFilterSpecialty] = useState<string>("all");
-  const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
+type FormData = z.infer<typeof formSchema>;
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(5);
-
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
-  const [menuOpen, setMenuOpen] = useState<number | null>(null);
-
-  const formatDate = (date: Date | string) => {
-    return new Intl.DateTimeFormat("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    }).format(new Date(date));
+export default function JobManagement() {
+  // Router for navigation
+  const router = {
+    push: (path: string) => {
+      window.location.href = path;
+    }
   };
 
-  const handleMenuToggle = (id: number) => {
-    setMenuOpen(menuOpen === id ? null : id);
-  };
+  // State for view mode
+  const [currentView, setCurrentView] = useState<'list' | 'edit'>('list');
+  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+  
+  // Job listing states
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [jobToDelete, setJobToDelete] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
+  const [isDeleting, setIsDeleting] = useState(false);
+  
+  // Edit job states
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState("");
 
-  const parseSalary = (salary: string): number => {
-    const numericPart = salary.match(/\$([0-9,]+)/);
-    if (numericPart && numericPart[1]) {
-      return parseFloat(numericPart[1].replace(/,/g, "")) || 0;
-    }
-    return 0;
-  };
-
-  let filteredJobs = jobs.filter((job) => {
-    const matchesSearch = job.jobTitle.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          job.hospital.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          job.department.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = filterStatus === "all" || job.status === filterStatus;
-    const matchesMode = filterMode === "all" || job.mode === filterMode;
-    const matchesExperience = filterExperience === "all" || job.experience === filterExperience;
-    const matchesSpecialty = filterSpecialty === "all" || job.specialty === filterSpecialty;
-
-    const salaryValue = parseSalary(job.salary);
-    let matchesSalary = true;
-    if (filterSalary !== "all") {
-      if (filterSalary === "upTo200000") {
-        matchesSalary = salaryValue <= 200000;
-      } else if (filterSalary === "200001to300000") {
-        matchesSalary = salaryValue > 200000 && salaryValue <= 300000;
-      } else if (filterSalary === "above300000") {
-        matchesSalary = salaryValue > 300000;
-      }
-    }
-
-    const deadlineDate = new Date(job.applicationDeadline).getTime();
-    const [startDate, endDate] = dateRange;
-    let matchesDateRange = true;
-    if (startDate && endDate) {
-      const startTime = startDate.getTime();
-      const endTime = endDate.getTime();
-      matchesDateRange = deadlineDate >= startTime && deadlineDate <= endTime;
-    }
-
-    return matchesSearch && matchesStatus && matchesMode && matchesExperience && matchesSalary && matchesSpecialty && matchesDateRange;
+  // Initialize form
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      jobId: "",
+      title: "",
+      department: "",
+      hospitalName: "",
+      location: "",
+      jobType: "",
+      description: "",
+      requirements: "",
+      salaryRange: "",
+      urgent: false,
+    },
   });
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredJobs.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredJobs.length / itemsPerPage);
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    reset,
+    formState: { errors },
+  } = form;
 
-  const statuses = ["all", ...Array.from(new Set(jobs.map((job) => job.status)))];
-  const modes = ["all", ...Array.from(new Set(jobs.map((job) => job.mode)))];
-  const experiences = ["all", ...Array.from(new Set(jobs.map((job) => job.experience))).sort()];
-  const specialties = ["all", ...Array.from(new Set(jobs.map((job) => job.specialty))).sort()];
-  const salaryRanges = [
-    { value: "all", label: "All Salaries" },
-    { value: "upTo200000", label: "Up to $200,000" },
-    { value: "200001to300000", label: "$200,001 - $300,000" },
-    { value: "above300000", label: "Above $300,000" },
-  ];
+  // Check if edit mode from URL
+  useEffect(() => {
+    const path = window.location.pathname;
+    if (path.includes('edit-job')) {
+      const jobId = path.split('/').pop();
+      if (jobId) {
+        setCurrentView('edit');
+        setSelectedJobId(jobId);
+      }
+    } else {
+      setCurrentView('list');
+      fetchJobs();
+    }
+  }, []);
 
-  const handleFilterClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
+  // Search debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Fetch job data for editing
+  useEffect(() => {
+    if (currentView === 'edit' && selectedJobId) {
+      fetchJobById(selectedJobId);
+    }
+  }, [currentView, selectedJobId]);
+
+  // Fetch all jobs
+  const fetchJobs = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await axios.get("http://localhost:3000/JobPost/viewJobs");
+      if (!response.data) {
+        throw new Error('No data received');
+      }
+      setJobs(response.data);
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Failed to fetch job listings. Please try again.");
+      setJobs([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleFilterClose = () => {
-    setAnchorEl(null);
+  // Fetch single job by ID
+  const fetchJobById = async (id: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await axios.get(`http://localhost:3000/JobPost/viewJobs/${id}`);
+      const jobData = response.data;
+
+      // Set all form values
+      Object.keys(jobData).forEach((key) => {
+        if (form.formState.defaultValues && key in form.formState.defaultValues) {
+          setValue(key as keyof FormData, jobData[key]);
+        }
+      });
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Failed to load job data. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleViewDetails = (job: Job) => {
-    console.log("View Details for:", job);
-    setMenuOpen(null);
+  // Transition to edit mode
+  const handleEdit = (jobId: string) => {
+    if (!jobId) {
+      setError("Invalid job ID");
+      return;
+    }
+    
+    // Update URL without page reload
+    window.history.pushState({}, '', `/edit-job/${jobId}`);
+    setSelectedJobId(jobId);
+    setCurrentView('edit');
   };
 
-  const [startDate, endDate] = dateRange;
-  const subtitleText =
-    startDate && endDate
-      ? `Here is your medical job listings status from ${formatDate(startDate)} - ${formatDate(endDate)}.`
-      : "Here is your full medical job listings status.";
+  // Delete job confirmation
+  const confirmDelete = (jobId: string) => {
+    setJobToDelete(jobId);
+    setShowDeleteModal(true);
+  };
+
+  // Delete job
+  const handleDelete = async () => {
+    if (!jobToDelete) return;
+    
+    setIsDeleting(true);
+    try {
+      const response = await axios.delete(`http://localhost:3000/JobPost/deleteJobs/${jobToDelete}`);
+      if (response.status === 200) {
+        setJobs(jobs.filter(job => job._id !== jobToDelete));
+        setShowDeleteModal(false);
+        setJobToDelete(null);
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Failed to delete job. Please try again.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // Submit updated job
+  const onSubmit = async (values: FormData) => {
+    if (!selectedJobId) return;
+    
+    setIsSubmitting(true);
+    setMessage("");
+    setError("");
+
+    try {
+      const response = await axios.put(`http://localhost:3000/JobPost/updateJobs/${selectedJobId}`, values);
+      setMessage("Job updated successfully!");
+      
+      // Wait 1 second then return to listings
+      setTimeout(() => {
+        window.history.pushState({}, '', '/job-listings');
+        setCurrentView('list');
+        fetchJobs();
+      }, 1000);
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Failed to update job. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Back to listing
+  const backToListing = () => {
+    window.history.pushState({}, '', '/job-listings');
+    setCurrentView('list');
+    setSelectedJobId(null);
+    reset();
+  };
+
+  // Format date helper
+  const formatDate = (dateString: string) => {
+    if (!dateString) return 'N/A';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch (err) {
+      return 'Invalid date';
+    }
+  };
+
+  // Filter jobs based on search term
+  const filteredJobs = jobs.filter(job => 
+    job.title?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+    job.department?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+    job.hospitalName?.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
+  );
 
   return (
-    <div className="flex h-screen">
+    <div>
       <Sidebar />
       <div className="flex-1 overflow-auto md:pl-64">
-        <TopBar />
-        <div className="flex flex-col min-h-[calc(100vh-80px)] p-4 ">
-          <div className="flex justify-between items-center bg-white px-4 py-3 rounded-t-lg border-gray-200">
-            <div className="space-y-2">
-              <h1 className="text-xl font-semibold">Medical Job Listing</h1>
-              <p className="text-gray-600 text-sm">{subtitleText}</p>
+        {/* JOB LISTINGS VIEW */}
+        {currentView === 'list' && (
+          <div className="max-w-7xl mx-auto px-4 py-8">
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-2xl font-bold text-gray-800">Job Listings</h1>
+              <button
+                onClick={() => router.push('/recruiter/jobPost')}
+                className="bg-[#184389] text-white px-4 py-2 rounded hover:bg-blue-700"
+              >
+                Post New Job
+              </button>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 px-3 py-2 border rounded-lg shadow-sm cursor-pointer relative">
-                <FaCalendarAlt className="text-gray-600" />
-                <DatePicker
-                  selectsRange
-                  startDate={dateRange[0]}
-                  endDate={dateRange[1]}
-                  onChange={(update: [Date | null, Date | null]) => setDateRange(update)}
-                  placeholderText="Select Date Range"
-                  dateFormat="MMM d, yyyy"
-                  className="text-gray-700 text-sm border-none outline-none"
-                  popperClassName="z-[1000]"
-                />
+
+            {/* Search bar */}
+            <div className="mb-6">
+              <input
+                type="text"
+                placeholder="Search by title, department, or hospital..."
+                className="w-full md:w-1/2 px-4 py-2 border rounded-lg"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+
+            {/* Error message */}
+            {error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                {error}
               </div>
-              <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                + Post a job
+            )}
+
+            {/* Loading state */}
+            {isLoading ? (
+              <div className="text-center py-10">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-t-blue-500"></div>
+                <p className="mt-2 text-gray-600">Loading job listings...</p>
+              </div>
+            ) : (
+              <>
+                {filteredJobs.length === 0 ? (
+                  <div className="text-center py-10 bg-gray-50 rounded-lg">
+                    <p className="text-gray-600">No job listings found</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {filteredJobs.map((job) => (
+                      <div key={job._id} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
+                        <div className="p-5">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h2 className="text-xl font-semibold text-gray-800 group-hover:text-blue-600">
+                                {job.title}
+                              </h2>
+                              <p className="text-sm text-gray-600">{job.hospitalName} • {job.location}</p>
+                            </div>
+                            {job.urgent && (
+                              <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded flex items-center">
+                                <FaExclamationCircle className="mr-1" /> Urgent
+                              </span>
+                            )}
+                          </div>
+                          
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                              {job.department}
+                            </span>
+                            <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
+                              {job.jobType}
+                            </span>
+                            {job.salaryRange && (
+                              <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded">
+                                {job.salaryRange}
+                              </span>
+                            )}
+                          </div>
+                          
+                          <div className="mt-4">
+                            <h3 className="text-sm font-medium text-gray-700">Description:</h3>
+                            <p className="text-sm text-gray-600 line-clamp-2">{job.description}</p>
+                          </div>
+                          
+                          <div className="mt-4 flex justify-between items-center">
+                            <span className="text-xs text-gray-500">
+                              Posted: {job.createdAt ? formatDate(job.createdAt) : 'N/A'}
+                            </span>
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => handleEdit(job.jobId)}
+                                className="text-blue-600 hover:text-blue-800 p-1"
+                                title="Edit job"
+                              >
+                                <FaEdit />
+                              </button>
+                              <button
+                                onClick={() => confirmDelete(job._id)}
+                                className="text-red-600 hover:text-red-800 p-1"
+                                title="Delete job"
+                              >
+                                <FaTrash />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
+        {/* EDIT JOB VIEW */}
+        {currentView === 'edit' && (
+          <div className="max-w-2xl mx-auto bg-white shadow-md rounded-lg overflow-hidden my-8">
+            <div className="bg-[#184389] px-6 py-4 flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-semibold text-white">Edit Job Posting</h2>
+                <p className="text-sm text-white">Update the details for this job posting</p>
+              </div>
+              <button 
+                onClick={backToListing}
+                className="text-white hover:text-gray-200"
+              >
+                <FaArrowLeft /> <span className="sr-only">Back to listings</span>
+              </button>
+            </div>
+
+            {isLoading ? (
+              <div className="p-6 text-center">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-t-blue-500"></div>
+                <p className="mt-2 text-gray-600">Loading job data...</p>
+              </div>
+            ) : error ? (
+              <div className="p-6">
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                  <p>{error}</p>
+                  <button 
+                    onClick={backToListing} 
+                    className="mt-2 text-blue-600 hover:underline"
+                  >
+                    Return to listings
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
+                {/* Basic Info Section */}
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block font-medium">Job ID</label>
+                      <input 
+                        type="text"
+                        {...register("jobId")}
+                        placeholder="e.g. 1001"
+                        className="w-full border rounded px-3 py-2"
+                      />
+                      {errors.jobId && <p className="text-red-500 text-sm">{errors.jobId.message}</p>}
+                    </div>
+                    <div>
+                      <label className="block font-medium">Job Title</label>
+                      <input 
+                        type="text"
+                        {...register("title")}
+                        placeholder="e.g. Cardiologist"
+                        className="w-full border rounded px-3 py-2"
+                      />
+                      {errors.title && <p className="text-red-500 text-sm">{errors.title.message}</p>}
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block font-medium">Department</label>
+                      <select {...register("department")} className="w-full border rounded px-3 py-2">
+                        <option value="">Select department</option>
+                        <option value="Cardiology">Cardiology</option>
+                        <option value="Dermatology">Dermatology</option>
+                        <option value="Emergency">Emergency Medicine</option>
+                        <option value="Neurology">Neurology</option>
+                        <option value="Gastroenterology">Gastroenterology</option>
+                        <option value="Pulmonology">Pulmonology</option>
+                        <option value="Nephrology">Nephrology</option>
+                        <option value="Endocrinology">Endocrinology</option>
+                        <option value="Obstetrics">Obstetrics & Gynecology</option>
+                        <option value="Urology">Urology</option>
+                        <option value="Other">Other</option>
+                      </select>
+                      {errors.department && <p className="text-red-500 text-sm">{errors.department.message}</p>}
+                    </div>
+                    <div>
+                      <label className="block font-medium">Job Type</label>
+                      <select {...register("jobType")} className="w-full border rounded px-3 py-2">
+                        <option value="">Select job type</option>
+                        <option value="Full-Time">Full-Time</option>
+                        <option value="Part-Time">Part-Time</option>
+                        <option value="Internship">Internship</option>
+                      </select>
+                      {errors.jobType && <p className="text-red-500 text-sm">{errors.jobType.message}</p>}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block font-medium">Hospital Name</label>
+                    <input 
+                      type="text"
+                      {...register("hospitalName")}
+                      placeholder="e.g. Memorial General Hospital"
+                      className="w-full border rounded px-3 py-2"
+                    />
+                    {errors.hospitalName && <p className="text-red-500 text-sm">{errors.hospitalName.message}</p>}
+                  </div>
+                  
+                  <div>
+                    <label className="block font-medium">Location</label>
+                    <input 
+                      type="text"
+                      {...register("location")}
+                      placeholder="e.g. New York, NY"
+                      className="w-full border rounded px-3 py-2"
+                    />
+                    {errors.location && <p className="text-red-500 text-sm">{errors.location.message}</p>}
+                  </div>
+                </div>
+                
+                {/* Job Details Section */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block font-medium">Job Description</label>
+                    <textarea
+                      {...register("description")}
+                      placeholder="Describe the responsibilities and duties of this position"
+                      className="w-full border rounded px-3 py-2 min-h-[100px]"
+                    />
+                    {errors.description && <p className="text-red-500 text-sm">{errors.description.message}</p>}
+                  </div>
+                  
+                  <div>
+                    <label className="block font-medium">Requirements</label>
+                    <textarea
+                      {...register("requirements")}
+                      placeholder="List qualifications, experience, and credentials required"
+                      className="w-full border rounded px-3 py-2 min-h-[100px]"
+                    />
+                    {errors.requirements && <p className="text-red-500 text-sm">{errors.requirements.message}</p>}
+                  </div>
+                  
+                  <div>
+                    <label className="block font-medium">Salary Range (Optional)</label>
+                    <input 
+                      type="text"
+                      {...register("salaryRange")}
+                      placeholder="e.g. $200,000 - $250,000"
+                      className="w-full border rounded px-3 py-2"
+                    />
+                    {errors.salaryRange && <p className="text-red-500 text-sm">{errors.salaryRange.message}</p>}
+                  </div>
+                </div>
+                
+                {/* Urgent Hiring Section */}
+                <div className="flex items-center space-x-3 border rounded p-4">
+                  <button type="button" onClick={() => setValue("urgent", !watch("urgent"))} className="text-xl">
+                    {watch("urgent") ? <FaCheckSquare className="text-blue-600" /> : <FaRegSquare />}
+                  </button>
+                  <div>
+                    <label className="font-medium cursor-pointer">Urgent Hiring</label>
+                    <p className="text-sm text-gray-500">Mark this position as urgent to prioritize in listings</p>
+                  </div>
+                </div>
+                
+                <div className="flex space-x-4">
+                  <button
+                    type="button"
+                    onClick={backToListing}
+                    className="flex-1 bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded transition-all hover:bg-gray-300"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className={`flex-1 bg-[#184389] text-white font-semibold py-2 rounded transition-all ${
+                      isSubmitting ? "opacity-70 cursor-not-allowed" : "hover:bg-blue-800"
+                    }`}
+                  >
+                    {isSubmitting ? "Updating..." : "Update Job"}
+                  </button>
+                </div>
+                
+                {message && (
+                  <div className="mt-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+                    {message}
+                  </div>
+                )}
+              </form>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full mx-4">
+            <h2 className="text-lg font-semibold text-gray-800 mb-2">
+              Confirm Deletion
+            </h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Are you sure you want to delete this job? This action cannot be undone.
+            </p>
+            {error && (
+              <div className="mb-4 p-2 bg-red-50 border border-red-200 text-red-600 text-sm rounded">
+                {error}
+              </div>
+            )}
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setError(null);
+                }}
+                disabled={isDeleting}
+                className="px-4 py-2 text-sm font-medium rounded bg-gray-100 hover:bg-gray-200 text-gray-800 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="px-4 py-2 text-sm font-medium rounded bg-red-600 hover:bg-red-700 text-white transition-colors disabled:opacity-50 flex items-center"
+              >
+                {isDeleting ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Deleting...
+                  </>
+                ) : (
+                  'Delete'
+                )}
               </button>
             </div>
           </div>
-          {/* Additional UI rendering code continues... */}
         </div>
-      </div>
+      )}
     </div>
   );
-};
-
-export default JobListing;
+}

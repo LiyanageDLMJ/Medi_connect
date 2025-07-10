@@ -5,26 +5,52 @@ const upload = multer();
 import cloudinary from "../../Config/cloudinaryConfig";
 import fs from "fs";
 
+
+
 interface MulterRequest extends Request {
     file?: Express.Multer.File;
   }
 
-exports.viewDoctorsCv=async(req:MulterRequest ,res:Response)=>{
-    const result=await CvDoctorUpdate.find();
-    if(result){
-        res.send({
-            
-        "Message":`${result.length} Doctors found`,
-        "CvDoctorUpdate":result
-    }).status(200);
-    }else{
-        res.send({
-            "Message":"No Doctors found"
-        }).status(404);
+exports.viewDoctorsCv = async (req: Request, res: Response) => {
+  try {
+    const { yourName } = req.query; // Get the name query parameter (e.g., "mok")
+    if (!yourName) {
+      return res.status(400).json({ message: 'Name query is required' });
     }
+
+    // Use regex to find names that start with the input (case-insensitive)
+    const users = await CvDoctorUpdate.find(
+      { yourName: { $regex: `^${yourName}`, $options: 'i' } }, // Match yourName field
+      { yourName: 1, _id: 0 } // Only return the yourName field
+    ).limit(5); // Limit to 5 suggestions for performance
+
+    const names = users.map(user => user.yourName); // Extract yourName into an array
+    res.status(200).json(names);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
 };
 
-// Fixed backend handler with proper error handling
+exports.getDoctorCv = async (req: Request, res: Response) => {
+  try {
+    const { yourName } = req.query;
+    if (!yourName) {
+      return res.status(400).json({ message: 'Name query is required' });
+    }
+
+    const user = await CvDoctorUpdate.findOne({ yourName });
+    if (!user) {
+      return res.status(404).json({ message: 'Doctor not found' });
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
 export const addDoctorCv = async (req: Request, res: Response) => {
     try {
         console.log("Incoming data:", req.body);
@@ -32,15 +58,11 @@ export const addDoctorCv = async (req: Request, res: Response) => {
 
         let resumePdfUrl = "";
 
-        // Check if file exists and upload to Cloudinary
+        //  upload to Cloudinary
         if (req.file) {
             try {
-                // IMPORTANT: We need to properly handle the file buffer since you're using multer
-                // First fix: req.file.path doesn't exist when using multer memory storage
-                
-                // Check if we have a buffer (from multer.memoryStorage) or a path (from multer.diskStorage)
-                if (req.file.buffer) {
-                    // If using memory storage, convert buffer to base64 string for Cloudinary
+                          if (req.file.buffer) {
+                    
                     const base64String = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
                     
                     const result = await cloudinary.uploader.upload(base64String, {
@@ -58,7 +80,7 @@ export const addDoctorCv = async (req: Request, res: Response) => {
                     });
                     resumePdfUrl = result.secure_url;
                     
-                    // Delete temporary file after successful upload
+                    // Delete temporary file 
                     fs.unlinkSync(req.file.path);
                 } else {
                     throw new Error("File is missing both buffer and path");
@@ -74,7 +96,6 @@ export const addDoctorCv = async (req: Request, res: Response) => {
             }
         }
 
-        // Rest of the function remains the same
         
         // Handle certification input
         let certificationInput = [];

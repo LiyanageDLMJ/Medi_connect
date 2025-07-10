@@ -20,35 +20,41 @@ import Footer from "./Components/FooterDiv/Footer"; // Adjust the path as needed
 import WithFooter from "./Layout/WithFooter"; // Adjust the path as needed
 import DegreeListing from "./Role/higherEducation/pages/DegreeListing";
 import Dashborad from "./Role/higherEducation/pages/dashborad";
-import Dashboard from "./Role/Physician/pages/dashboard";
+import DoctorDashboard from "./Role/Physician/pages/Doctordashboard";
 import  DegreeApplication from "./Role/Physician/pages/DegreeApplicationForm"
 
 import  ViewApplications from "./Role/higherEducation/pages/ViewApplications"
+import ViewCandidates from "./Role/Recuiter/pages/VeiwCandidates";
 
 
 import { FormProvider } from "./context/FormContext";
-import { Cvcompare } from "./Role/Physician/pages/Cvcompare";
+import MedicalStudentDashboard from "./Role/Physician/pages/MedicalStudentDashboard";
+import Cvcompare from "./Role/Physician/pages/Cvcompare";
 import PostDegree from "./Role/higherEducation/pages/PostDegree";
 const App = () => {
   return (
     <FormProvider>
-    
       <Routes>
-
-      {/* With Footer Routes */}
-      <Route element={<WithFooter><Outlet /></WithFooter>}>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-      </Route>
+        {/* With Footer Routes */}
+        <Route
+          element={
+            <WithFooter>
+              <Outlet />
+            </WithFooter>
+          }
+        >
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+        </Route>
 
       {/* Without Footer Routes */}
       <Route element={<><Outlet /></>}>
 
         {/* Physician Routes */}
         <Route path="/physician">
-          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="Doctordashboard" element={<DoctorDashboard />} />
           <Route path="higher-education" element={<HigherEducationSearch />} />
           <Route path="job-internship" element={<JobInternshipSearch />} />
           <Route path="job-application" element={<JobApplicationForm />} />
@@ -62,19 +68,21 @@ const App = () => {
 
         </Route>
 
-        {/* Higher Education Routes */}
-        <Route path="/higher-education">
-          <Route path="messages" element={<Messages />} />
-          <Route path="view-applications" element={<ViewApplications />} />
-          <Route path="degree-listing" element={<DegreeListing />} />
-          <Route path="deshboard" element={<Dashborad />} />
-    
-        </Route>
+          {/* Higher Education Routes */}
+          <Route path="/higher-education">
+            <Route path="messages" element={<Messages />} />
+            <Route path="view-applications" element={<ViewApplications />} />
+            <Route path="degree-listing" element={<DegreeListing />} />
+            <Route path="deshboard" element={<Dashborad />} />
+          </Route>
 
         {/* Recruiter Routes */}
         <Route path="/recruiter">
           <Route path="jobPost" element={<JobPost />} />
           <Route path="JobListing" element={<JobListing />} />
+          <Route path="ViewCandidates" element={<ViewCandidates />} />
+          <Route path="Messages" element={<Messages />} />
+          <Route path="Dashborad" element={<Dashborad />} />
         </Route>
 
       

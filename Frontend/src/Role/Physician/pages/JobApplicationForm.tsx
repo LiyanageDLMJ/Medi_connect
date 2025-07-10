@@ -27,69 +27,8 @@ const initialFormData: FormDataType = {
 
 export default function JobApplicationForm() {
   const [formData, setFormData] = useState<FormDataType>(initialFormData);
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [touched, setTouched] = useState<Partial<Record<keyof FormDataType, boolean>>>({});
+  const [successMessage, setSuccessMessage] = useState<string>("");
 
-  // Validation function for a single field
-  const validateField = (name: keyof FormDataType, value: string | File | null): string | undefined => {
-    switch (name) {
-      case "name":
-        if (!value) return "Full name is required";
-        if (typeof value === "string" && !/^[a-zA-Z\s]{2,}$/.test(value.trim())) {
-          return "Name must contain only letters and spaces (min 2 characters)";
-        }
-        break;
-      case "email":
-        if (!value) return "Email is required";
-        if (typeof value === "string" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-          return "Invalid email format";
-        }
-        break;
-      case "phone":
-        if (!value) return "Phone number is required";
-        if (typeof value === "string" && !/^\+?[\d\s()-]{10,15}$/.test(value.trim())) {
-          return "Invalid phone number format (e.g., +1 (123) 456-7890)";
-        }
-        break;
-      case "experience":
-        if (!value) return "Professional experience is required";
-        if (typeof value === "string" && value.trim().length < 10) {
-          return "Experience must be at least 10 characters long";
-        }
-        break;
-      case "cv":
-        if (!value) return "CV is required";
-        if (value instanceof File) {
-          const allowedTypes = [
-            "application/pdf",
-            "application/msword",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-          ];
-          if (!allowedTypes.includes(value.type)) {
-            return "CV must be a PDF, DOC, or DOCX file";
-          }
-          if (value.size > 10 * 1024 * 1024) {
-            return "CV file size exceeds 10MB limit";
-          }
-        }
-        break;
-      default:
-        break;
-    }
-    return undefined;
-  };
-
-  // Validate all fields (for submission)
-  const validateForm = (): FormErrors => {
-    const newErrors: FormErrors = {};
-    (Object.keys(formData) as (keyof FormDataType)[]).forEach((key) => {
-      const error = validateField(key, formData[key]);
-      if (error) newErrors[key] = error;
-    });
-    return newErrors;
-  };
-
-  // Handle input changes and validate in real-time
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     let updatedValue: string | File | null = value;
@@ -122,25 +61,27 @@ export default function JobApplicationForm() {
   // Handle form submission
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setSuccessMessage("");
 
-    // Validate all fields
-    const validationErrors = validateForm();
-    setErrors(validationErrors);
+    // Check file size (10MB limit)
+    if (formData.cv && formData.cv.size > 10 * 1024 * 1024) {
+      alert("File size should not exceed 10MB");
+      return;
+    }
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 
-    // Mark all fields as touched to show errors
-    setTouched({
-      name: true,
-      email: true,
-      phone: true,
-      experience: true,
-      cv: true,
-    });
+    if (!emailRegex.test(formData.email)) {
+      alert("Please enter a valid email address.");
+      return;
 
-    if (Object.keys(validationErrors).length > 0) {
-      alert("Please fix the errors in the form before submitting.");
+    }
+    if (formData.phone.length !== 10) {
+      alert("Invalid Phone Number");
       return;
     }
 
+
+    // Create FormData object
     const submissionData = new FormData();
     submissionData.append("name", formData.name);
     submissionData.append("email", formData.email);
@@ -154,20 +95,26 @@ export default function JobApplicationForm() {
       const response = await fetch("http://localhost:3000/JobApplication/addApplication", {
         method: "POST",
         body: submissionData,
+        
       });
 
-      const result = await response.json();
-      if (response.ok) {
-        alert("Application Submitted Successfully!");
-        setFormData(initialFormData); // Reset form
-        setErrors({}); // Clear errors
-        setTouched({}); // Clear touched state
-      } else {
-        alert(`Submission failed: ${result.message}`);
+      if (!response.ok) {
+        throw new Error("Failed to submit application");
       }
+
+      const result = await response.json();
+      alert("Application submitted successfully!");
+      setSuccessMessage("Application submitted successfully! Your CV has been uploaded.");
+      
+      setFormData(initialFormData);
+
+      setTimeout(() => {
+        setSuccessMessage("");
+      }, 5000);
+      
     } catch (error) {
       console.error("Error submitting application:", error);
-      alert("An error occurred while submitting your application.");
+      alert("Failed to submit application. Please try again.");
     }
   };
 
@@ -307,6 +254,23 @@ export default function JobApplicationForm() {
                   Submit Application
                 </button>
               </div>
+              {/* Add success message display */}
+              {successMessage && (
+                <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-4 rounded">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm text-green-700">
+                        {successMessage}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </form>
           </div>
         </div>

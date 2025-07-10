@@ -11,11 +11,11 @@ interface FormData {
   medicalDegree: string;
   university: string;
   specialization: string;
-  experience: string;
+  experience: number|string; // Changed to string to accommodate both number and string
   certificationInput: string[];
   additionalCertifications: string; 
   graduationDate: string; 
-  medicalLicenseNumber: string;
+  medicalLicenseNumber: number|string; // Changed to string to accommodate both number and string
   medicalLicenseIssuer: string;
   jobTitle: string;
   employmentPeriod: string;
@@ -39,11 +39,11 @@ const defaultFormData: FormData = {
   medicalDegree: "",
   university: "",
   specialization: "",
-  experience: "",
+  experience: '',
   certificationInput: [],
   additionalCertifications: "", 
   graduationDate: "",
-  medicalLicenseNumber: "",
+  medicalLicenseNumber: '',
   medicalLicenseIssuer: "",
   jobTitle: "",
   employmentPeriod: "",

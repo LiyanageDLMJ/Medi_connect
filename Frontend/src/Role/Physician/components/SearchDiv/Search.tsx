@@ -21,7 +21,7 @@ interface SearchProps {
 const Search: React.FC<SearchProps> = ({ filters, onFilterChange, onClear }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // You could add additional search logic here if needed
+    
   };
 
   return (
@@ -73,7 +73,7 @@ const SearchForm: React.FC<{
         placeholder="Search by Location..."
         onFilterChange={onFilterChange}
       />
-      <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md">
+      <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white px-6 py-2 rounded-md">
         Search
       </button> 
     </div>
