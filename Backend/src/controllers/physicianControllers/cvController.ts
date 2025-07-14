@@ -7,6 +7,7 @@ import fs from "fs";
 
 
 
+
 interface MulterRequest extends Request {
     file?: Express.Multer.File;
   }
@@ -215,4 +216,14 @@ exports.deleteCv=async(req:Request,res:Response)=>{
             "Message":"Doctor Cv not deleted"
         }).status(500);
     }
+};
+
+export const profile = async (req: Request, res: Response) => {
+  try {
+    const physician = await CvDoctorUpdate.findById(req.params.id);
+    if (!physician) return res.status(404).json({ message: "Not found" });
+    res.json(physician);
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
 };

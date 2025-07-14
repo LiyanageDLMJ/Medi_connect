@@ -14,6 +14,7 @@ import UpdateCV02 from "../pages/UpdateCV02";
 import UpdateCV03 from "../pages/UpdateCV03";
 import MedicalStudentDashboard from "../pages/MedicalStudentDashboard";
 import CVComparison from "../pages/Cvcompare";
+import DoctorProfile from "../pages/YourProfile";
 
 // import { Cvcompare } from "../pages/Cvcompare";
 
@@ -23,7 +24,7 @@ const routes = () => {
       <NavBar />
       <Routes>
         <Route path="/Doctordashboard" element={<DoctorDashboard />} />
-        <Route path="/profile" element={<UserProfile />} />
+        <Route path="/profile/:id" element={<DoctorProfile />} />
         <Route path="/update-cv01" element={<UpdateCV01 />} />
         <Route path="/update-cv02" element={<UpdateCV02 />} />
         <Route path="/update-cv03" element={<UpdateCV03 />} />
@@ -40,6 +41,7 @@ const routes = () => {
         />
         <Route path="/higher-education" element={<HigherEducation />} />
         <Route path="/messages" element={<Messages />} />
+        
         {/* <Route path="/cvCompare" element={<Cvcompare />} /> */}
       </Routes>
       <Footer />

@@ -18,11 +18,18 @@ export default function UpdateCV01() {
   const { formData, setFormData } = useFormContext();
   const navigate = useNavigate();
   const [phoneError, setPhoneError] = useState<string>("");
+  const [linkedinError, setLinkedinError] = useState<string>("");
 
   const validatePhoneNumber = (phone: string) => {
     //phone number validation
     const phoneRegex = /^(?:\+94|0)[0-9]{9}$/;
     return phoneRegex.test(phone);
+  };
+
+  const validateURL = (linkedinLink: string) => {
+    const urlPattern =
+      /^(https?:\/\/)?([\w.-]+)\.([a-z]{2,6})([\/\w .-]*)*\/?$/i;
+    return urlPattern.test(linkedinLink);
   };
 
   const handleInputChange = (
@@ -37,6 +44,14 @@ export default function UpdateCV01() {
         );
       } else {
         setPhoneError("");
+      }
+    }
+
+    if (name === "linkedinLink") {
+      if (!validateURL(value) && value !== "") {
+        setLinkedinError("Please enter a valid URL");
+      } else {
+        setLinkedinError("");
       }
     }
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -165,8 +180,13 @@ export default function UpdateCV01() {
                     value={formData.linkedinLink}
                     onChange={handleInputChange}
                     placeholder="https://www.linkedin.com/in/yourprofile"
-                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
+                    className={`w-full p-3 bg-gray-50 border border-gray-200 rounded-md ${
+                      linkedinError ? "border-red-500" : ""
+                    }`}
                   />
+                  {linkedinError && (
+                    <p className="text-red-500 text-sm mt-1">{linkedinError}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -246,7 +266,7 @@ export default function UpdateCV01() {
                     type="email"
                     value={formData.contactEmail}
                     onChange={handleInputChange}
-                    placeholder="example@gmail.com"                     
+                    placeholder="example@gmail.com"
                     className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
                     required
                   />
