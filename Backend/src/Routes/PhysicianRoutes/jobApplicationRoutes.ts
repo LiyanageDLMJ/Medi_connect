@@ -5,6 +5,9 @@ import {
   getAllJobApplications,
   getJobApplicationById,
   deleteJobApplication,
+  getUserApplications,
+  updateApplicationStatus,
+  getApplicationDetails,
 } from "../../controllers/physicianControllers/jobApplicationController";
 
 const router = express.Router();
@@ -20,5 +23,14 @@ router.get("/getApplication/:id", getJobApplicationById as express.RequestHandle
 
 // Route to delete a job application by ID
 router.delete("/deleteApplication/:id", deleteJobApplication as express.RequestHandler);
+
+// Get all applications for a user
+router.get("/user/:userId", getUserApplications);
+
+// Get single application details
+router.get("/:id", getApplicationDetails as express.RequestHandler);
+
+// Update application status
+router.patch("/:id/status", updateApplicationStatus as express.RequestHandler);
 
 export default router;

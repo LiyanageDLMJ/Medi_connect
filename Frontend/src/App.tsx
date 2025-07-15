@@ -4,6 +4,8 @@ import JobInternshipSearch from "./Role/Physician/pages/JobInternshipSearch";
 import HigherEducationSearch from "./Role/Physician/pages/HigherEducationSearch";
 import JobApplicationForm from "./Role/Physician/pages/JobApplicationForm";
 import JobInternshipDetails from "./Role/Physician/pages/JobInternshipDetails";
+import JobApplicationTracker from "./Role/Physician/pages/TrackJobApplication";
+
 
 import Register from "./LoginRegister/register/Register";
 import JobPost from "./Role/Recuiter/pages/JobPost";
@@ -60,7 +62,7 @@ const App = () => {
           <Route path="job-details/:jobId" element={<JobInternshipDetails />} />
           <Route path="Cvcompare" element={<Cvcompare />} />
           <Route path="degreeapplication" element={<DegreeApplication />} />
-
+          <Route path="job-application-tracker" element={<JobApplicationTracker />} /> {/* Add this line */}
         </Route>
 
         {/* Higher Education Routes */}
