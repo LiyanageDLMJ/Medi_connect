@@ -1,4 +1,5 @@
 import { useState, ChangeEvent, FormEvent } from "react";
+import { useParams, useNavigate } from "react-router-dom"; // Add useParams and useNavigate
 import Sidebar from "../components/NavBar/Sidebar";
 
 interface FormDataType {
@@ -21,6 +22,10 @@ export default function JobApplicationForm() {
   const [formData, setFormData] = useState<FormDataType>(initialFormData);
   const [successMessage, setSuccessMessage] = useState<string>("");
 
+  // Replace the old location logic with useParams
+  const { jobId } = useParams<{ jobId: string }>();
+  const navigate = useNavigate();
+
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     if (type === "file") {
@@ -41,23 +46,30 @@ export default function JobApplicationForm() {
     e.preventDefault();
     setSuccessMessage("");
 
+    // Check if jobId exists
+    if (!jobId) {
+      alert("No job selected. Please apply from a job card.");
+      navigate('/physician/job-internship'); // Redirect to job listings
+      return;
+    }
+
     // Check file size (10MB limit)
     if (formData.cv && formData.cv.size > 10 * 1024 * 1024) {
       alert("File size should not exceed 10MB");
       return;
     }
-    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
     if (!emailRegex.test(formData.email)) {
       alert("Please enter a valid email address.");
       return;
-
     }
-    if (formData.phone.length !== 10) {
-      alert("Invalid Phone Number");
+
+    // Phone validation: only digits, length 10
+    if (!/^\d{10}$/.test(formData.phone)) {
+      alert("Phone number must be exactly 10 digits.");
       return;
     }
-
 
     // Create FormData object
     const submissionData = new FormData();
@@ -68,31 +80,58 @@ export default function JobApplicationForm() {
     if (formData.cv) {
       submissionData.append("cv", formData.cv);
     }
+    submissionData.append("jobId", jobId); // Now jobId is guaranteed to exist
+
+    // Add debugging logs
+    console.log("Submitting application with:");
+    console.log("jobId:", jobId);
+    console.log("name:", formData.name);
+    console.log("email:", formData.email);
+    console.log("CV file:", formData.cv);
 
     try {
       const response = await fetch("http://localhost:3000/JobApplication/addApplication", {
         method: "POST",
         body: submissionData,
-        
       });
 
+      // Log the response status
+      console.log("Response status:", response.status);
+      console.log("Response headers:", response.headers);
+
       if (!response.ok) {
-        throw new Error("Failed to submit application");
+        let errorMessage = "Failed to submit application";
+        try {
+          const errorData = await response.json();
+          console.log("Error data:", errorData); // Add this log
+          errorMessage = errorData.message || errorMessage;
+        } catch (jsonErr) {
+          console.log("Could not parse error response as JSON");
+        }
+        throw new Error(errorMessage);
       }
 
-      const result = await response.json();
+      // Try to parse JSON, but fallback if not JSON
+      let result;
+      try {
+        result = await response.json();
+      } catch (jsonErr) {
+        console.warn("Response is not valid JSON:", jsonErr);
+        result = null;
+      }
+
       alert("Application submitted successfully!");
       setSuccessMessage("Application submitted successfully! Your CV has been uploaded.");
-      
       setFormData(initialFormData);
-
-      setTimeout(() => {
-        setSuccessMessage("");
-      }, 5000);
       
-    } catch (error) {
+      // Redirect to job tracker after successful submission
+      setTimeout(() => {
+        navigate('/physician/job-application-tracker');
+      }, 2000);
+
+    } catch (error: any) {
       console.error("Error submitting application:", error);
-      alert("Failed to submit application. Please try again.");
+      alert(error.message || "Failed to submit application. Please try again.");
     }
   };
 
@@ -105,6 +144,8 @@ export default function JobApplicationForm() {
             <div className="bg-gradient-to-tr from-[#2E5FB7] to-[#1a365d] py-6 px-8">
               <h2 className="text-2xl font-bold text-white text-center">Job Application Form</h2>
               <p className="text-blue-100 text-center mt-2">Please fill in your details below</p>
+              {/* Add jobId display for debugging */}
+              <p className="text-blue-100 text-center mt-1 text-sm">Job ID: {jobId}</p>
             </div>
 
             <form onSubmit={handleSubmit} className="py-8 px-8 space-y-6">
@@ -190,7 +231,7 @@ export default function JobApplicationForm() {
                   Submit Application
                 </button>
               </div>
-              {/* Add success message display */}
+
               {successMessage && (
                 <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-4 rounded">
                   <div className="flex">
@@ -208,7 +249,6 @@ export default function JobApplicationForm() {
                 </div>
               )}
             </form>
-
           </div>
         </div>
       </div>

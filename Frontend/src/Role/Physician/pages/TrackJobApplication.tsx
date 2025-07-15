@@ -49,107 +49,6 @@ interface JobApplication {
   lastUpdate: string;
 }
 
-const mockApplications: JobApplication[] = [
-  {
-    _id: "1",
-    jobId: {
-      _id: "job1",
-      title: "Internal Medicine Resident",
-      hospitalName: "Johns Hopkins Hospital",
-      location: "Baltimore, MD",
-      salaryRange: "$60k - $65k",
-      department: "Internal Medicine",
-      jobType: "Residency",
-    },
-    name: "Dr. Smith",
-    email: "smith@example.com",
-    phone: "123-456-7890",
-    experience: "3 years",
-    cv: "resume.pdf",
-    status: "interview-scheduled",
-    recruiterFeedback: "Interview scheduled for residency program",
-    appliedDate: "2024-01-15",
-    lastUpdate: "2024-01-20",
-  },
-  {
-    id: "2",
-    company: "Mayo Clinic",
-    position: "Cardiology Fellow",
-    location: "Rochester, MN",
-    salary: "$70k - $75k",
-    appliedDate: "2024-01-10",
-    status: "in-review",
-    lastUpdate: "2024-01-18",
-    notes: "Application under review by fellowship committee",
-  },
-  {
-    id: "3",
-    company: "Cleveland Clinic",
-    position: "Emergency Medicine Physician",
-    location: "Cleveland, OH",
-    salary: "$280k - $320k",
-    appliedDate: "2024-01-08",
-    status: "offer",
-    lastUpdate: "2024-01-22",
-    notes: "Offer received! Reviewing contract terms",
-  },
-  {
-    id: "4",
-    company: "Massachusetts General Hospital",
-    position: "Pediatric Resident",
-    location: "Boston, MA",
-    salary: "$62k - $67k",
-    appliedDate: "2024-01-05",
-    status: "rejected",
-    lastUpdate: "2024-01-12",
-    notes: "Program filled with other candidates",
-  },
-  {
-    id: "5",
-    company: "UCSF Medical Center",
-    position: "Orthopedic Surgery Resident",
-    location: "San Francisco, CA",
-    salary: "$65k - $70k",
-    appliedDate: "2024-01-20",
-    status: "applied",
-    lastUpdate: "2024-01-20",
-    notes: "Application submitted through ERAS",
-  },
-  {
-    id: "6",
-    company: "Mount Sinai Hospital",
-    position: "Attending Radiologist",
-    location: "New York, NY",
-    salary: "$350k - $400k",
-    appliedDate: "2024-01-12",
-    status: "final-interview",
-    lastUpdate: "2024-01-25",
-    notes: "Final interview with department chair scheduled",
-  },
-  {
-    id: "7",
-    company: "Houston Methodist Hospital",
-    position: "Anesthesiology Resident",
-    location: "Houston, TX",
-    salary: "$58k - $63k",
-    appliedDate: "2024-01-18",
-    status: "phone-screen",
-    lastUpdate: "2024-01-23",
-    notes: "Phone interview with program director completed",
-  },
-  {
-    id: "8",
-    company: "Stanford Health Care",
-    position: "Dermatology Fellow",
-    location: "Palo Alto, CA",
-    salary: "$72k - $77k",
-    appliedDate: "2024-01-14",
-    status: "in-review",
-    lastUpdate: "2024-01-21",
-    notes: "Waiting for fellowship match results",
-  },
-]
-
 const statusConfig = {
   applied: { label: "Applied", color: "bg-blue-100 text-blue-800", icon: Clock },
   "phone-screen": { label: "Phone Screen", color: "bg-purple-100 text-purple-800", icon: Clock },
@@ -241,7 +140,6 @@ const Select = ({
   const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <div><Sidebar/>
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
@@ -277,7 +175,7 @@ const Select = ({
           </div>
         </div>
       )}
-    </div></div>
+    </div>
   )
 }
 
@@ -354,8 +252,56 @@ export default function JobApplicationTracker() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  const userEmail = localStorage.getItem("userEmail");
+  // Hardcoded data for demonstration
+  useEffect(() => {
+    setApplications([
+      {
+        _id: "1",
+        jobId: {
+          _id: "job1",
+          title: "Pediatrician",
+          hospitalName: "Little Angels Children Hospital",
+          location: "Kandy",
+          salaryRange: "LKR 200,000 - 250,000",
+          department: "Pediatrics",
+          jobType: "Part-Time"
+        },
+        name: "Dr. Nimal Perera",
+        email: "nimal@example.com",
+        phone: "+94 77 123 4567",
+        experience: "3 years as Pediatric Consultant",
+        cv: "nimal_cv.pdf",
+        status: "applied",
+        recruiterFeedback: "Pending initial review",
+        appliedDate: "2025-04-20T00:00:00Z",
+        lastUpdate: "2025-04-22T00:00:00Z"
+      },
+      {
+        _id: "2",
+        jobId: {
+          _id: "job2",
+          title: "General Physician",
+          hospitalName: "Mount Sinai Hospital",
+          location: "Toronto",
+          salaryRange: "Stipend Based",
+          department: "General Medicine",
+          jobType: "Internship"
+        },
+        name: "Dr. Sameera Fernando",
+        email: "sameera@example.com",
+        phone: "+94 71 456 7890",
+        experience: "1-year clinical rotation experience",
+        cv: "sameera_cv.pdf",
+        status: "interview-scheduled",
+        recruiterFeedback: "Interview scheduled for May 5th",
+        appliedDate: "2025-04-18T00:00:00Z",
+        lastUpdate: "2025-04-25T00:00:00Z"
+      }
+    ]);
+    setLoading(false);
+  }, []);
 
+  // Calculate status counts based on real data
   const statusCounts = {
     total: applications.length,
     active: applications.filter(app => !['rejected', 'withdrawn', 'offer'].includes(app.status)).length,
@@ -363,54 +309,34 @@ export default function JobApplicationTracker() {
     rejected: applications.filter(app => app.status === 'rejected').length,
   };
 
+  // Filter applications based on search and status
   const filteredApplications = applications.filter(app => {
     const matchesSearch = 
-      app.jobId.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      app.jobId.hospitalName.toLowerCase().includes(searchTerm.toLowerCase());
+      app.jobId?.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      app.jobId?.hospitalName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      app.name?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || app.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
-  useEffect(() => {
-    const fetchApplications = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(`http://localhost:3000/JobApplication/user/${userEmail}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch applications');
-        }
-        const data = await response.json();
-        setApplications(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (userEmail) {
-      fetchApplications();
-    }
-  }, [userEmail]);
-
-  // Update your table row to show job details
+  // Application row component
   const ApplicationRow = ({ application }: { application: JobApplication }) => (
     <TableRow key={application._id}>
       <TableCell className="font-medium">
         <div className="flex items-center gap-2">
           <Building2 className="w-4 h-4 text-gray-500" />
-          {application.jobId.hospitalName}
+          {application.jobId?.hospitalName || 'N/A'}
         </div>
       </TableCell>
-      <TableCell>{application.jobId.title}</TableCell>
+      <TableCell>{application.jobId?.title || 'N/A'}</TableCell>
       <TableCell className="hidden md:table-cell">
         <div className="flex items-center gap-1">
           <MapPin className="w-3 h-3 text-gray-500" />
-          {application.jobId.location}
+          {application.jobId?.location || 'N/A'}
         </div>
       </TableCell>
       <TableCell className="hidden lg:table-cell">
-        {application.jobId.salaryRange && (
+        {application.jobId?.salaryRange && (
           <div className="flex items-center gap-1">
             <DollarSign className="w-3 h-3 text-gray-500" />
             {application.jobId.salaryRange}
@@ -423,151 +349,194 @@ export default function JobApplicationTracker() {
       <TableCell className="hidden sm:table-cell">
         {new Date(application.appliedDate).toLocaleDateString()}
       </TableCell>
+      <TableCell className="hidden lg:table-cell">
+        {new Date(application.lastUpdate).toLocaleDateString()}
+      </TableCell>
     </TableRow>
   );
 
+  // Loading state
+  if (loading) {
+    return (
+      <div className="flex-1 overflow-auto md:pl-64">
+        <Sidebar />
+        <div className="container mx-auto p-6">
+          <div className="flex justify-center items-center h-64">
+            <div className="text-lg">Loading applications...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="flex-1 overflow-auto md:pl-64">
+        <Sidebar />
+        <div className="container mx-auto p-6">
+          <div className="text-center text-red-500">
+            <p>Error: {error}</p>
+            <Button onClick={() => window.location.reload()} className="mt-4">
+              Retry
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 overflow-auto md:pl-64">
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">Medical Job Application Tracker</h1>
-          <p className="text-gray-500">Track and manage your medical career applications</p>
+      <Sidebar />
+      {/* Doctor name at top right */}
+      <div className="flex justify-end items-center p-4">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/340px-Default_pfp.svg.png"  className="w-10 h-10 rounded-full mr-2" />
+        <span className="font-semibold text-gray-700">Dr. Nimal Perera</span>
+      </div>
+      <div className="container mx-auto p-6 space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold">Medical Job Application Tracker</h1>
+            <p className="text-gray-500">Track and manage your medical career applications</p>
+          </div>
+          <Button className="flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            Add Application
+          </Button>
         </div>
-        <Button className="flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          Add Application
-        </Button>
-      </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Applications</CardTitle>
-            <Building2 className="h-4 w-4 text-gray-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{statusCounts.total}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Applications</CardTitle>
-            <Clock className="h-4 w-4 text-gray-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{statusCounts.active}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Offers Received</CardTitle>
-            <CheckCircle className="h-4 w-4 text-gray-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{statusCounts.offers}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Rejections</CardTitle>
-            <XCircle className="h-4 w-4 text-gray-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{statusCounts.rejected}</div>
-          </CardContent>
-        </Card>
-      </div>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Applications</CardTitle>
+              <Building2 className="h-4 w-4 text-gray-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{statusCounts.total}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Active Applications</CardTitle>
+              <Clock className="h-4 w-4 text-gray-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{statusCounts.active}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Offers Received</CardTitle>
+              <CheckCircle className="h-4 w-4 text-gray-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">{statusCounts.offers}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Rejections</CardTitle>
+              <XCircle className="h-4 w-4 text-gray-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-600">{statusCounts.rejected}</div>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Applications</CardTitle>
-          <CardDescription>Manage and track your medical job applications</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
-              <Input
-                placeholder="Search companies or positions..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <div className="w-full sm:w-[200px]">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <div className="p-1">
-                  <div className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-gray-100">
-                    All Statuses
-                  </div>
-                  {Object.entries(statusConfig).map(([key, config]) => (
-                    <div
-                      key={key}
-                      className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-gray-100"
-                    >
-                      {config.label}
+        {/* Filters */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Applications</CardTitle>
+            <CardDescription>Manage and track your medical job applications</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col sm:flex-row gap-4 mb-6">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
+                <Input
+                  placeholder="Search companies or positions..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <div className="w-full sm:w-[200px]">
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <div className="p-1">
+                    <div className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-gray-100">
+                      All Statuses
                     </div>
-                  ))}
-                </div>
-              </Select>
+                    {Object.entries(statusConfig).map(([key, config]) => (
+                      <div
+                        key={key}
+                        className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-gray-100"
+                      >
+                        {config.label}
+                      </div>
+                    ))}
+                  </div>
+                </Select>
+              </div>
             </div>
-          </div>
 
-          {/* Applications Table */}
-          <div className="rounded-md border border-gray-200">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Company</TableHead>
-                  <TableHead>Position</TableHead>
-                  <TableHead className="hidden md:table-cell">Location</TableHead>
-                  <TableHead className="hidden lg:table-cell">Salary</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="hidden sm:table-cell">Applied</TableHead>
-                  <TableHead className="hidden lg:table-cell">Last Update</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredApplications.map((application) => (
-                  <ApplicationRow key={application._id} application={application} />
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+            {/* Applications Table */}
+            <div className="rounded-md border border-gray-200">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Company</TableHead>
+                    <TableHead>Position</TableHead>
+                    <TableHead className="hidden md:table-cell">Location</TableHead>
+                    <TableHead className="hidden lg:table-cell">Salary</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="hidden sm:table-cell">Applied</TableHead>
+                    <TableHead className="hidden lg:table-cell">Last Update</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredApplications.map((application) => (
+                    <ApplicationRow key={application._id} application={application} />
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
 
-          {filteredApplications.length === 0 && (
-            <div className="text-center py-8 text-gray-500">No applications found matching your criteria.</div>
-          )}
-        </CardContent>
-      </Card>
+            {filteredApplications.length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                {applications.length === 0 ? "No applications found. Start applying for jobs!" : "No applications found matching your criteria."}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
-      {/* Status Overview */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Application Pipeline</CardTitle>
-          <CardDescription>Overview of applications by status</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
-            {Object.entries(statusConfig).map(([status, config]) => {
-              const count = applications.filter((app) => app.status === status).length
-              const Icon = config.icon
+        {/* Status Overview */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Application Pipeline</CardTitle>
+            <CardDescription>Overview of applications by status</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+              {Object.entries(statusConfig).map(([status, config]) => {
+                const count = applications.filter((app) => app.status === status).length
+                const Icon = config.icon
 
-              return (
-                <div key={status} className="text-center p-4 rounded-lg border border-gray-200">
-                  <Icon className="w-6 h-6 mx-auto mb-2 text-gray-500" />
-                  <div className="text-2xl font-bold">{count}</div>
-                  <div className="text-xs text-gray-500">{config.label}</div>
-                </div>
-              )
-            })}
-          </div>
-        </CardContent>
-      </Card>
-    </div></div>
+                return (
+                  <div key={status} className="text-center p-4 rounded-lg border border-gray-200">
+                    <Icon className="w-6 h-6 mx-auto mb-2 text-gray-500" />
+                    <div className="text-2xl font-bold">{count}</div>
+                    <div className="text-xs text-gray-500">{config.label}</div>
+                  </div>
+                )
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   )
 }

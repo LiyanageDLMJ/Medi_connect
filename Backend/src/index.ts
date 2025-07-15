@@ -3,7 +3,7 @@ import cors from "cors"; // Import cors
 import mongoose from "mongoose";
 import router from "./Routes/PhysicianRoutes/BasicRoutes";
 import CvDocRouter from "./Routes/PhysicianRoutes/CvDoctorRoutes";
-import RecuiterJobPost from "./Routes/RecuiterRoutes/JobPostRoutes";
+import  RecuiterJobPost from "./Routes/RecuiterRoutes/JobPostRoutes";
 import connectDB from "./Config/db";
 import JobSearch from "./Routes/PhysicianRoutes/JobSearchRoutes";
 import jobApplicationRoutes from "./Routes/PhysicianRoutes/jobApplicationRoutes";
@@ -13,13 +13,14 @@ import DegreeApplicationRoutes from "./Routes/PhysicianRoutes/degreeApplicationR
 import viewDegreeApplicationRoutes from "./Routes/EducationRoutes/ViewDegreeApplicationRoutes";
 import degreeListingRoutes from './Routes/EducationRoutes/DegreeListingRoutes';
 import higherEducationRoutes from './Routes/EducationRoutes/higherEducationRoutes';
+import jobApplicationContolByRecuiterRoutes from './Routes/RecuiterRoutes/jobApplicationcontolByRecuiterRoutes';
 import fs from "fs";
 import path from "path";
 
 
 
 import LoginRegisterRoutes from "./Routes/LoginRegisterRoutes";
-connectDB();
+connectDB(); 
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -55,6 +56,7 @@ app.use("/degrees", degreeListingRoutes);
 app.use("/higherDegrees", higherEducationRoutes);
 app.use('/degreeApplications', DegreeApplicationRoutes);
 app.use('/viewDegreeApplications', viewDegreeApplicationRoutes);
+app.use('/jobApplicationControl', jobApplicationContolByRecuiterRoutes);
 // app.use('/images', express.static('src/image'));
 app.use('/image', express.static(path.join(__dirname, "../image")));
 

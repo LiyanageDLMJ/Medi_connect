@@ -34,7 +34,8 @@ const routes = () => {
  <Route path="/cvCompare" element={<Cvcompare />} />
  <Route path="/job-application-tracker" element={<JobApplicationTracker />} />
    
-
+// Make sure this route matches what you're using
+<Route path="/physician/job-details/:jobId" element={<JobInternshipDetails />} />
 
       </Routes>
       <Footer />

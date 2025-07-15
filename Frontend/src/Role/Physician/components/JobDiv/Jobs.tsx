@@ -95,7 +95,10 @@ const Jobs: React.FC<JobsProps> = ({ jobs, totalJobs }) => {
               >
                 Details
               </button>
-              <button className="btn btn-apply" onClick={() => navigate("/physician/job-application")}>
+              <button 
+                className="btn btn-apply" 
+                onClick={() => navigate(`/physician/job-application/${job.jobId}`)}
+              >
                 Apply
               </button>
             </div>
@@ -123,4 +126,3 @@ Jobs.propTypes = {
 };
 
 export default Jobs;
-

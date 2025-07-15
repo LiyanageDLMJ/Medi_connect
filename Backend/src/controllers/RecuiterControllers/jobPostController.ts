@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import JobPost from "../../models/Job";
 
 
+
 // View all job posts
 export const viewJobs = async (req: Request, res: Response) => {
   try {
@@ -85,4 +86,5 @@ export const getJobById = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Failed to fetch job details", error: error.message });
   }
 };
+
 

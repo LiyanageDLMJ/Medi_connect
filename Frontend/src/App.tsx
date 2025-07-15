@@ -54,7 +54,7 @@ const App = () => {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="higher-education" element={<HigherEducationSearch />} />
           <Route path="job-internship" element={<JobInternshipSearch />} />
-          <Route path="job-application" element={<JobApplicationForm />} />
+          <Route path="job-application/:jobId" element={<JobApplicationForm />} /> {/* Add :jobId parameter */}
           <Route path="job-internship/:jobId" element={<JobInternshipDetails />} />
           <Route path="update-cv01" element={<UpdateCV01 />} />
           <Route path="update-cv02" element={<UpdateCV02 />} />
@@ -62,7 +62,7 @@ const App = () => {
           <Route path="job-details/:jobId" element={<JobInternshipDetails />} />
           <Route path="Cvcompare" element={<Cvcompare />} />
           <Route path="degreeapplication" element={<DegreeApplication />} />
-          <Route path="job-application-tracker" element={<JobApplicationTracker />} /> {/* Add this line */}
+          <Route path="job-application-tracker" element={<JobApplicationTracker />} />
         </Route>
 
         {/* Higher Education Routes */}

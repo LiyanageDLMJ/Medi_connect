@@ -257,6 +257,10 @@ export default function JobManagement() {
   return (
     <div>
       <Sidebar />
+      <div className="flex justify-end items-center p-4">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/340px-Default_pfp.svg.png"  className="w-10 h-10 rounded-full mr-2" />
+        <span className="font-semibold text-gray-700">Mayo Clinic</span>
+      </div>
       <div className="flex-1 overflow-auto md:pl-64">
         {/* JOB LISTINGS VIEW */}
         {currentView === 'list' && (

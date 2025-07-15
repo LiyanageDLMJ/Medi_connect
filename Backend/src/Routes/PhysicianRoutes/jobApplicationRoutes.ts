@@ -6,8 +6,8 @@ import {
   getJobApplicationById,
   deleteJobApplication,
   getUserApplications,
-  updateApplicationStatus,
-  getApplicationDetails,
+
+  getApplicationsByEmail,
 } from "../../controllers/physicianControllers/jobApplicationController";
 
 const router = express.Router();
@@ -28,9 +28,8 @@ router.delete("/deleteApplication/:id", deleteJobApplication as express.RequestH
 router.get("/user/:userId", getUserApplications);
 
 // Get single application details
-router.get("/:id", getApplicationDetails as express.RequestHandler);
+router.get("/:id", getApplicationsByEmail as express.RequestHandler);
 
-// Update application status
-router.patch("/:id/status", updateApplicationStatus as express.RequestHandler);
+
 
 export default router;
