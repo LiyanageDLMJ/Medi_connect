@@ -2,13 +2,15 @@ import React from 'react';
 import { InputGroup, Label, Input, RadioGroup, RadioWrapper, RadioInput, RadioLabel } from '../../components/StyledFormComponents';
 
 interface DoctorFormProps {
-  formData: {
+  formData: any; // widened for compatibility
+  /*
     profession?: string;
     specialty?: string;
     location?: string;
     higherEducation?: string;
-  };
-  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+    [key: string]: any;
+  */
+  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
 }
 
 const DoctorForm: React.FC<DoctorFormProps> = ({ formData, handleChange }) => {

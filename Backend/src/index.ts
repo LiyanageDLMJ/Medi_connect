@@ -1,30 +1,35 @@
-import express from "express";
-import cors from "cors"; // Import cors
-import mongoose from "mongoose";
+import express, { Application } from "express";
+import cors from "cors";
+import { connect } from "mongoose";
 import router from "./Routes/PhysicianRoutes/BasicRoutes";
 import CvDocRouter from "./Routes/PhysicianRoutes/CvDoctorRoutes";
 import RecuiterJobPost from "./Routes/RecuiterRoutes/JobPostRoutes";
 import connectDB from "./Config/db";
 import JobSearch from "./Routes/PhysicianRoutes/JobSearchRoutes";
 import jobApplicationRoutes from "./Routes/PhysicianRoutes/jobApplicationRoutes";
-
 import DegreeApplicationRoutes from "./Routes/PhysicianRoutes/degreeApplicationRoutes";
-
 import viewDegreeApplicationRoutes from "./Routes/EducationRoutes/ViewDegreeApplicationRoutes";
 import degreeListingRoutes from './Routes/EducationRoutes/DegreeListingRoutes';
 import higherEducationRoutes from './Routes/EducationRoutes/higherEducationRoutes';
+import LoginRegisterRoutes from "./Routes/LoginRegisterRoutes";
 import fs from "fs";
 import path from "path";
+import dotenv from "dotenv";
 
+// Load environment variables
+dotenv.config();
 
+// Initialize express app
+const app: Application = express();
+const PORT: number = Number(process.env.PORT) || 3000;
 
-import LoginRegisterRoutes from "./Routes/LoginRegisterRoutes";
-connectDB();
+// Connect to database
+connectDB().catch(err => {
+    console.error("Failed to connect to database:", err);
+    process.exit(1);
+});
 
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-// Configure CORS with specific options
+// Middleware setup
 app.use(cors({
     origin: ['http://localhost:5173', 'http://localhost:3000'],
     credentials: true,
@@ -32,36 +37,54 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Middleware to parse JSON
 app.use(express.json());
-
-// Create uploads folder if it doesn't exist
-const uploadDir = path.join(__dirname, "../uploads");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
-}
-
-
-// Middleware for parsing URL-encoded data
 app.use(express.urlencoded({ extended: true }));
 
-// Routes
-app.use("/api", router);
-app.use("/CvdoctorUpdate", CvDocRouter);
-app.use("/JobPost", RecuiterJobPost);
-app.use("/JobSearch", JobSearch);
-app.use("/JobApplication", jobApplicationRoutes);
-app.use("/degrees", degreeListingRoutes);
-app.use("/higherDegrees", higherEducationRoutes);
-app.use('/degreeApplications', DegreeApplicationRoutes);
-app.use('/viewDegreeApplications', viewDegreeApplicationRoutes);
-// app.use('/images', express.static('src/image'));
-app.use('/image', express.static(path.join(__dirname, "../image")));
+// Ensure uploads directory exists
+const uploadDir = path.join(__dirname, "../uploads");
+if (!fs.existsSync(uploadDir)) {
+    try {
+        fs.mkdirSync(uploadDir, { recursive: true });
+    } catch (err) {
+        console.error("Failed to create uploads directory:", err);
+    }
+}
 
+// Route definitions
+const routes = [
+    { path: "/api", router },
+    { path: "/CvdoctorUpdate", router: CvDocRouter },
+    { path: "/JobPost", router: RecuiterJobPost },
+    { path: "/JobSearch", router: JobSearch },
+    { path: "/JobApplication", router: jobApplicationRoutes },
+    { path: "/degrees", router: degreeListingRoutes },
+    { path: "/higherDegrees", router: higherEducationRoutes },
+    { path: "/degreeApplications", router: DegreeApplicationRoutes },
+    { path: "/viewDegreeApplications", router: viewDegreeApplicationRoutes },
+    { path: "/auth", router: LoginRegisterRoutes },
+];
 
-// Start the server
-app.use("/auth", LoginRegisterRoutes); // Use the centralized login/register routes
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+// Register routes
+routes.forEach(({ path, router }) => {
+    app.use(path, router);
 });
 
+app.use('/physician', CvDocRouter);
+
+// Serve static files
+app.use('/image', express.static(path.join(__dirname, "../image")));
+
+// Error handling middleware
+app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error(err.stack);
+    res.status(500).send('Something broke!');
+});
+
+// Start server
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+}).on('error', (err: Error) => {
+    console.error("Failed to start server:", err);
+});
+
+export default app;

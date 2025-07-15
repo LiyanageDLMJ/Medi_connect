@@ -31,6 +31,8 @@ import { FormProvider } from "./context/FormContext";
 import MedicalStudentDashboard from "./Role/Physician/pages/MedicalStudentDashboard";
 import Cvcompare from "./Role/Physician/pages/Cvcompare";
 import PostDegree from "./Role/higherEducation/pages/PostDegree";
+import DoctorProfile from "./Role/Physician/pages/YourProfile"; // Import the PhysicianProfile component
+import RequireAuth from "./Components/RequireAuth";
 const App = () => {
   return (
     <FormProvider>
@@ -53,7 +55,14 @@ const App = () => {
       <Route element={<><Outlet /></>}>
 
         {/* Physician Routes */}
-        <Route path="/physician">
+        <Route
+          path="/physician"
+          element={
+            <RequireAuth>
+              <Outlet />
+            </RequireAuth>
+          }
+        >
           <Route path="Doctordashboard" element={<DoctorDashboard />} />
           <Route path="higher-education" element={<HigherEducationSearch />} />
           <Route path="job-internship" element={<JobInternshipSearch />} />
@@ -65,8 +74,19 @@ const App = () => {
           <Route path="job-details/:jobId" element={<JobInternshipDetails />} />
           <Route path="Cvcompare" element={<Cvcompare />} />
           <Route path="degreeapplication" element={<DegreeApplication />} />
+          
+          
 
         </Route>
+
+        <Route
+          path="/physician/profile/:id"
+          element={
+            <RequireAuth>
+              <DoctorProfile />
+            </RequireAuth>
+          }
+        />
 
           {/* Higher Education Routes */}
           <Route path="/higher-education">
@@ -85,7 +105,9 @@ const App = () => {
           <Route path="Dashborad" element={<Dashborad />} />
         </Route>
 
-      
+      <Route path="/medical-student">
+          <Route path="MedicalStudentDashboard" element={<MedicalStudentDashboard />} />
+      </Route>
         
         <Route path="/postdegree" element={<PostDegree />} />
  

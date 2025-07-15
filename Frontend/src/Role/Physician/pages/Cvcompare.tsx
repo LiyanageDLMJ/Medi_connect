@@ -15,36 +15,49 @@ import {
 import axios from "axios";
 
 type ComparisonData = {
+  yourName: string;
+  otherName: string;
   totalExperience: string;
   educationLevel: string;
   certifications: number;
-  languages: string[];
-  leadershipExperience: boolean;
+  specialization: string;
+  university: string;
+  graduationDate: string;
 };
 
 export default function CVComparison() {
   const [yourProfile, setYourProfile] = useState<string>("");
   const [otherProfile, setOtherProfile] = useState<string>("");
   const [isCompared, setIsCompared] = useState<boolean>(false);
-  const [yourProfileData, setYourProfileData] = useState<ComparisonData | null>(null);
-  const [otherProfileData, setOtherProfileData] = useState<ComparisonData | null>(null);
+  const [yourProfileData, setYourProfileData] = useState<ComparisonData | null>(
+    null
+  );
+  const [otherProfileData, setOtherProfileData] =
+    useState<ComparisonData | null>(null);
   const [yourSuggestions, setYourSuggestions] = useState<string[]>([]);
   const [otherSuggestions, setOtherSuggestions] = useState<string[]>([]);
   const [showYourDropdown, setShowYourDropdown] = useState<boolean>(false);
   const [showOtherDropdown, setShowOtherDropdown] = useState<boolean>(false);
 
   // Fetch suggestions for autocomplete
-  const fetchSuggestions = async (name: string, setSuggestions: (suggestions: string[]) => void, setShowDropdown: (show: boolean) => void) => {
-    if (name.length < 2) {
+  const fetchSuggestions = async (
+    name: string,
+    setSuggestions: (suggestions: string[]) => void,
+    setShowDropdown: (show: boolean) => void
+  ) => {
+    if (name.length < 1) {
       setSuggestions([]);
       setShowDropdown(false);
       return;
     }
 
     try {
-      const response = await axios.get("http://localhost:3000/CvdoctorUpdate/viewDoctorsCv", {
-        params: { yourName: name },
-      });
+      const response = await axios.get(
+        "http://localhost:3000/CvdoctorUpdate/viewDoctorsCv",
+        {
+          params: { yourName: name },
+        }
+      );
       setSuggestions(response.data);
       setShowDropdown(true);
     } catch (error) {
@@ -55,18 +68,27 @@ export default function CVComparison() {
   };
 
   // Fetch full CV data for a selected profile
-  const fetchProfileData = async (name: string, setProfileData: (data: ComparisonData | null) => void) => {
+  const fetchProfileData = async (
+    name: string,
+    setProfileData: (data: ComparisonData | null) => void
+  ) => {
     try {
-      const response = await axios.get("http://localhost:3000/CvdoctorUpdate/getDoctorCv", {
-        params: { yourName: name },
-      });
+      const response = await axios.get(
+        "http://localhost:3000/CvdoctorUpdate/getDoctorCv",
+        {
+          params: { yourName: name },
+        }
+      );
       const data = response.data;
       setProfileData({
+        yourName: data.yourName,
+        otherName: data.otherName,
         totalExperience: data.experience,
         educationLevel: data.medicalDegree, // Adjust based on your schema
         certifications: data.certificationInput.length,
-        languages: [], // You'll need to add a languages field to your schema if needed
-        leadershipExperience: false, // Add logic if you have this data
+        specialization: data.specialization, // You'll need to add a languages field to your schema if needed
+        university: data.university, // Adjust based on your schema
+        graduationDate: data.graduationDate, // Add logic if you have this data
       });
     } catch (error) {
       console.error("Error fetching profile data:", error);
@@ -110,12 +132,12 @@ export default function CVComparison() {
   };
 
   return (
-    <div>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Sidebar />
 
       <div className="flex-1 overflow-auto md:pl-64">
         {/* Header */}
-        <header className="flex items-center justify-between p-4 bg-white border-b">
+        <header className="flex items-center justify-between p-6 bg-white border-b">
           <div className="flex items-center gap-4">
             <button className="p-2 rounded-full hover:bg-gray-100">
               <Menu className="w-5 h-5" />
@@ -147,10 +169,13 @@ export default function CVComparison() {
             </div>
           </div>
         </header>
-        <div className="container mx-auto py-8 px-4">
-          <h1 className="text-3xl font-bold mb-8 mt-8">CV Comparison</h1>
 
-          <div className="flex flex-col md:flex-row gap-4 items-center mb-30">
+        <div className="w-full max-w-7xl mx-auto py-12 px-8">
+          <h1 className="text-4xl font-extrabold mb-12 mt-10 text-gray-800">
+            CV Comparison
+          </h1>
+
+          <div className="flex flex-col md:flex-row gap-8 items-center mb-16">
             <div className="relative flex-1">
               <Input
                 placeholder="Enter your profile name"
@@ -204,82 +229,53 @@ export default function CVComparison() {
           </div>
 
           {isCompared && yourProfileData && otherProfileData && (
-            <div className="border rounded-lg overflow-hidden">
-              <table className="w-full">
+            <div className="border rounded-2xl overflow-hidden shadow-lg bg-white">
+              <table className="w-full text-lg">
                 <thead>
-                  <tr className="bg-gray-50">
-                    <th className="text-left p-4 font-medium">Features</th>
-                    <th className="text-left p-4 font-medium">Your Profile</th>
-                    <th className="text-left p-4 font-medium">Other User</th>
+                  <tr className="bg-gray-100">
+                    <th className="text-left p-6 font-bold text-2xl">
+                      Features
+                    </th>
+                    <th className="text-left p-6 font-bold text-2xl">
+                      {yourProfileData.yourName}
+                    </th>
+                    <th className="text-left p-6 font-bold text-2xl">
+                      {otherProfileData.yourName}
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr className="border-t">
-                    <td className="p-4">Total Experience</td>
-                    <td className="p-4">{yourProfileData.totalExperience}</td>
-                    <td className="p-4">{otherProfileData.totalExperience}</td>
+                    <td className="p-6 font-semibold">Total Experience</td>
+                    <td className="p-6">{yourProfileData.totalExperience}</td>
+                    <td className="p-6">{otherProfileData.totalExperience}</td>
                   </tr>
                   <tr className="border-t">
-                    <td className="p-4">Education Level</td>
-                    <td className="p-4">{yourProfileData.educationLevel}</td>
-                    <td className="p-4">{otherProfileData.educationLevel}</td>
+                    <td className="p-6 font-semibold">Education Level</td>
+                    <td className="p-6">{yourProfileData.educationLevel}</td>
+                    <td className="p-6">{otherProfileData.educationLevel}</td>
                   </tr>
                   <tr className="border-t">
-                    <td className="p-4">Certifications</td>
-                    <td className="p-4">{yourProfileData.certifications}</td>
-                    <td className="p-4">{otherProfileData.certifications}</td>
+                    <td className="p-6 font-semibold">Certifications</td>
+                    <td className="p-6">{yourProfileData.certifications}</td>
+                    <td className="p-6">{otherProfileData.certifications}</td>
                   </tr>
                   <tr className="border-t">
-                    <td className="p-4">Languages</td>
-                    <td className="p-4">
-                      <div className="flex flex-wrap gap-2">
-                        {yourProfileData.languages.map((language) => (
-                          <span
-                            key={language}
-                            className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm"
-                          >
-                            {language}
-                          </span>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex flex-wrap gap-2">
-                        {otherProfileData.languages.map((language) => (
-                          <span
-                            key={language}
-                            className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm"
-                          >
-                            {language}
-                          </span>
-                        ))}
-                      </div>
-                    </td>
+                    <td className="p-6 font-semibold">Specialization</td>
+                    <td className="p-6">{yourProfileData.specialization}</td>
+                    <td className="p-6">{otherProfileData.specialization}</td>
                   </tr>
                   <tr className="border-t">
-                    <td className="p-4">Leadership Experience</td>
-                    <td className="p-4">
-                      <span
-                        className={`${
-                          yourProfileData.leadershipExperience
-                            ? "text-green-600"
-                            : "text-red-600"
-                        }`}
-                      >
-                        {yourProfileData.leadershipExperience ? "Yes" : "No"}
-                      </span>
+                    <td className="p-6 font-semibold">
+                      University/Medical School
                     </td>
-                    <td className="p-4">
-                      <span
-                        className={`${
-                          otherProfileData.leadershipExperience
-                            ? "text-green-600"
-                            : "text-red-600"
-                        }`}
-                      >
-                        {otherProfileData.leadershipExperience ? "Yes" : "No"}
-                      </span>
-                    </td>
+                    <td className="p-6">{yourProfileData.university}</td>
+                    <td className="p-6">{otherProfileData.university}</td>
+                  </tr>
+                  <tr className="border-t">
+                    <td className="p-6 font-semibold">Graduation Date</td>
+                    <td className="p-6">{yourProfileData.graduationDate}</td>
+                    <td className="p-6">{otherProfileData.graduationDate}</td>
                   </tr>
                 </tbody>
               </table>

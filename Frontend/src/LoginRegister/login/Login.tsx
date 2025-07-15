@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import styled from 'styled-components';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { InputGroup, Label, Input } from '../components/StyledFormComponents';
 import Navbar from '../components/Navbar';
 
@@ -8,13 +9,19 @@ const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
+  const from = (location.state as { from?: Location })?.from?.pathname || '/';
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically make an API call to authenticate
-    console.log('Login attempt with:', { email, password });
-    // For now, we'll just redirect to dashboard
-    navigate('/dashboard');
+    try {
+      await login(email, password);
+      navigate(from, { replace: true });
+    } catch (err) {
+      console.error('Login failed', err);
+      alert('Invalid credentials');
+    }
   }
 
   return (

@@ -9,6 +9,7 @@ import {
   Menu,
   Search,
   User,
+  Check,
 } from "lucide-react";
 import Sidebar from "../components/NavBar/Sidebar";
 import axios from "axios";
@@ -17,7 +18,9 @@ export default function UpdateCV03() {
   const { formData, setFormData } = useFormContext();
   const navigate = useNavigate();
   const [resumeFile, setResumeFile] = useState<File | null>(null);
-  const [error, setError] = useState<string | null>(null); // Added for user feedback
+  const [error, setError] = useState<string | null>(null); // Error feedback
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [createdDoctorId, setCreatedDoctorId] = useState<string | null>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -74,7 +77,15 @@ export default function UpdateCV03() {
         }
       );
 
-      navigate("/success");
+      // Attempt to extract the newly created / updated doctor's id from the response
+      const newDoctorId =
+        response.data?.doctorId || response.data?.id || response.data?._id;
+      if (newDoctorId) {
+        localStorage.setItem("doctorId", newDoctorId.toString());
+      }
+
+      setSubmitSuccess(true);
+      setCreatedDoctorId(newDoctorId || null);
     } catch (error) {
       console.error("Error submitting data:", error);
       setError("Failed to submit the form. Please try again later."); // User feedback
@@ -138,6 +149,20 @@ export default function UpdateCV03() {
             onSubmit={handleSubmit}
             className="bg-white p-8 rounded-lg shadow-sm"
           >
+            {submitSuccess && (
+              <div className="mb-4 p-4 border border-green-300 rounded-md bg-green-50 text-green-700 flex items-center gap-2">
+                <Check className="w-4 h-4" />
+                <span>Your CV has been updated successfully!</span>
+                {createdDoctorId && (
+                  <button
+                    onClick={() => navigate(`/physician/profile/${createdDoctorId}`)}
+                    className="ml-auto text-blue-600 underline text-sm"
+                  >
+                    View Profile
+                  </button>
+                )}
+              </div>
+            )}
             {error && (
               <div className="mb-4 text-red-500 text-sm">{error}</div>
             )}
@@ -148,7 +173,7 @@ export default function UpdateCV03() {
                     htmlFor="JobTitle"
                     className="block text-sm font-medium"
                   >
-                    Job Title*
+                    Job Type*
                   </label>
                   <input
                     id="JobTitle"
@@ -156,7 +181,7 @@ export default function UpdateCV03() {
                     type="text"
                     value={formData.jobTitle || ""}
                     onChange={handleInputChange}
-                    placeholder="Cardiologist"
+                    placeholder="full time"
                     className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
                     required
                   />
