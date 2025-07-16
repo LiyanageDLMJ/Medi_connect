@@ -11,7 +11,8 @@ import degreePostRoutes from './Routes/EducationRoutes/DegreePostRoutes';
 import fs from "fs";
 import path from "path";
 
-import LoginRegisterRoutes from "./Routes/LoginRegisterRoutes";
+import LoginRegisterRoutes from "./Routes/LoginRegisterRoutes/LoginRegisterRoutes";
+import userlistRoutes from "./Routes/LoginRegisterRoutes/UserListRoutes";
 connectDB();
 
 const app = express();
@@ -40,6 +41,7 @@ app.use("/JobPost", RecuiterJobPost);
 app.use("/JobSearch", JobSearch);
 app.use("/JobApplication", jobApplicationRoutes);
 app.use('/degrees', degreePostRoutes);
+app.use("/userlist", userlistRoutes); // Use the user list routes
 // Start the server
 app.use("/auth", LoginRegisterRoutes); // Use the centralized login/register routes
 app.listen(PORT, () => {

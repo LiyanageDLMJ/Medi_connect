@@ -14,6 +14,28 @@ const MedicalStudentForm: React.FC<MedicalStudentFormProps> = ({ formData, handl
   return (
     <>
       <InputGroup>
+        <Label>Name</Label>
+        <Input
+          type="text"
+          name="name"
+          value={(formData as any).name || ''}
+          onChange={handleChange}
+          required
+        />
+      </InputGroup>
+
+      <InputGroup>
+        <Label>Age</Label>
+        <Input
+          type="number"
+          name="age"
+          value={(formData as any).age || ''}
+          onChange={handleChange}
+          required
+        />
+      </InputGroup>
+
+      <InputGroup>
         <Label>Current Institute</Label>
         <Input
           type="text"
@@ -38,6 +60,10 @@ const MedicalStudentForm: React.FC<MedicalStudentFormProps> = ({ formData, handl
           <option value="4">Fourth Year</option>
           <option value="5">Fifth Year</option>
         </Select>
+      </InputGroup>
+      <InputGroup>
+        <Label>Medical Student ID Photo</Label>
+        <Input type="file" name="idPhoto" accept="image/*" onChange={handleChange} required />
       </InputGroup>
       <InputGroup>
         <Label>Field of Study</Label>

@@ -17,6 +17,28 @@ const DoctorForm: React.FC<DoctorFormProps> = ({ formData, handleChange }) => {
   return (
     <>
       <InputGroup>
+        <Label>Name</Label>
+        <Input
+          type="text"
+          name="name"
+          value={(formData as any).name || ''}
+          onChange={handleChange}
+          required
+        />
+      </InputGroup>
+
+      <InputGroup>
+         <Label>Age</Label>
+         <Input
+           type="number"
+           name="age"
+           value={(formData as any).age || ''}
+           onChange={handleChange}
+           required
+         />
+      </InputGroup>
+
+      <InputGroup>
         <Label>Profession</Label>
         <Input
           type="text"
@@ -35,7 +57,6 @@ const DoctorForm: React.FC<DoctorFormProps> = ({ formData, handleChange }) => {
           required
           style={{
             width: '100%',
-            color: 'Blue',
             padding: '8px',
             borderRadius: '4px',
             border: '1px solid #ccc',
@@ -59,6 +80,10 @@ const DoctorForm: React.FC<DoctorFormProps> = ({ formData, handleChange }) => {
           onChange={handleChange}
           required
         />
+      </InputGroup>
+      <InputGroup>
+        <Label>Doctor ID Photo</Label>
+        <Input type="file" name="idPhoto" accept="image/*" onChange={handleChange} required />
       </InputGroup>
       <RadioGroup>
         <Label>Higher Education</Label>

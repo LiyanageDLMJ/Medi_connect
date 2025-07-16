@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import DoctorForm from '../register/forms/DoctorForm';
+import MedicalStudentForm from '../register/forms/MedicalStudentForm';
+import RecruiterForm from '../register/forms/RecruiterForm';
+import EducationalInstituteForm from '../register/forms/EducationalInstituteForm';
+import { InputGroup, Label, Input, Select } from '../components/StyledFormComponents';
+import Navbar from '../components/Navbar';
+import { registerUser } from '../../api/authApi';act, { useState } from 'react';
+import styled from 'styled-components';
+import { Link, useNavigate } from 'react-router-dom';
 import DoctorForm from '../register/forms/DoctorForm';
 import MedicalStudentForm from '../register/forms/MedicalStudentForm';
 import RecruiterForm from '../register/forms/RecruiterForm';
@@ -15,6 +24,7 @@ interface FormData {
   email: string;
   password: string;
   confirmPassword: string;
+  idPhoto?: File | null;
   profession?: string;
   specialty?: string;
   location?: string;
@@ -32,6 +42,7 @@ interface FormData {
 }
 
 const Register = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<FormData>({
     userType: '',
     email: '',
@@ -39,16 +50,56 @@ const Register = () => {
     confirmPassword: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Registration attempt with:', formData);
+    setMessage(null);
+    setError(null);
+
+    // Simple client-side validation
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+    if (!formData.userType) {
+      setError('Please select a user type');
+      return;
+    }
+
+    try {
+      const response = await registerUser(formData);
+      setMessage('Registration successful! Please log in. Redirecting to login page...');
+      
+      // Wait a moment so the user can read the success message, then send to login
+      setTimeout(() => navigate('/login'), 1500);
+      
+      // Optionally reset form
+      setFormData({
+        userType: '',
+        email: '',
+        password: '',
+        confirmPassword: ''
+      } as FormData);
+    } catch (err: any) {
+      setError(err.message || 'An error occurred');
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    if (e.target.type === 'file') {
+      const fileInput = e.target as HTMLInputElement;
+      setFormData({
+        ...formData,
+        idPhoto: fileInput.files?.[0] || null,
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [e.target.name]: (e.target as any).value,
+      });
+    }
   };
 
   return (
@@ -118,6 +169,10 @@ const Register = () => {
             <RegisterButton type="submit">
               Register <span>→</span>
             </RegisterButton>
+
+            {message && <p style={{ color: 'green', textAlign: 'center' }}>{message}</p>}
+            {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
+
             <RegisterLink>
               Already have an account? <Link to="/login">Login</Link>
             </RegisterLink>
