@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
 import DoctorForm from '../register/forms/DoctorForm';
 import MedicalStudentForm from '../register/forms/MedicalStudentForm';
@@ -7,15 +6,8 @@ import RecruiterForm from '../register/forms/RecruiterForm';
 import EducationalInstituteForm from '../register/forms/EducationalInstituteForm';
 import { InputGroup, Label, Input, Select } from '../components/StyledFormComponents';
 import Navbar from '../components/Navbar';
-import { registerUser } from '../../api/authApi';act, { useState } from 'react';
+import { registerUser } from '../../api/authApi';
 import styled from 'styled-components';
-import { Link, useNavigate } from 'react-router-dom';
-import DoctorForm from '../register/forms/DoctorForm';
-import MedicalStudentForm from '../register/forms/MedicalStudentForm';
-import RecruiterForm from '../register/forms/RecruiterForm';
-import EducationalInstituteForm from '../register/forms/EducationalInstituteForm';
-import { InputGroup, Label, Input, Select } from '../components/StyledFormComponents';
-import Navbar from '../components/Navbar';
 
 type UserType = 'doctor' | 'medical_student' | 'recruiter' | 'educational_institute' | '';
 
