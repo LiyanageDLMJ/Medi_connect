@@ -9,6 +9,7 @@ import {
   FiBook,
   FiMessageSquare,
   FiCalendar,
+  FiSearch,
 } from "react-icons/fi";
 
 const SidebarNav = () => {
@@ -24,6 +25,11 @@ const SidebarNav = () => {
       label: "Job & Internships",
       to: "/physician/job-internship",
       icon: <FiBriefcase size={20} />,
+    },
+     {
+      label: "Track job Application",
+      to: "/physician/job-application-tracker",
+      icon: <FiSearch size={20} />,
     },
     {
       label: "Higher Education",

@@ -4,6 +4,8 @@ import JobInternshipSearch from "./Role/Physician/pages/JobInternshipSearch";
 import HigherEducationSearch from "./Role/Physician/pages/HigherEducationSearch";
 import JobApplicationForm from "./Role/Physician/pages/JobApplicationForm";
 import JobInternshipDetails from "./Role/Physician/pages/JobInternshipDetails";
+import JobApplicationTracker from "./Role/Physician/pages/TrackJobApplication";
+
 
 import Register from "./LoginRegister/register/Register";
 import JobPost from "./Role/Recuiter/pages/JobPost";
@@ -57,7 +59,7 @@ const App = () => {
           <Route path="Doctordashboard" element={<DoctorDashboard />} />
           <Route path="higher-education" element={<HigherEducationSearch />} />
           <Route path="job-internship" element={<JobInternshipSearch />} />
-          <Route path="job-application" element={<JobApplicationForm />} />
+          <Route path="job-application/:jobId" element={<JobApplicationForm />} /> {/* Add :jobId parameter */}
           <Route path="job-internship/:jobId" element={<JobInternshipDetails />} />
           <Route path="update-cv01" element={<UpdateCV01 />} />
           <Route path="update-cv02" element={<UpdateCV02 />} />
@@ -65,7 +67,7 @@ const App = () => {
           <Route path="job-details/:jobId" element={<JobInternshipDetails />} />
           <Route path="Cvcompare" element={<Cvcompare />} />
           <Route path="degreeapplication" element={<DegreeApplication />} />
-
+          <Route path="job-application-tracker" element={<JobApplicationTracker />} />
         </Route>
 
           {/* Higher Education Routes */}
