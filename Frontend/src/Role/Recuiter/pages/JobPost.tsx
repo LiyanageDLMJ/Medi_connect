@@ -19,6 +19,7 @@ const formSchema = z.object({
   requirements: z.string().min(10, { message: "Requirements must be at least 10 characters" }),
   salaryRange: z.string().optional(),
   urgent: z.boolean().default(false),
+  applicationDeadline: z.string().min(1, { message: "Application deadline is required" }),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -78,7 +79,8 @@ const BasicInfoSection = ({ register, errors }: FormSectionProps) => (
           <option value="">Select department</option>
           <option value="Cardiology">Cardiology</option>
           <option value="Dermatology">Dermatology</option>
-          <option value="Emergency">Emergency Medicine</option>
+          <option value="Emergency">Emergency Medicine</option>Cardiologist", 
+        
           <option value="Neurology">Neurology</option>
           <option value="Gastroenterology">Gastroenterology</option>
           <option value="Pulmonology">Pulmonology</option>
@@ -109,6 +111,15 @@ const BasicInfoSection = ({ register, errors }: FormSectionProps) => (
       placeholder="e.g. Memorial General Hospital"
     />
     <TextField register={register} errors={errors} name="location" label="Location" placeholder="e.g. New York, NY" />
+    <div>
+      <label className="block font-medium">Application Deadline</label>
+      <input
+        type="date"
+        {...register("applicationDeadline")}
+        className="w-full border rounded px-3 py-2"
+      />
+      {errors.applicationDeadline && <p className="text-red-500 text-sm">{errors.applicationDeadline.message}</p>}
+    </div>
   </>
 );
 
@@ -166,6 +177,7 @@ export default function JobPostForm() {
       requirements: "",
       salaryRange: "",
       urgent: false,
+      applicationDeadline: "",
     },
   });
 

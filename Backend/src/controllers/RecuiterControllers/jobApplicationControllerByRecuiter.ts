@@ -5,7 +5,7 @@ import JobApplication from '../../models/JobApplication';
 export const getApplications = async (req: Request, res: Response) => {
   try {
     const applications = await JobApplication.find()
-      .populate('jobId', 'title hospitalName location')
+      .populate('jobId', 'title hospitalName location department')
       .sort({ appliedDate: -1 });
     
     res.status(200).json(applications);

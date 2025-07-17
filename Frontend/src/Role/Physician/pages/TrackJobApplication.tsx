@@ -280,7 +280,7 @@ export default function JobApplicationTracker() {
         _id: "2",
         jobId: {
           _id: "job2",
-          title: "General Physician",
+          title: "Pediatrician",
           hospitalName: "Mount Sinai Hospital",
           location: "Toronto",
           salaryRange: "Stipend Based",

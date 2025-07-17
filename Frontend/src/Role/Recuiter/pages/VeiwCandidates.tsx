@@ -19,6 +19,7 @@ interface Application {
     title: string;
     hospitalName: string;
     location: string;
+    department: string;
   };
 }
 
@@ -32,6 +33,7 @@ const ViewCandidates = () => {
   const [newStatus, setNewStatus] = useState('');
   const [feedback, setFeedback] = useState('');
   const [updateLoading, setUpdateLoading] = useState(false);
+  const [statusFilter, setStatusFilter] = useState('all');
 
   const statusOptions = [
     'applied',
@@ -50,13 +52,16 @@ const ViewCandidates = () => {
 
   const fetchApplications = async () => {
     try {
-      // Fix: Change to match your actual backend route
-      const response = await axios.get('http://localhost:3000/jobApplicationControl/getApplications');
+      const response = await axios.get('http://localhost:3000/jobApplicationControl/getApplications', {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
       setApplications(response.data);
       setError(null);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to fetch applications');
       console.error('Error fetching applications:', err);
+      setError(err.response?.data?.message || err.message || 'Failed to fetch applications');
     } finally {
       setIsLoading(false);
     }
@@ -112,11 +117,18 @@ const ViewCandidates = () => {
 
     setUpdateLoading(true);
     try {
-      // Fix: Change to match your actual backend route
-      await axios.patch(`http://localhost:3000/jobApplicationControl/updateStatus/${selectedApplication._id}`, {
-        status: newStatus,
-        recruiterFeedback: feedback
-      });
+      await axios.patch(
+        `http://localhost:3000/jobApplicationControl/updateStatus/${selectedApplication._id}`,
+        {
+          status: newStatus,
+          recruiterFeedback: feedback
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
       // Update local state
       setApplications(prev => 
@@ -133,23 +145,27 @@ const ViewCandidates = () => {
       setFeedback('');
     } catch (error: any) {
       console.error('Error updating status:', error);
-      setError(error.response?.data?.message || 'Failed to update status');
+      setError(error.response?.data?.message || error.message || 'Failed to update status');
     } finally {
       setUpdateLoading(false);
     }
   };
 
-  const filteredApplications = applications.filter(app =>
-    app.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    app.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredApplications = applications.filter(app => {
+    const matchesSearch = app.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         app.email.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === 'all' || app.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <div className="flex h-screen bg-gray-100">
       <Sidebar />
       
-      <div className="flex-1 overflow-auto md:pl-64">
-        <div className="p-8">
+      <div className="flex-1 overflow-hidden md:pl-64">
+        <div className="h-full flex flex-col p-8">
           <div className="mb-8 flex items-center justify-between">
             <h1 className="text-2xl font-bold text-gray-900">Candidate Applications</h1>
             <div className="flex items-center">
@@ -158,7 +174,8 @@ const ViewCandidates = () => {
             </div>
           </div>
             
-          <div className="mt-4 flex items-center">
+          <div className="mb-4 flex items-center gap-4">
+            {/* Search Field */}
             <div className="relative flex-1 max-w-md">
               <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
@@ -169,6 +186,50 @@ const ViewCandidates = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
+
+            {/* Status Filter */}
+            <div className="relative min-w-[200px]">
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-gray-100 text-gray-700"
+              >
+                <option value="all">Status filter</option>
+                <option value="applied">Applied</option>
+                <option value="phone-screen">Phone Screen</option>
+                <option value="interview-scheduled">Interview Scheduled</option>
+                <option value="in-review">In Review</option>
+                <option value="final-interview">Final Interview</option>
+                <option value="offer">Offer</option>
+                <option value="rejected">Rejected</option>
+                <option value="withdrawn">Withdrawn</option>
+              </select>
+            </div>
+
+            {/* Clear Filters Button */}
+            <button
+              onClick={() => {
+                setSearchTerm('');
+                setStatusFilter('all');
+              }}
+              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-150"
+            >
+              Clear Filters
+            </button>
+          </div>
+
+          <div className="mb-4 text-sm text-gray-600">
+            Showing {filteredApplications.length} of {applications.length} candidates
+            {statusFilter !== 'all' && (
+              <span className="ml-2">
+                • Status: <span className="font-semibold">{statusFilter.replace('-', ' ')}</span>
+              </span>
+            )}
+            {searchTerm && (
+              <span className="ml-2">
+                • Search: <span className="font-semibold">"{searchTerm}"</span>
+              </span>
+            )}
           </div>
 
           {error && (
@@ -178,107 +239,134 @@ const ViewCandidates = () => {
           )}
 
           {isLoading ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+            <div className="flex items-center justify-center flex-1">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             </div>
           ) : (
-            <div className="overflow-x-auto bg-white rounded-lg shadow">
-              <table className="min-w-full table-auto">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-blue-500 uppercase tracking-wider">Name</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-blue-500 uppercase tracking-wider">Contact Info</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-blue-500 uppercase tracking-wider">Experience</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-blue-500 uppercase tracking-wider">Applied Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-blue-500 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-blue-500 uppercase tracking-wider">Viewed</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-blue-500 uppercase tracking-wider">CV</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-blue-500 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredApplications.map((application) => (
-                    <tr key={application._id} className={`hover:bg-gray-50 ${!application.viewedByRecruiter ? 'bg-blue-50' : ''}`}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="font-medium text-gray-900">{application.name}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900">{application.email}</div>
-                        <div className="text-sm text-gray-500">{application.phone}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900 max-w-xs truncate">
-                          {application.experience}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatDate(application.appliedDate)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(application.status)}`}>
-                          {application.status.replace('-', ' ')}
-                        </span>
-                      </td>
-                      
-                      {/* Add this missing "Viewed" column */}
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          {application.viewedByRecruiter ? (
-                            <span className="text-green-600 flex items-center text-sm">
-                              <FaEye className="mr-1" />
-                              Viewed
+            <div className="bg-white rounded-lg shadow-lg flex-1 flex flex-col min-h-0">
+              {/* Fixed table with vertical scrolling only */}
+              <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+                {/* Fixed table header */}
+                <div className="bg-gray-50 border-b border-gray-200 flex-shrink-0">
+                  <table className="w-full table-fixed">
+                    <thead>
+                      <tr>
+                        <th className="w-[12%] px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Name
+                        </th>
+                        <th className="w-[18%] px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Contact Info
+                        </th>
+                        <th className="w-[12%] px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Title
+                        </th>
+                        <th className="w-[20%] px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Experience
+                        </th>
+                        <th className="w-[12%] px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Applied Date
+                        </th>
+                        <th className="w-[10%] px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="w-[10%] px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          CV
+                        </th>
+                        <th className="w-[10%] px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                  </table>
+                </div>
+
+                {/* Scrollable table body */}
+                <div className="flex-1 overflow-y-auto overflow-x-hidden min-h-0">
+                  <table className="w-full table-fixed">
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {filteredApplications.map((application) => (
+                        <tr 
+                          key={application._id} 
+                          className={`hover:bg-gray-50 transition-colors duration-150 ${!application.viewedByRecruiter ? 'bg-blue-50' : ''}`}
+                        >
+                          <td className="w-[12%] px-3 py-4 whitespace-nowrap">
+                            <div className="font-medium text-gray-900 truncate text-sm">{application.name}</div>
+                          </td>
+                          <td className="w-[18%] px-3 py-4">
+                            <div className="text-xs text-gray-900 truncate">{application.email}</div>
+                            <div className="text-xs text-gray-500">{application.phone}</div>
+                          </td>
+                          <td className="w-[12%] px-3 py-4">
+                            <div className="text-xs text-gray-900 truncate" title={application.jobId?.title || 'N/A'}>
+                              {application.jobId?.title || 'N/A'}
+                            </div>
+                          </td>
+                          <td className="w-[20%] px-3 py-4">
+                            <div className="text-xs text-gray-900 truncate" title={application.experience}>
+                              {application.experience}
+                            </div>
+                          </td>
+                          <td className="w-[12%] px-3 py-4 whitespace-nowrap text-xs text-gray-500">
+                            {formatDate(application.appliedDate)}
+                          </td>
+                          <td className="w-[10%] px-3 py-4 whitespace-nowrap">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(application.status)}`}>
+                              {application.status.replace('-', ' ')}
                             </span>
-                          ) : (
-                            <span className="text-orange-600 flex items-center text-sm font-semibold">
-                              <FaEye className="mr-1" />
-                              New
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <a
-                          href={application.cv}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                        >
-                          <FaDownload className="mr-2" />
-                          View CV
-                        </a>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button
-                          onClick={() => handleViewCandidate(application)}
-                          className="text-blue-600 hover:text-blue-900 mr-3"
-                          title="View Candidate"
-                        >
-                          <FaEye />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSelectedApplication(application);
-                            setNewStatus(application.status);
-                            setFeedback(application.recruiterFeedback || '');
-                            setShowStatusModal(true);
-                          }}
-                          className="text-green-600 hover:text-green-900"
-                          title="Update Status"
-                        >
-                          <FaEdit />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                          </td>
+                          <td className="w-[10%] px-3 py-4 whitespace-nowrap">
+                            <a
+                              href={application.cv}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center px-2 py-1 border border-transparent text-xs leading-4 font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-150"
+                            >
+                              <FaDownload className="mr-1" />
+                              View
+                            </a>
+                          </td>
+                          <td className="w-[10%] px-3 py-4 whitespace-nowrap text-sm font-medium">
+                            <div className="flex items-center space-x-2">
+                              <button
+                                onClick={() => handleViewCandidate(application)}
+                                className="text-blue-600 hover:text-blue-900 transition-colors duration-150"
+                                title="View Candidate"
+                              >
+                                <FaEye />
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setSelectedApplication(application);
+                                  setNewStatus(application.status);
+                                  setFeedback(application.recruiterFeedback || '');
+                                  setShowStatusModal(true);
+                                }}
+                                className="text-green-600 hover:text-green-900 transition-colors duration-150"
+                                title="Update Status"
+                              >
+                                <FaEdit />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              
+              {/* Footer section */}
+              {filteredApplications.length === 0 && (
+                <div className="text-center py-12">
+                  <p className="text-gray-500">No applications found</p>
+                </div>
+              )}
             </div>
           )}
         </div>
       </div>
 
-      {/* Status Update Modal */}
+      {/* Status Update Modal - keep as is */}
       {showStatusModal && selectedApplication && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-96 max-w-md mx-4">

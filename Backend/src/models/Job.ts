@@ -38,6 +38,10 @@ const JobSchema = new mongoose.Schema({
   salaryRange: {
     type: String,
   },
+  applicationDeadline: {
+    type: Date,
+    required: true,
+  },
   status: {
     type: String,
     enum: ["OPEN", "INTERVIEW", "PENDING", "CLOSED"],

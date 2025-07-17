@@ -216,6 +216,13 @@ const JobInternshipDetails = () => {
                     <p className="text-gray-600">{formatDate(job.postedDate)}</p>
                   </div>
                 </div>
+                <div className="flex items-start gap-3">
+                  <Calendar className="h-5 w-5 text-gray-500 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium" style={{ color: 'red', fontWeight: 'bold' }}>Deadline</h4>
+                    <p className="text-gray-600" style={{ color: 'red', fontWeight: 'bold' }}>{job.applicationDeadline ? formatDate(job.applicationDeadline) : 'N/A'}</p>
+                  </div>
+                </div>
               </div>
             </div>
 

@@ -23,6 +23,7 @@ import WithFooter from "./Layout/WithFooter"; // Adjust the path as needed
 import DegreeListing from "./Role/higherEducation/pages/DegreeListing";
 import Dashborad from "./Role/higherEducation/pages/dashborad";
 import DoctorDashboard from "./Role/Physician/pages/Doctordashboard";
+
 import  DegreeApplication from "./Role/Physician/pages/DegreeApplicationForm"
 
 import  ViewApplications from "./Role/higherEducation/pages/ViewApplications"
@@ -68,6 +69,7 @@ const App = () => {
           <Route path="Cvcompare" element={<Cvcompare />} />
           <Route path="degreeapplication" element={<DegreeApplication />} />
           <Route path="job-application-tracker" element={<JobApplicationTracker />} />
+          <Route path="medical-student-dashboard" element={<MedicalStudentDashboard />} />
         </Route>
 
           {/* Higher Education Routes */}
