@@ -11,10 +11,12 @@ import {
   User,
 } from "lucide-react";
 import Sidebar from "../components/NavBar/Sidebar";
+import DoctorForm from "../../../LoginRegister/register/forms/DoctorForm";
 import { useFormContext } from "../../../context/FormContext";
 import UpdateCV02 from "./UpdateCV02";
 
 export default function UpdateCV01() {
+  const [activeTab, setActiveTab] = useState<'basic' | 'cv' | 'profile'>('basic');
   const { formData, setFormData } = useFormContext();
   const navigate = useNavigate();
   const [phoneError, setPhoneError] = useState<string>("");
@@ -33,7 +35,7 @@ export default function UpdateCV01() {
   };
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
 
@@ -42,6 +44,7 @@ export default function UpdateCV01() {
         setPhoneError(
           "Please enter a valid phone number (+94XXXXXXXXX or 0XXXXXXXXX)"
         );
+
       } else {
         setPhoneError("");
       }
@@ -104,24 +107,58 @@ export default function UpdateCV01() {
 
         {/* Main Content */}
         <main className="max-w-6xl mx-auto p-6">
-          <h1 className="text-2xl font-bold mb-6">Update CV</h1>
+          <h1 className="text-2xl font-bold mb-6">Insert CV</h1>
 
           {/* Tabs */}
           <div className="flex border-b mb-8">
-            <button className="flex items-center gap-2 px-6 py-4 border-b-2 border-blue-500 text-blue-500">
+            {/* Tabs */}
+            <button
+              onClick={() => setActiveTab('basic')}
+              className={`flex items-center gap-2 px-6 py-4 border-b-2 ${activeTab==='basic' ? 'border-blue-500 text-blue-500' : 'border-transparent text-gray-600'}`}>
               <User className="w-5 h-5" />
               <span>Basic Details</span>
             </button>
-            <button className="flex items-center gap-2 px-6 py-4 text-gray-600">
-              <span>Update CV</span>
+            <button
+             onClick={() => setActiveTab('cv')}
+             className={`flex items-center gap-2 px-6 py-4 border-b-2 ${activeTab==='cv' ? 'border-blue-500 text-blue-500' : 'border-transparent text-gray-600'}`}>
+              <span>Insert CV</span>
             </button>
-            <button className="flex items-center gap-2 px-6 py-4 text-gray-600">
+            <button
+             onClick={() => setActiveTab('profile')}
+             className={`flex items-center gap-2 px-6 py-4 border-b-2 ${activeTab==='profile' ? 'border-blue-500 text-blue-500' : 'border-transparent text-gray-600'}`}>
               <span>Profile Settings</span>
             </button>
           </div>
 
-          {/* Form */}
-          <form
+          {/* Content */}
+          {activeTab==='basic' && (
+            <div className="bg-white p-8 rounded-lg shadow-sm space-y-8">
+              {/* Registration Form */}
+              <DoctorForm formData={formData} handleChange={handleInputChange} />
+              {/* Age Field */}
+              <div className="space-y-2">
+                <label htmlFor="age" className="block text-sm font-medium">
+                  Age*
+                </label>
+                <input
+                  id="age"
+                  name="age"
+                  type="number"
+                  value={formData.age}
+                  onChange={handleInputChange}
+                  placeholder="30"
+                  className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
+                  required
+                />
+              </div>
+              <div className="mt-8 flex justify-end">
+                <button type="button" onClick={() => setActiveTab('cv')} className="px-6 py-2 bg-blue-500 text-white rounded-md">Next</button>
+              </div>
+            </div>
+          )}
+
+          {activeTab==='cv' && (
+            <form
             onSubmit={handleNext}
             className="bg-white p-8 rounded-lg shadow-sm"
           >
@@ -284,6 +321,14 @@ export default function UpdateCV01() {
               </button>
             </div>
           </form>
+          )}
+
+          {/* Add the profile tab content here if needed */}
+          {activeTab === 'profile' && (
+            <div className="bg-white p-8 rounded-lg shadow-sm">
+              <p>Profile settings content goes here...</p>
+            </div>
+          )}
         </main>
       </div>
     </div>

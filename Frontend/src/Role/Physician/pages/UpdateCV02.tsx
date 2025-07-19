@@ -339,6 +339,7 @@ export default function UpdateCV02() {
                         ? new Date(formData.graduationDate)
                         : null
                     }
+                    maxDate={new Date()}
                     onChange={handleDateChange}
                     dateFormat="MM/dd/yyyy"
                     className="w-full p-2 border rounded-md border-gray-200 bg-gray-50"

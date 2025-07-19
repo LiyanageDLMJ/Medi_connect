@@ -4,6 +4,7 @@ import { connect } from "mongoose";
 import router from "./Routes/PhysicianRoutes/BasicRoutes";
 import CvDocRouter from "./Routes/PhysicianRoutes/CvDoctorRoutes";
 import RecuiterJobPost from "./Routes/RecuiterRoutes/JobPostRoutes";
+import CandidateRoutes from "./Routes/RecuiterRoutes/CandidateRoutes";
 import connectDB from "./Config/db";
 import JobSearch from "./Routes/PhysicianRoutes/JobSearchRoutes";
 import jobApplicationRoutes from "./Routes/PhysicianRoutes/jobApplicationRoutes";
@@ -15,6 +16,7 @@ import LoginRegisterRoutes from "./Routes/LoginRegisterRoutes";
 import fs from "fs";
 import path from "path";
 import dotenv from "dotenv";
+//import cvCompareRoutes from "./Routes/RecuiterRoutes/CvCompareRoutes";
 
 // Load environment variables
 dotenv.config();
@@ -52,9 +54,10 @@ if (!fs.existsSync(uploadDir)) {
 
 // Route definitions
 const routes = [
-    { path: "/api", router },
+    { path: "/api/recruiter/candidates", router: CandidateRoutes },
     { path: "/CvdoctorUpdate", router: CvDocRouter },
     { path: "/JobPost", router: RecuiterJobPost },
+    { path: "/api", router },
     { path: "/JobSearch", router: JobSearch },
     { path: "/JobApplication", router: jobApplicationRoutes },
     { path: "/degrees", router: degreeListingRoutes },
@@ -62,6 +65,7 @@ const routes = [
     { path: "/degreeApplications", router: DegreeApplicationRoutes },
     { path: "/viewDegreeApplications", router: viewDegreeApplicationRoutes },
     { path: "/auth", router: LoginRegisterRoutes },
+    //{ path: "/cvCompare", router: cvCompareRoutes },
 ];
 
 // Register routes

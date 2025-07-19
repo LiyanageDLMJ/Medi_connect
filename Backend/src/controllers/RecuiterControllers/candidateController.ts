@@ -1,6 +1,35 @@
 import { Request, Response, NextFunction } from "express";
 import CvDoctorUpdate from "../../models/CvUpdate";
 import { Types } from "mongoose";
+import cloudinary from "../../Config/cloudinaryConfig";
+
+// Helper to generate Cloudinary URLs
+const generateCloudinaryUrl = (publicUrl: string, download: boolean = false): string => {
+  if (!publicUrl || !publicUrl.includes('cloudinary')) return publicUrl;
+
+  // Extract the public ID from the URL
+  // Example URL: https://res.cloudinary.com/db9rhbyij/image/upload/v1234567890/medical_cvs/filename.pdf
+  const urlParts = publicUrl.split('/');
+  const uploadIndex = urlParts.findIndex(part => part === 'upload');
+
+  if (uploadIndex === -1) return publicUrl;
+
+  // Get everything after 'upload' and before any version number
+  const afterUpload = urlParts.slice(uploadIndex + 1);
+  let publicId = afterUpload.join('/');
+
+  // Remove version number if present (starts with 'v')
+  if (publicId.startsWith('v')) {
+    publicId = publicId.substring(publicId.indexOf('/') + 1);
+  }
+
+  return cloudinary.url(publicId, {
+    secure: true,
+    resource_type: 'raw',
+    flags: download ? 'attachment' : undefined,
+    type: 'upload'
+  });
+};
 
 /*
  * Candidate Controller
@@ -19,7 +48,7 @@ export const getAllCandidates: RequestHandler = async (req: Request, res: Respon
       currentLocation,
       experience,
       page = 1,
-      limit = 10,
+      limit = 50,
     } = req.query as Record<string, any>;
 
     const filter: Record<string, any> = {};
@@ -37,13 +66,20 @@ export const getAllCandidates: RequestHandler = async (req: Request, res: Respon
     const docs = await CvDoctorUpdate.find(filter)
       .limit(Number(limit))
       .skip((Number(page) - 1) * Number(limit))
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const enhancedDocs = docs.map(doc => ({
+      ...doc,
+      resumePdfUrl: doc.resumePdfUrl ? generateCloudinaryUrl(doc.resumePdfUrl) : null,
+      resumeDownloadUrl: doc.resumePdfUrl ? generateCloudinaryUrl(doc.resumePdfUrl, true) : null
+    }));
 
     const total = await CvDoctorUpdate.countDocuments(filter);
 
     res.status(200).json({
       success: true,
-      data: docs,
+      data: enhancedDocs,
       pagination: {
         current: Number(page),
         pages: Math.ceil(total / Number(limit)),
@@ -100,8 +136,15 @@ export const getDoctorCvByName: RequestHandler = async (req: Request, res: Respo
 export const getCandidatesBySpecialty: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { specialty } = req.params;
-    const docs = await CvDoctorUpdate.find({ [SPECIALTY_FIELD]: { $regex: specialty, $options: "i" } }).sort({ [YEAR_FIELD]: -1, yourName: 1 });
-    res.status(200).json({ success: true, data: docs, count: docs.length });
+    const docs = await CvDoctorUpdate.find({ [SPECIALTY_FIELD]: { $regex: specialty, $options: "i" } }).sort({ [YEAR_FIELD]: -1, yourName: 1 }).lean();
+
+    const enhancedDocs = docs.map(doc => ({
+      ...doc,
+      resumePdfUrl: doc.resumePdfUrl ? generateCloudinaryUrl(doc.resumePdfUrl) : null,
+      resumeDownloadUrl: doc.resumePdfUrl ? generateCloudinaryUrl(doc.resumePdfUrl, true) : null
+    }));
+
+    res.status(200).json({ success: true, data: enhancedDocs, count: enhancedDocs.length });
   } catch (err: any) {
     next(err);
   }
@@ -110,8 +153,15 @@ export const getCandidatesBySpecialty: RequestHandler = async (req: Request, res
 export const getCandidatesByGraduationYear: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { year } = req.params;
-    const docs = await CvDoctorUpdate.find({ [YEAR_FIELD]: year }).sort({ yourName: 1 });
-    res.status(200).json({ success: true, data: docs, count: docs.length });
+    const docs = await CvDoctorUpdate.find({ [YEAR_FIELD]: year }).sort({ yourName: 1 }).lean();
+
+    const enhancedDocs = docs.map(doc => ({
+      ...doc,
+      resumePdfUrl: doc.resumePdfUrl ? generateCloudinaryUrl(doc.resumePdfUrl) : null,
+      resumeDownloadUrl: doc.resumePdfUrl ? generateCloudinaryUrl(doc.resumePdfUrl, true) : null
+    }));
+
+    res.status(200).json({ success: true, data: enhancedDocs, count: enhancedDocs.length });
   } catch (err: any) {
     next(err);
   }
@@ -124,8 +174,15 @@ export const searchCandidatesByName: RequestHandler = async (req: Request, res: 
       res.status(400).json({ success: false, message: "name parameter required" });
       return;
     }
-    const docs = await CvDoctorUpdate.find({ yourName: { $regex: name as string, $options: "i" } }).sort({ yourName: 1 });
-    res.status(200).json({ success: true, data: docs, count: docs.length });
+    const docs = await CvDoctorUpdate.find({ yourName: { $regex: name as string, $options: "i" } }).sort({ yourName: 1 }).lean();
+
+    const enhancedDocs = docs.map(doc => ({
+      ...doc,
+      resumePdfUrl: doc.resumePdfUrl ? generateCloudinaryUrl(doc.resumePdfUrl) : null,
+      resumeDownloadUrl: doc.resumePdfUrl ? generateCloudinaryUrl(doc.resumePdfUrl, true) : null
+    }));
+
+    res.status(200).json({ success: true, data: enhancedDocs, count: enhancedDocs.length });
   } catch (err: any) {
     next(err);
   }
@@ -150,12 +207,18 @@ export const compareCandidates: RequestHandler = async (req: Request, res: Respo
       return;
     }
 
+    const enhancedCandidates = candidates.map(candidate => ({
+      ...candidate.toObject(),
+      resumePdfUrl: candidate.resumePdfUrl ? generateCloudinaryUrl(candidate.resumePdfUrl) : null,
+      resumeDownloadUrl: candidate.resumePdfUrl ? generateCloudinaryUrl(candidate.resumePdfUrl, true) : null
+    }));
+
     // Simple common feature calc
-    const commonSpecialization = candidates.every((c) => c.specialization === candidates[0].specialization) ? candidates[0].specialization : null;
-    const commonGraduationDate = candidates.every((c) => c.graduationDate === candidates[0].graduationDate) ? candidates[0].graduationDate : null;
+    const commonSpecialization = enhancedCandidates.every((c) => c.specialization === enhancedCandidates[0].specialization) ? enhancedCandidates[0].specialization : null;
+    const commonGraduationDate = enhancedCandidates.every((c) => c.graduationDate === enhancedCandidates[0].graduationDate) ? enhancedCandidates[0].graduationDate : null;
 
     const comparison = {
-      candidates,
+      candidates: enhancedCandidates,
       commonFeatures: {
         specialization: commonSpecialization,
         graduationDate: commonGraduationDate,
@@ -190,12 +253,19 @@ export const getAvailableGraduationYears: RequestHandler = async (_req: Request,
 export const getCandidateById: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
-    const doc = await CvDoctorUpdate.findById(id);
+    const doc = await CvDoctorUpdate.findById(id).lean();
     if (!doc) {
       res.status(404).json({ success: false, message: "Candidate not found" });
       return;
     }
-    res.status(200).json({ success: true, data: doc });
+
+    const enhancedDoc = {
+      ...doc,
+      resumePdfUrl: doc.resumePdfUrl ? generateCloudinaryUrl(doc.resumePdfUrl) : null,
+      resumeDownloadUrl: doc.resumePdfUrl ? generateCloudinaryUrl(doc.resumePdfUrl, true) : null
+    };
+
+    res.status(200).json({ success: true, data: enhancedDoc });
   } catch (err: any) {
     next(err);
   }
@@ -227,13 +297,20 @@ export const advancedSearch: RequestHandler = async (req: Request, res: Response
     const docs = await CvDoctorUpdate.find(filter)
       .sort({ yourName: 1 })
       .limit(Number(limit))
-      .skip((Number(page) - 1) * Number(limit));
+      .skip((Number(page) - 1) * Number(limit))
+      .lean();
+
+    const enhancedDocs = docs.map(doc => ({
+      ...doc,
+      resumePdfUrl: doc.resumePdfUrl ? generateCloudinaryUrl(doc.resumePdfUrl) : null,
+      resumeDownloadUrl: doc.resumePdfUrl ? generateCloudinaryUrl(doc.resumePdfUrl, true) : null
+    }));
 
     const total = await CvDoctorUpdate.countDocuments(filter);
 
     res.status(200).json({
       success: true,
-      data: docs,
+      data: enhancedDocs,
       pagination: {
         current: Number(page),
         pages: Math.ceil(total / Number(limit)),

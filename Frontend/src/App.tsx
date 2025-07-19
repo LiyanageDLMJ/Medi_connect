@@ -21,17 +21,20 @@ import WithFooter from "./Layout/WithFooter"; // Adjust the path as needed
 import DegreeListing from "./Role/higherEducation/pages/DegreeListing";
 import Dashborad from "./Role/higherEducation/pages/dashborad";
 import DoctorDashboard from "./Role/Physician/pages/Doctordashboard";
-import  DegreeApplication from "./Role/Physician/pages/DegreeApplicationForm"
+import DegreeApplication from "./Role/Physician/pages/DegreeApplicationForm";
 
-import  ViewApplications from "./Role/higherEducation/pages/ViewApplications"
+import ViewApplications from "./Role/higherEducation/pages/ViewApplications";
 import ViewCandidates from "./Role/Recuiter/pages/VeiwCandidates";
-
+import CVComparison from "./Role/Recuiter/pages/CvComparison";
 
 import { FormProvider } from "./context/FormContext";
 import MedicalStudentDashboard from "./Role/Physician/pages/MedicalStudentDashboard";
-import Cvcompare from "./Role/Physician/pages/Cvcompare";
+// import Cvcompare from "./Role/Physician/pages/Cvcompare";
 import PostDegree from "./Role/higherEducation/pages/PostDegree";
 import DoctorProfile from "./Role/Physician/pages/YourProfile"; // Import the PhysicianProfile component
+import RequireAuth from "./Components/RequireAuth";
+
+
 const App = () => {
   return (
     <FormProvider>
@@ -50,28 +53,53 @@ const App = () => {
           <Route path="/forgot-password" element={<ForgotPassword />} />
         </Route>
 
-      {/* Without Footer Routes */}
-      <Route element={<><Outlet /></>}>
+        {/* Without Footer Routes */}
+        <Route
+          element={
+            <>
+              <Outlet />
+            </>
+          }
+        >
+          {/* Physician Routes */}
+          <Route
+            path="/physician"
+            element={
+              <RequireAuth>
+                <Outlet />
+              </RequireAuth>
+            }
+          >
+            <Route path="Doctordashboard" element={<DoctorDashboard />} />
+            <Route
+              path="higher-education"
+              element={<HigherEducationSearch />}
+            />
+            <Route path="job-internship" element={<JobInternshipSearch />} />
+            <Route path="job-application" element={<JobApplicationForm />} />
+            <Route
+              path="job-internship/:jobId"
+              element={<JobInternshipDetails />}
+            />
+            <Route path="update-cv01" element={<UpdateCV01 />} />
+            <Route path="update-cv02" element={<UpdateCV02 />} />
+            <Route path="update-cv03" element={<UpdateCV03 />} />
+            <Route
+              path="job-details/:jobId"
+              element={<JobInternshipDetails />}
+            />
+            {/* <Route path="cvCompare" element={<Cvcompare />} /> */}
+            <Route path="degreeapplication" element={<DegreeApplication />} />
+          </Route>
 
-        {/* Physician Routes */}
-        <Route path="/physician">
-          <Route path="Doctordashboard" element={<DoctorDashboard />} />
-          <Route path="higher-education" element={<HigherEducationSearch />} />
-          <Route path="job-internship" element={<JobInternshipSearch />} />
-          <Route path="job-application" element={<JobApplicationForm />} />
-          <Route path="job-internship/:jobId" element={<JobInternshipDetails />} />
-          <Route path="update-cv01" element={<UpdateCV01 />} />
-          <Route path="update-cv02" element={<UpdateCV02 />} />
-          <Route path="update-cv03" element={<UpdateCV03 />} />
-          <Route path="job-details/:jobId" element={<JobInternshipDetails />} />
-          <Route path="Cvcompare" element={<Cvcompare />} />
-          <Route path="degreeapplication" element={<DegreeApplication />} />
-          
-          
-
-        </Route>
-
-        <Route path="/physician/profile/:id" element={<DoctorProfile />} />
+          <Route
+            path="/physician/profile/:id"
+            element={
+              <RequireAuth>
+                <DoctorProfile />
+              </RequireAuth>
+            }
+          />
 
           {/* Higher Education Routes */}
           <Route path="/higher-education">
@@ -81,24 +109,26 @@ const App = () => {
             <Route path="deshboard" element={<Dashborad />} />
           </Route>
 
-        {/* Recruiter Routes */}
-        <Route path="/recruiter">
-          <Route path="jobPost" element={<JobPost />} />
-          <Route path="JobListing" element={<JobListing />} />
-          <Route path="ViewCandidates" element={<ViewCandidates />} />
-          <Route path="Messages" element={<Messages />} />
-          <Route path="Dashborad" element={<Dashborad />} />
+          {/* Recruiter Routes */}
+          <Route path="/recruiter">
+            <Route path="jobPost" element={<JobPost />} />
+            <Route path="JobListing" element={<JobListing />} />
+            <Route path="ViewCandidates" element={<ViewCandidates />} />
+            <Route path="Messages" element={<Messages />} />
+            <Route path="Dashborad" element={<Dashborad />} />
+            <Route path="cvCompare" element={<CVComparison />} />
+          </Route>
+
+          <Route path="/medical-student">
+            <Route
+              path="MedicalStudentDashboard"
+              element={<MedicalStudentDashboard />}
+            />
+          </Route>
+
+          <Route path="/postdegree" element={<PostDegree />} />
         </Route>
-
-      <Route path="/medical-student">
-          <Route path="MedicalStudentDashboard" element={<MedicalStudentDashboard />} />
-      </Route>
-        
-        <Route path="/postdegree" element={<PostDegree />} />
- 
-
-      </Route>
-    </Routes>
+      </Routes>
     </FormProvider>
   );
 };
