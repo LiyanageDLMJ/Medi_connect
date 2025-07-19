@@ -34,7 +34,7 @@ const upload = multer({
       cb(new Error("Only PDF files are allowed") as any);
     }
   },
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+  limits: { fileSize: 20 * 1024 * 1024 } // 20MB limit
 });
 
 export default upload;

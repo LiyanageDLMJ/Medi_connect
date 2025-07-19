@@ -1,6 +1,26 @@
 import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    trim: true,
+    required: function(this: any) {
+      // Name is required for all user types except Recruiter
+      return this.userType !== 'Recruiter';
+    },
+    validate: {
+      validator: function(this: any, value: string) {
+        // Skip validation for Recruiters as they use companyName
+        if (this.userType === 'Recruiter') return true;
+        return Boolean(value && value.trim().length > 0);
+      },
+      message: 'Name is required for this user type'
+    }
+  },
+  age: {
+    type: Number,
+    min: 0,
+  },
   email: {
     type: String,
     required: [true, 'Email is required'],
@@ -21,6 +41,23 @@ const userSchema = new mongoose.Schema({
       values: ['Doctor', 'MedicalStudent', 'Recruiter', 'EducationalInstitute'],
       message: '{VALUE} is not a valid user type',
     },
+  },
+  photoUrl: {
+    type: String,
+    default: '',
+  },
+  school: {
+    type: String,
+    default: '',
+  },
+  location: {
+    type: String,
+    default: '',
+  },
+  higherEducation: {
+    type: String,
+    enum: ['yes', 'no'],
+    default: 'no',
   },
 }, { 
   timestamps: true,
