@@ -52,12 +52,13 @@ const MedicalStudentDashboard: React.FC = () => {
         </div>
 
         {/* Hero Section */}
+      <div className="bg-gradient-to-l from-sky-200 to-sky-100">
         <div className="relative px-6 py-12 md:px-16 md:py-16">
           <div className="max-w-6xl mx-auto">
             <div className="flex flex-col md:flex-row items-center">
               <div className="md:w-1/2 mb-8 md:mb-0 z-10">
                 <h1 className="text-4xl md:text-5xl font-bold text-slate-700 mb-8">
-                  Doctors
+                 Medical Student Dashboard
                 </h1>
                 <div className="bg-sky-200 rounded-xl p-8 md:p-10 max-w-2xl max-h-2xl ">
                   <h2 className="text-xl md:text-2xl font-semibold text-slate-800 leading-relaxed">
@@ -76,6 +77,7 @@ const MedicalStudentDashboard: React.FC = () => {
             </div>
           </div>
         </div>
+      </div>  
 
         {/* Welcome Section */}
         <div className="px-6 py-8 md:px-16">

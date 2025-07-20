@@ -15,6 +15,8 @@ import {
 import axios from "axios";
 
 type ComparisonData = {
+  yourName: string;
+  otherName: string;
   totalExperience: string;
   educationLevel: string;
   certifications: number;
@@ -26,15 +28,22 @@ export default function CVComparison() {
   const [yourProfile, setYourProfile] = useState<string>("");
   const [otherProfile, setOtherProfile] = useState<string>("");
   const [isCompared, setIsCompared] = useState<boolean>(false);
-  const [yourProfileData, setYourProfileData] = useState<ComparisonData | null>(null);
-  const [otherProfileData, setOtherProfileData] = useState<ComparisonData | null>(null);
+  const [yourProfileData, setYourProfileData] = useState<ComparisonData | null>(
+    null
+  );
+  const [otherProfileData, setOtherProfileData] =
+    useState<ComparisonData | null>(null);
   const [yourSuggestions, setYourSuggestions] = useState<string[]>([]);
   const [otherSuggestions, setOtherSuggestions] = useState<string[]>([]);
   const [showYourDropdown, setShowYourDropdown] = useState<boolean>(false);
   const [showOtherDropdown, setShowOtherDropdown] = useState<boolean>(false);
 
   // Fetch suggestions for autocomplete
-  const fetchSuggestions = async (name: string, setSuggestions: (suggestions: string[]) => void, setShowDropdown: (show: boolean) => void) => {
+  const fetchSuggestions = async (
+    name: string,
+    setSuggestions: (suggestions: string[]) => void,
+    setShowDropdown: (show: boolean) => void
+  ) => {
     if (name.length < 2) {
       setSuggestions([]);
       setShowDropdown(false);
@@ -42,9 +51,12 @@ export default function CVComparison() {
     }
 
     try {
-      const response = await axios.get("http://localhost:3000/CvdoctorUpdate/viewDoctorsCv", {
-        params: { yourName: name },
-      });
+      const response = await axios.get(
+        "http://localhost:3000/CvdoctorUpdate/viewDoctorsCv",
+        {
+          params: { yourName: name },
+        }
+      );
       setSuggestions(response.data);
       setShowDropdown(true);
     } catch (error) {
@@ -55,17 +67,25 @@ export default function CVComparison() {
   };
 
   // Fetch full CV data for a selected profile
-  const fetchProfileData = async (name: string, setProfileData: (data: ComparisonData | null) => void) => {
+  const fetchProfileData = async (
+    name: string,
+    setProfileData: (data: ComparisonData | null) => void
+  ) => {
     try {
-      const response = await axios.get("http://localhost:3000/CvdoctorUpdate/getDoctorCv", {
-        params: { yourName: name },
-      });
+      const response = await axios.get(
+        "http://localhost:3000/CvdoctorUpdate/getDoctorCv",
+        {
+          params: { yourName: name },
+        }
+      );
       const data = response.data;
       setProfileData({
+        yourName: data.yourName,
+        otherName: "", // You can fill this if needed
         totalExperience: data.experience,
-        educationLevel: data.medicalDegree, // Adjust based on your schema
+        educationLevel: data.medicalDegree,
         certifications: data.certificationInput.length,
-        languages: [], // You'll need to add a languages field to your schema if needed
+        languages: [], // Add if available in your schema
         leadershipExperience: false, // Add logic if you have this data
       });
     } catch (error) {
@@ -101,7 +121,6 @@ export default function CVComparison() {
   };
 
   const handleCompare = () => {
-    // Ensure data is fetched before comparing
     if (yourProfile && otherProfile) {
       fetchProfileData(yourProfile, setYourProfileData);
       fetchProfileData(otherProfile, setOtherProfileData);
@@ -112,7 +131,6 @@ export default function CVComparison() {
   return (
     <div>
       <Sidebar />
-
       <div className="flex-1 overflow-auto md:pl-64">
         {/* Header */}
         <header className="flex items-center justify-between p-4 bg-white border-b">
@@ -149,7 +167,6 @@ export default function CVComparison() {
         </header>
         <div className="container mx-auto py-8 px-4">
           <h1 className="text-3xl font-bold mb-8 mt-8">CV Comparison</h1>
-
           <div className="flex flex-col md:flex-row gap-4 items-center mb-30">
             <div className="relative flex-1">
               <Input
@@ -202,7 +219,6 @@ export default function CVComparison() {
               Compare
             </Button>
           </div>
-
           {isCompared && yourProfileData && otherProfileData && (
             <div className="border rounded-lg overflow-hidden">
               <table className="w-full">
