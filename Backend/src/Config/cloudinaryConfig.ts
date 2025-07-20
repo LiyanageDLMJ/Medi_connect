@@ -20,6 +20,29 @@ cloudinary.config({
   cloud_name: cloudName || "db9rhbyij",
   api_key: apiKey || "884286557911137",
   api_secret: apiSecret || "ohshmCYeCPvFNXCMWaHboDHB7vI",
+  secure: true,
+  transformation: {
+    quality: "auto",
+    fetch_format: "auto"
+  }
 });
+
+// Utility functions for PDF URLs
+export const generatePdfUrl = (publicId: string) => {
+  return cloudinary.url(publicId, {
+    resource_type: 'raw',
+    type: 'upload',
+    flags: 'attachment',
+    format: 'pdf'
+  });
+};
+
+export const generatePdfPreviewUrl = (publicId: string) => {
+  return cloudinary.url(publicId, {
+    resource_type: 'raw',
+    type: 'upload',
+    format: 'pdf'
+  });
+};
 
 export default cloudinary;

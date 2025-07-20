@@ -8,6 +8,7 @@ interface FormData {
   careerSummary: string;
   contactPhone: string;
   contactEmail: string;
+  age: string;
   medicalDegree: string;
   university: string;
   specialization: string;
@@ -21,11 +22,21 @@ interface FormData {
   employmentPeriod: string;
   hospitalInstitution: string;
   resumePdfUrl: string;
+  profession?: string;
+  specialty?: string;
+  location?: string;
+  higherEducation?: string;
+}
+
+interface CandidateData extends FormData {
+  id: string;
 }
 
 interface FormContextType {
   formData: FormData;
   setFormData: React.Dispatch<React.SetStateAction<FormData>>;
+  submissions: CandidateData[];
+  addSubmission: (data: FormData) => void;
 }
 
 const defaultFormData: FormData = {
@@ -36,6 +47,7 @@ const defaultFormData: FormData = {
   careerSummary: "",
   contactPhone: "",
   contactEmail: "",
+  age: "",
   medicalDegree: "",
   university: "",
   specialization: "",
@@ -49,15 +61,25 @@ const defaultFormData: FormData = {
   employmentPeriod: "",
   hospitalInstitution: "",
   resumePdfUrl: "",
+  profession: "",
+  specialty: "",
+  location: "",
+  higherEducation: "",
 };
 
 const FormContext = createContext<FormContextType | undefined>(undefined);
 
 export const FormProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [formData, setFormData] = useState<FormData>(defaultFormData);
+  const [submissions, setSubmissions] = useState<CandidateData[]>([]);
+
+  const addSubmission = (data: FormData) => {
+    const id = crypto.randomUUID();
+    setSubmissions(prev => [...prev, { ...data, id }]);
+  };
 
   return (
-    <FormContext.Provider value={{ formData, setFormData }}>
+    <FormContext.Provider value={{ formData, setFormData, submissions, addSubmission }}>
       {children}
     </FormContext.Provider>
   );
