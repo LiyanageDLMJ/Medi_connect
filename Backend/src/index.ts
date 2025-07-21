@@ -20,9 +20,6 @@ import LoginRegisterRoutes from "./Routes/LoginRegisterRoutes";
 import userListRoutes from "./Routes/UserListRoutes";
 import { createServer } from "http";
 import { attachSocket } from "./socketServer";
-connectDB();
-
-connectDB(); 
 import faqRoutes from "./Routes/FAQRoutes";
 connectDB();
 
@@ -43,18 +40,14 @@ app.use(cors({
     'Access-Control-Allow-Origin',
     'Access-Control-Allow-Headers',
     'Access-Control-Allow-Methods',
-    'x-user-id' // <-- make sure this is present and lowercase!
+    'x-user-id'
   ]
-    origin: ['http://localhost:5173', 'http://localhost:3000'],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT','PATCH','DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.options('*', cors());
 
 // Middleware to parse JSON
-app.use(express.json({ limit: '10mb' })); // or higher if needed
+app.use(express.json({ limit: '10mb' }));
 
 // Create uploads folder if it doesn't exist
 const uploadDir = path.join(__dirname, "../uploads");
@@ -63,7 +56,7 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 // Middleware for parsing URL-encoded data
-app.use(express.urlencoded({ extended: true, limit: '10mb' })); // or higher if needed
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Routes
 app.use("/api", router);
@@ -85,8 +78,8 @@ app.use("/api/faqs", faqRoutes);
 // app.use('/images', express.static('src/image'));
 app.use('/image', express.static(path.join(__dirname, "../image")));
 
-// Start the server
 app.use("/auth", LoginRegisterRoutes);
+app.use("/", LoginRegisterRoutes);
 
 // Create HTTP server from existing Express app
 const httpServer = createServer(app);
@@ -96,9 +89,4 @@ attachSocket(httpServer);
 
 httpServer.listen(PORT, () => {
   console.log(`Server and Socket.IO are running on port ${PORT}`);
-app.use("/auth", LoginRegisterRoutes); // /auth/api/me
-app.use("/", LoginRegisterRoutes);     // /api/me
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
 });
-
