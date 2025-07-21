@@ -210,10 +210,10 @@ export default function JobPostForm() {
   }
 
   return (
-    <div>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f7fafd 0%, #e3eafc 100%)', display: 'flex' }}>
       <Sidebar />
-      <div className="flex-1 overflow-auto md:pl-64">
-        <div className="max-w-2xl mx-auto bg-white shadow-md rounded-lg overflow-hidden my-8">
+      <div className="flex-1 flex flex-col items-center justify-center md:pl-64" style={{ minHeight: '100vh' }}>
+        <div style={{ maxWidth: 700, width: '100%', background: '#fff', boxShadow: '0 8px 32px rgba(24,67,137,0.10)', borderRadius: 16, margin: '48px 0', padding: '2.5rem 2.5rem' }}>
           <div className="bg-[#184389] px-6 py-4">
             <h2 className="text-xl font-semibold text-white">Post a Medical Position</h2>
             <p className="text-sm text-white">Create a new job posting for doctors at your hospital</p>

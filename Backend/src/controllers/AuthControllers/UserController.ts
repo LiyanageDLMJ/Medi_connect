@@ -35,6 +35,12 @@ export const register = async (req: Request, res: Response) => {
     if (!email || !password || !confirmPassword || !userType) {
       return res.status(400).json({ message: 'All fields are required' });
     }
+    // Password confirmation
+    if (password !== confirmPassword) {
+      return res.status(400).json({ message: 'Passwords do not match' });
+    }
+    // Always lowercase email
+    const normalizedEmail = email.toLowerCase().trim();
     console.log('userType:', userType);
     
     // Normalize userType
@@ -47,7 +53,7 @@ export const register = async (req: Request, res: Response) => {
     }
 
     // Check if the email is already registered
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       return res.status(400).json({ message: 'Email is already registered' });
     }
@@ -55,16 +61,67 @@ export const register = async (req: Request, res: Response) => {
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create a new user using the appropriate model
-    const Model = userModels[normalizedUserType];
-    const newUser = new Model({
-      email,
+    // Prepare user data
+    const userPayload = {
+      email: normalizedEmail,
       password: hashedPassword,
       userType: normalizedUserType,
       ...otherFields, // Additional fields specific to the user type
-    });
+    };
 
-    await newUser.save();
+    // Convert establishedYear to number for EducationalInstitute
+    if (normalizedUserType === 'EducationalInstitute' && userPayload.establishedYear) {
+      userPayload.establishedYear = parseInt(userPayload.establishedYear as string, 10);
+    }
+
+    // Map instituteName to name for EducationalInstitute
+    if (normalizedUserType === 'EducationalInstitute' && userPayload.instituteName) {
+      userPayload.name = userPayload.instituteName;
+    }
+
+    // Validate required fields for discriminator
+    const Model = userModels[normalizedUserType];
+    
+    // Manual validation for each user type
+    let missingFields: string[] = [];
+    
+    if (normalizedUserType === 'Recruiter') {
+      const requiredFields = ['companyName', 'companyType', 'position', 'contactNumber'];
+      missingFields = requiredFields.filter(field => !userPayload[field] || userPayload[field].trim() === '');
+    } else if (normalizedUserType === 'Doctor') {
+      const requiredFields = ['name', 'profession', 'specialty', 'location', 'higherEducation'];
+      missingFields = requiredFields.filter(field => !userPayload[field] || userPayload[field].trim() === '');
+    } else if (normalizedUserType === 'MedicalStudent') {
+      const requiredFields = ['name', 'currentInstitute', 'yearOfStudy', 'fieldOfStudy'];
+      missingFields = requiredFields.filter(field => !userPayload[field] || userPayload[field].trim() === '');
+    } else if (normalizedUserType === 'EducationalInstitute') {
+      const requiredFields = ['name', 'instituteType', 'accreditation', 'establishedYear'];
+      missingFields = requiredFields.filter(field => {
+        if (field === 'establishedYear') {
+          return !userPayload[field] || isNaN(userPayload[field] as number);
+        }
+        return !userPayload[field] || userPayload[field].toString().trim() === '';
+      });
+    }
+    
+    console.log('User payload:', userPayload);
+    console.log('Missing fields:', missingFields);
+    
+    if (missingFields.length > 0) {
+      return res.status(400).json({ message: `Missing required fields for ${normalizedUserType}`, missingFields });
+    }
+
+    // Create and save user
+    let newUser;
+    try {
+      newUser = new Model(userPayload);
+      await newUser.save();
+    } catch (err) {
+      if (err && typeof err === 'object' && 'name' in err && err.name === 'ValidationError') {
+        return res.status(400).json({ message: 'Validation error', error: (err as Error).message });
+      }
+      throw err;
+    }
 
     // Return user data without sensitive information
     const userData = {
@@ -89,7 +146,8 @@ export const register = async (req: Request, res: Response) => {
 // Login a user
 export const login = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
+    let { email, password } = req.body;
+    email = (email || '').toLowerCase().trim();
 
     // Validate required fields
     if (!email || !password) {

@@ -3,7 +3,6 @@ import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import { FaUserMd, FaHospital, FaSearch, FaCalendarCheck, FaChartLine, FaUsers } from 'react-icons/fa';
 import Navbar from '../components/Navbar';
-import Footer from '../../Components/FooterDiv/Footer';
 
 const Home = () => {
   return (
@@ -86,7 +85,6 @@ const Home = () => {
         </CTAContent>
       </CTASection>
 
-     <Footer/> 
     </Container>
   );
 };

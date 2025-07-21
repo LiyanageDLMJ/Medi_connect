@@ -16,8 +16,8 @@ const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const upperLinks = [
-    { to: "/higher-education/deshboard", label: "Dashboard", icon: <FiHome size={20} /> },
-    { to: "/higher-education/your-profile", label: "Your Profile", icon: <FiUser size={20} /> },
+    { to: "/higher-education/dashboard", label: "Dashboard", icon: <FiHome size={20} /> },
+    { to: "/higher-education/update-profile", label: "Your Profile", icon: <FiUser size={20} /> },
     { to: "/higher-education/messages", label: "Messages", icon: <FiMessageSquare size={20} /> },
     {
       to: "/higher-education/degree-listing",
@@ -28,16 +28,6 @@ const Sidebar = () => {
       to: "/higher-education/view-applications",
       label: "View Applications",
       icon: <FiBook size={20} />,
-    },
-    {
-      to: "/higher-education/update-cv",
-      label: "Update CV",
-      icon: <FiFileText size={20} />,
-    },
-    {
-      to: "/higher-education/performance-insights",
-      label: "Performance Insights",
-      icon: <FiBarChart2 size={20} />,
     },
   ];
 
@@ -59,6 +49,7 @@ const Sidebar = () => {
         className={`sidebar-container fixed inset-y-0 left-0 w-64 h-screen bg-white shadow-lg transform transition-transform md:transform-none ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         } md:translate-x-0 z-40`}
+        style={{ minHeight: '100vh', position: 'relative' }}
       >
         <div className="sidebar-header flex items-center justify-between p-7">
           <span className="text-xl font-bold">
@@ -106,6 +97,18 @@ const Sidebar = () => {
             </NavLink>
           ))}
         </nav>
+        {/* Logout Button - absolutely positioned at the bottom */}
+        <button
+          onClick={() => {
+            localStorage.clear();
+            window.location.href = '/login';
+          }}
+          className="flex items-center gap-3 px-4 py-2 text-black hover:bg-red-100 hover:text-red-600 rounded-[12px] transition-all"
+          style={{ position: 'absolute', bottom: 24, left: 16, right: 16, width: 'calc(100% - 32px)' }}
+        >
+          <FiLogOut size={20} />
+          <span>Logout</span>
+        </button>
       </div>
 
       {isOpen && (
