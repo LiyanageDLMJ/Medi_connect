@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Bell, Search } from "lucide-react";
 import Sidebar from "../components/NavBar/Sidebar";
 import doctorImage from "../../../Doctor.png";
@@ -6,6 +6,32 @@ import Footer from "../../../Components/FooterDiv/Footer";
 import { FaSearch, FaFileAlt, FaComments } from "react-icons/fa";
 
 const DoctorDashboard: React.FC = () => {
+  const [profile, setProfile] = useState<{ name?: string; specialty?: string; photoUrl?: string }>({});
+
+  useEffect(() => {
+    // Fetch doctor profile on mount
+    const fetchProfile = async () => {
+      const token = localStorage.getItem('token');
+      const userId = localStorage.getItem('userId');
+      if (!token || !userId) return;
+      try {
+        const res = await fetch('http://localhost:3000/profile', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'x-user-id': userId,
+          },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setProfile({ name: data.name, specialty: data.specialty, photoUrl: data.photoUrl });
+        }
+      } catch (err) {
+        // Optionally handle error
+      }
+    };
+    fetchProfile();
+  }, []);
+
   return (
     <div>
       <Sidebar />
@@ -39,13 +65,14 @@ const DoctorDashboard: React.FC = () => {
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
                 <img
-                  src="/placeholder.svg?height=32&width=32"
+                  src={profile.photoUrl || "/placeholder.svg?height=32&width=32"}
                   alt="User avatar"
+                  className="h-8 w-8 object-cover"
                 />
               </div>
               <div>
-                <p className="text-sm font-medium">Moni Roy</p>
-                <p className="text-xs text-gray-500">Dentist</p>
+                <p className="text-sm font-medium">{profile.name || "Doctor"}</p>
+                <p className="text-xs text-gray-500">{profile.specialty || "Specialty"}</p>
               </div>
             </div>
           </div>

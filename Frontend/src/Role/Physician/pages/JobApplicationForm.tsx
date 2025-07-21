@@ -1,4 +1,4 @@
-import { useState, ChangeEvent, FormEvent } from "react";
+import { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import { useParams, useNavigate } from "react-router-dom"; // Add useParams and useNavigate
 import Sidebar from "../components/NavBar/Sidebar";
 
@@ -25,6 +25,38 @@ export default function JobApplicationForm() {
   // Replace the old location logic with useParams
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
+
+  // --- NEW: Fetch user profile and auto-fill form ---
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const token = localStorage.getItem('token');
+      const userId = localStorage.getItem('userId');
+      if (!token || !userId) return;
+
+      try {
+        const res = await fetch('http://localhost:3000/profile', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'x-user-id': userId,
+          },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setFormData(prev => ({
+            ...prev,
+            name: data.name || "",
+            email: data.email || "",
+            phone: data.phone || "",
+          }));
+        }
+      } catch (err) {
+        console.error("Failed to fetch user profile:", err);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+  // --- END NEW ---
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
@@ -81,6 +113,7 @@ export default function JobApplicationForm() {
       submissionData.append("cv", formData.cv);
     }
     submissionData.append("jobId", jobId); // Now jobId is guaranteed to exist
+    submissionData.append("userId", localStorage.getItem("userId") || "");
 
     // Add debugging logs
     console.log("Submitting application with:");

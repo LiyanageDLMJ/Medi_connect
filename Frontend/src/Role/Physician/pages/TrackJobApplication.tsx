@@ -251,54 +251,53 @@ export default function JobApplicationTracker() {
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [userProfile, setUserProfile] = useState<{ name: string; photoUrl?: string }>({ name: "" });
 
-  // Hardcoded data for demonstration
   useEffect(() => {
-    setApplications([
-      {
-        _id: "1",
-        jobId: {
-          _id: "job1",
-          title: "Pediatrician",
-          hospitalName: "Little Angels Children Hospital",
-          location: "Kandy",
-          salaryRange: "LKR 200,000 - 250,000",
-          department: "Pediatrics",
-          jobType: "Part-Time"
-        },
-        name: "Dr. Nimal Perera",
-        email: "nimal@example.com",
-        phone: "+94 77 123 4567",
-        experience: "3 years as Pediatric Consultant",
-        cv: "nimal_cv.pdf",
-        status: "applied",
-        recruiterFeedback: "Pending initial review",
-        appliedDate: "2025-04-20T00:00:00Z",
-        lastUpdate: "2025-04-22T00:00:00Z"
-      },
-      {
-        _id: "2",
-        jobId: {
-          _id: "job2",
-          title: "Pediatrician",
-          hospitalName: "Mount Sinai Hospital",
-          location: "Toronto",
-          salaryRange: "Stipend Based",
-          department: "General Medicine",
-          jobType: "Internship"
-        },
-        name: "Dr. Sameera Fernando",
-        email: "sameera@example.com",
-        phone: "+94 71 456 7890",
-        experience: "1-year clinical rotation experience",
-        cv: "sameera_cv.pdf",
-        status: "interview-scheduled",
-        recruiterFeedback: "Interview scheduled for May 5th",
-        appliedDate: "2025-04-18T00:00:00Z",
-        lastUpdate: "2025-04-25T00:00:00Z"
+    const fetchApplications = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const userId = localStorage.getItem("userId");
+        if (!userId) {
+          setError("User not logged in");
+          setLoading(false);
+          return;
+        }
+        const res = await fetch(`http://localhost:3000/JobApplication/user/${userId}`);
+        if (!res.ok) throw new Error("Failed to fetch applications");
+        const data = await res.json();
+        setApplications(data);
+      } catch (err: any) {
+        setError(err.message || "Error fetching applications");
+      } finally {
+        setLoading(false);
       }
-    ]);
-    setLoading(false);
+    };
+    fetchApplications();
+  }, []);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const token = localStorage.getItem('token');
+      const userId = localStorage.getItem('userId');
+      if (!token || !userId) return;
+      try {
+        const res = await fetch('http://localhost:3000/profile', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'x-user-id': userId,
+          },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUserProfile({ name: data.name, photoUrl: data.photoUrl });
+        }
+      } catch (err) {
+        // Optionally handle error
+      }
+    };
+    fetchProfile();
   }, []);
 
   // Calculate status counts based on real data
@@ -328,20 +327,22 @@ export default function JobApplicationTracker() {
           {application.jobId?.hospitalName || 'N/A'}
         </div>
       </TableCell>
-      <TableCell>{application.jobId?.title || 'N/A'}</TableCell>
+      <TableCell>
+        {application.jobId?.title || "N/A"}
+      </TableCell>
       <TableCell className="hidden md:table-cell">
         <div className="flex items-center gap-1">
           <MapPin className="w-3 h-3 text-gray-500" />
-          {application.jobId?.location || 'N/A'}
+          {application.jobId?.location || "N/A"}
         </div>
       </TableCell>
       <TableCell className="hidden lg:table-cell">
-        {application.jobId?.salaryRange && (
+        {application.jobId?.salaryRange ? (
           <div className="flex items-center gap-1">
             <DollarSign className="w-3 h-3 text-gray-500" />
             {application.jobId.salaryRange}
           </div>
-        )}
+        ) : "N/A"}
       </TableCell>
       <TableCell>
         <StatusBadge status={application.status} />
@@ -391,8 +392,14 @@ export default function JobApplicationTracker() {
       <Sidebar />
       {/* Doctor name at top right */}
       <div className="flex justify-end items-center p-4">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/340px-Default_pfp.svg.png"  className="w-10 h-10 rounded-full mr-2" />
-        <span className="font-semibold text-gray-700">Dr. Nimal Perera</span>
+        <img
+          src={userProfile.photoUrl || "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/340px-Default_pfp.svg.png"}
+          className="w-10 h-10 rounded-full mr-2"
+          alt={userProfile.name}
+        />
+        <span className="font-semibold text-gray-700">
+          {userProfile.name ? `Dr. ${userProfile.name}` : ""}
+        </span>
       </div>
       <div className="container mx-auto p-6 space-y-6">
         {/* Header */}

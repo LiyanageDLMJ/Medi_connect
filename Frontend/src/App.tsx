@@ -1,4 +1,4 @@
-import { Routes, Route, Outlet } from "react-router-dom";
+import { Route ,Outlet,Routes} from "react-router-dom";
 
 import JobInternshipSearch from "./Role/Physician/pages/JobInternshipSearch";
 import HigherEducationSearch from "./Role/Physician/pages/HigherEducationSearch";

@@ -29,39 +29,26 @@ const PORT = process.env.PORT || 3000;
 
 // Configure CORS with specific options
 app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps, curl) or any localhost:* in dev
-    if (!origin) return callback(null, true);
-    if (origin.startsWith('http://localhost')) return callback(null, true);
-    // add prod domain if needed
-    return callback(new Error('Not allowed by CORS'));
-  },
+  origin: ['http://localhost:5173', 'http://localhost:3000'],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-user-id'],
-}));
-// Fix CORS configuration - Add PATCH method and more headers
-app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:3000'],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'], // Add PATCH method
-    allowedHeaders: [
-        'Content-Type', 
-        'Authorization',
-        'X-Requested-With',
-        'Accept',
-        'Origin',
-        'Access-Control-Allow-Origin',
-        'Access-Control-Allow-Headers',
-        'Access-Control-Allow-Methods'
-    ]
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization',
+    'X-Requested-With',
+    'Accept',
+    'Origin',
+    'Access-Control-Allow-Origin',
+    'Access-Control-Allow-Headers',
+    'Access-Control-Allow-Methods',
+    'x-user-id' // <-- make sure this is present and lowercase!
+  ]
 }));
 
-// Add explicit OPTIONS handler for preflight requests
 app.options('*', cors());
 
 // Middleware to parse JSON
-app.use(express.json());
+app.use(express.json({ limit: '10mb' })); // or higher if needed
 
 // Create uploads folder if it doesn't exist
 const uploadDir = path.join(__dirname, "../uploads");
@@ -70,7 +57,7 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 // Middleware for parsing URL-encoded data
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' })); // or higher if needed
 
 // Routes
 app.use("/api", router);
