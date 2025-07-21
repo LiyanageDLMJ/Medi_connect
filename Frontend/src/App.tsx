@@ -1,11 +1,11 @@
-import { Routes, Route, Outlet } from "react-router-dom";
+import { Route ,Outlet,Routes} from "react-router-dom";
 
 import JobInternshipSearch from "./Role/Physician/pages/JobInternshipSearch";
 import HigherEducationSearch from "./Role/Physician/pages/HigherEducationSearch";
 import JobApplicationForm from "./Role/Physician/pages/JobApplicationForm";
 import JobInternshipDetails from "./Role/Physician/pages/JobInternshipDetails";
 import JobApplicationTracker from "./Role/Physician/pages/TrackJobApplication";
-
+import PostDegree from "./Role/higherEducation/pages/PostDegree";
 
 import Register from "./LoginRegister/register/Register";
 import JobPost from "./Role/Recuiter/pages/JobPost";
@@ -13,7 +13,10 @@ import JobListing from "./Role/Recuiter/pages/JobListing";
 import UpdateCV01 from "./Role/Physician/pages/UpdateCV01";
 import UpdateCV02 from "./Role/Physician/pages/UpdateCV02";
 import UpdateCV03 from "./Role/Physician/pages/UpdateCV03";
-import Messages from "./Role/higherEducation/pages/Messages";
+import Messages from "./Role/Physician/pages/Messages";
+import ProfilePage from "./Components/Profile/ProfilePage";
+import MedicalStudentDashboard from "./Role/MedicalStudent/pages/Dashboard";
+import InstitutionDashboard from "./Role/higherEducation/pages/Dashboard";
 import "react-datepicker/dist/react-datepicker.css";
 import Home from "./LoginRegister/Home/Home";
 import ForgotPassword from "./LoginRegister/login/ForgetPassword";
@@ -30,17 +33,15 @@ import ViewApplications from "./Role/higherEducation/pages/ViewApplications";
 import ViewCandidates from "./Role/Recuiter/pages/VeiwCandidates";
 import CVComparison from "./Role/Recuiter/pages/CvComparison";
 
+import Dashboard from "./Role/Physician/pages/Doctordashboard";
+import RecruiterDashboard from "./Role/Recuiter/pages/Dashboard";
 import { FormProvider } from "./context/FormContext";
-import MedicalStudentDashboard from "./Role/Physician/pages/MedicalStudentDashboard";
-// import Cvcompare from "./Role/Physician/pages/Cvcompare";
-import PostDegree from "./Role/higherEducation/pages/PostDegree";
-import DoctorProfile from "./Role/Physician/pages/YourProfile"; // Import the PhysicianProfile component
-import RequireAuth from "./Components/RequireAuth";
-
-
+import Cvcompare  from "./Role/Physician/pages/Cvcompare";
+import { Toaster } from 'react-hot-toast';
 const App = () => {
   return (
     <FormProvider>
+      <Toaster position="top-center" toastOptions={{ style: { fontSize: '1rem', borderRadius: 8 } }} />
       <Routes>
         {/* With Footer Routes */}
         <Route
@@ -59,12 +60,23 @@ const App = () => {
       {/* Without Footer Routes */}
       <Route element={<><Outlet /></>}>
 
+        {/* Medical Student Routes */}
+        <Route path="/medical_student">
+          <Route path="dashboard" element={<MedicalStudentDashboard />} />
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="messages" element={<Messages />} />
+          <Route path="update-profile" element={<ProfilePage />} />
+          <Route path="message-box" element={<Messages />} />
+        </Route>
+
         {/* Physician Routes */}
         <Route path="/physician">
           <Route path="Doctordashboard" element={<DoctorDashboard />} />
           <Route path="higher-education" element={<HigherEducationSearch />} />
           <Route path="job-internship" element={<JobInternshipSearch />} />
           <Route path="job-application/:jobId" element={<JobApplicationForm />} />
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="job-application" element={<JobApplicationForm />} />
           <Route path="job-internship/:jobId" element={<JobInternshipDetails />} />
           <Route path="update-cv01" element={<UpdateCV01 />} />
           <Route path="update-cv02" element={<UpdateCV02 />} />
@@ -74,7 +86,10 @@ const App = () => {
           <Route path="messages" element={<Messages />} />
           <Route path="degreeapplication" element={<DegreeApplication />} />
           <Route path="job-application-tracker" element={<JobApplicationTracker />} />
-
+          <Route path="medical-student-dashboard" element={<MedicalStudentDashboard />} />
+          <Route path="messages" element={<Messages />} />
+          <Route path="update-profile" element={<ProfilePage />} />
+          <Route path="message-box" element={<Messages />} />
         </Route>
 
           {/* Higher Education Routes */}
@@ -84,14 +99,30 @@ const App = () => {
             <Route path="degree-listing" element={<DegreeListing />} />
             <Route path="deshboard" element={<Dashborad />} />
           </Route>
+        {/* Higher Education Routes */}
+        <Route path="/higher-education">
+          <Route path="dashboard" element={<InstitutionDashboard />} />
+          <Route path="messages" element={<Messages />} />
+          <Route path="view-applications" element={<ViewApplications />} />
+          <Route path="degree-listing" element={<DegreeListing />} />
+          <Route path="deshboard" element={<Dashborad />} />
+          <Route path="update-profile" element={<ProfilePage />} />
+          <Route path="message-box" element={<Messages />} />
+        </Route>
 
           {/* Recruiter Routes */}
           <Route path="/recruiter">
+          <Route path="dashboard" element={<RecruiterDashboard />} />
             <Route path="jobPost" element={<JobPost />} />
             <Route path="JobListing" element={<JobListing />} />
             <Route path="ViewCandidates" element={<ViewCandidates />} />
             <Route path="Messages" element={<Messages />} />
             <Route path="Dashborad" element={<Dashborad />} />
+          <Route path="jobListing" element={<JobListing />} />
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="update-profile" element={<ProfilePage />} />
+          <Route path="messages" element={<Messages />} />
+          <Route path="message-box" element={<Messages />} />
             <Route path="cvCompare" element={<CVComparison />} />
           </Route>
 

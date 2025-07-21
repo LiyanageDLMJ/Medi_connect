@@ -71,6 +71,9 @@ export default function JobManagement() {
   const [departmentFilter, setDepartmentFilter] = useState('all');
   const [jobTypeFilter, setJobTypeFilter] = useState('all');
 
+  // Recruiter profile state
+  const [recruiterProfile, setRecruiterProfile] = useState<{ companyName?: string; photoUrl?: string }>({});
+
   // Initialize form
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -134,7 +137,12 @@ export default function JobManagement() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.get("http://localhost:3000/JobPost/viewJobs");
+      const token = localStorage.getItem('token');
+      const userId = localStorage.getItem('userId');
+      const headers: any = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      if (userId) headers['x-user-id'] = userId;
+      const response = await axios.get("http://localhost:3000/JobPost/viewJobs", { headers });
       if (!response.data) {
         throw new Error('No data received');
       }
@@ -270,21 +278,53 @@ export default function JobManagement() {
     return matchesSearch && matchesDepartment && matchesJobType;
   });
 
+  useEffect(() => {
+    // Fetch recruiter profile on mount
+    const fetchProfile = async () => {
+      const token = localStorage.getItem('token');
+      const userId = localStorage.getItem('userId');
+      if (!token || !userId) return;
+      try {
+        const res = await fetch('http://localhost:3000/profile', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'x-user-id': userId,
+          },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setRecruiterProfile({ companyName: data.companyName, photoUrl: data.photoUrl });
+        }
+      } catch (err) {
+        // Optionally handle error
+      }
+    };
+    fetchProfile();
+  }, []);
+
   return (
-    <div>
-      <Sidebar />
-      <div className="flex justify-end items-center p-4">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/340px-Default_pfp.svg.png"  className="w-10 h-10 rounded-full mr-2" />
-        <span className="font-semibold text-gray-700">Mayo Clinic</span>
+    <div className="min-h-screen bg-gradient-to-br from-[#f7fafd] to-[#e3eafc] flex flex-col md:flex-row">
+      {/* Sidebar */}
+      <div className="w-full md:w-64 flex-shrink-0 md:sticky md:top-0 md:h-screen z-10">
+        <Sidebar />
       </div>
-      <div className="flex-1 overflow-auto md:pl-64">
+      {/* Main Content */}
+      <div className="flex-1 overflow-auto" style={{ maxHeight: '100vh' }}>
+        <div className="flex justify-end items-center p-4">
+          <img
+            src={recruiterProfile.photoUrl || "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/340px-Default_pfp.svg.png"}
+            className="w-10 h-10 rounded-full mr-2"
+            alt="Profile"
+          />
+          <span className="font-semibold text-gray-700">{recruiterProfile.companyName || "Recruiter"}</span>
+        </div>
         {/* JOB LISTINGS VIEW */}
         {currentView === 'list' && (
           <div className="max-w-7xl mx-auto px-4 py-8">
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-2xl font-bold text-gray-800">Job Listings</h1>
               <button
-                onClick={() => router.push('/recruiter/jobPost')}
+                onClick={() => router.push('/recruiter/JobPost')}
                 className="bg-[#184389] text-white px-4 py-2 rounded hover:bg-blue-700"
               >
                 Post New Job

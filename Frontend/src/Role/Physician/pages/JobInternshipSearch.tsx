@@ -23,7 +23,7 @@ const JobInternshipSearch = () => {
     const fetchJobs = async () => {
       try {
         setLoading(true);
-        const response = await axios.get("http://localhost:3000/JobPost/viewJobs");
+        const response = await axios.get("http://localhost:3000/JobPost/viewAllJobs");
         setJobs(response.data); // Save the fetched jobs to state
         setLoading(false);
       } catch (err: any) {

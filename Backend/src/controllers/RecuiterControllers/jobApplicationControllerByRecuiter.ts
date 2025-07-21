@@ -1,13 +1,24 @@
 import { Request, Response } from 'express';
 import JobApplication from '../../models/JobApplication';
+import Job from '../../models/Job'; // Make sure this import is present
 
 // Get all job applications
 export const getApplications = async (req: Request, res: Response) => {
   try {
-    const applications = await JobApplication.find()
+    const recruiterId = req.headers['x-user-id'];
+    if (!recruiterId) {
+      return res.status(401).json({ message: "Unauthorized: recruiter id missing" });
+    }
+
+    // Find all jobs posted by this recruiter
+    const jobs = await Job.find({ recruiterId });
+    const jobIds = jobs.map(job => job._id);
+
+    // Find all applications for those jobs
+    const applications = await JobApplication.find({ jobId: { $in: jobIds } })
       .populate('jobId', 'title hospitalName location department')
       .sort({ appliedDate: -1 });
-    
+
     res.status(200).json(applications);
   } catch (error: any) {
     res.status(500).json({ 

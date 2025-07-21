@@ -8,6 +8,8 @@ import CandidateRoutes from "./Routes/RecuiterRoutes/CandidateRoutes";
 import connectDB from "./Config/db";
 import JobSearch from "./Routes/PhysicianRoutes/JobSearchRoutes";
 import jobApplicationRoutes from "./Routes/PhysicianRoutes/jobApplicationRoutes";
+import chatUploadRoutes from './Routes/ChatUploadRoutes';
+import profilePhotoRoutes from './Routes/ProfilePhotoRoutes';
 import DegreeApplicationRoutes from "./Routes/PhysicianRoutes/degreeApplicationRoutes";
 import viewDegreeApplicationRoutes from "./Routes/EducationRoutes/ViewDegreeApplicationRoutes";
 import degreeListingRoutes from './Routes/EducationRoutes/DegreeListingRoutes';
@@ -16,14 +18,16 @@ import LoginRegisterRoutes from "./Routes/LoginRegisterRoutes";
 import jobApplicationContolByRecuiterRoutes from './Routes/RecuiterRoutes/jobApplicationcontolByRecuiterRoutes';
 import fs from "fs";
 import path from "path";
-import dotenv from "dotenv";
+import LoginRegisterRoutes from "./Routes/LoginRegisterRoutes";
+import userListRoutes from "./Routes/UserListRoutes";
+import { createServer } from "http";
+import { attachSocket } from "./socketServer";
+connectDB();
 
-// Load environment variables
-dotenv.config();
+connectDB(); 
 
-// Initialize express app
-const app: Application = express();
-const PORT: number = Number(process.env.PORT) || 3000;
+const app = express();
+const PORT = process.env.PORT || 3000;
 
 // Connect to database with error handling
 connectDB().catch(err => {
@@ -33,74 +37,63 @@ connectDB().catch(err => {
 
 // CORS configuration
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:3000'],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-    allowedHeaders: [
-        'Content-Type', 
-        'Authorization',
-        'X-Requested-With',
-        'Accept',
-        'Origin',
-        'Access-Control-Allow-Origin',
-        'Access-Control-Allow-Headers',
-        'Access-Control-Allow-Methods'
-    ]
+  origin: ['http://localhost:5173', 'http://localhost:3000'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization',
+    'X-Requested-With',
+    'Accept',
+    'Origin',
+    'Access-Control-Allow-Origin',
+    'Access-Control-Allow-Headers',
+    'Access-Control-Allow-Methods',
+    'x-user-id' // <-- make sure this is present and lowercase!
+  ]
 }));
 
-// Add explicit OPTIONS handler for preflight requests
 app.options('*', cors());
 
 // Middleware
-app.use(express.json());
+app.use(express.json({ limit: '10mb' })); // or higher if needed
 app.use(express.urlencoded({ extended: true }));
 
 // Ensure uploads directory exists
 const uploadDir = path.join(__dirname, "../uploads");
 if (!fs.existsSync(uploadDir)) {
-    try {
-        fs.mkdirSync(uploadDir, { recursive: true });
-    } catch (err) {
-        console.error("Failed to create uploads directory:", err);
-    }
+  fs.mkdirSync(uploadDir);
 }
 
-// Route definitions
-const routes = [
-    { path: "/api/recruiter/candidates", router: CandidateRoutes },
-    { path: "/CvdoctorUpdate", router: CvDocRouter },
-    { path: "/JobPost", router: RecuiterJobPost },
-    { path: "/api", router },
-    { path: "/JobSearch", router: JobSearch },
-    { path: "/JobApplication", router: jobApplicationRoutes },
-    { path: "/degrees", router: degreeListingRoutes },
-    { path: "/higherDegrees", router: higherEducationRoutes },
-    { path: "/degreeApplications", router: DegreeApplicationRoutes },
-    { path: "/viewDegreeApplications", router: viewDegreeApplicationRoutes },
-    { path: "/jobApplicationControl", router: jobApplicationContolByRecuiterRoutes },
-    { path: "/auth", router: LoginRegisterRoutes }
-];
+// Middleware for parsing URL-encoded data
+app.use(express.urlencoded({ extended: true }));
 
-// Register all routes
-routes.forEach(({ path, router }) => {
-    app.use(path, router);
-});
-
-// Additional routes
-app.use('/physician', CvDocRouter);
+// Routes
+app.use("/api", router);
+app.use("/CvdoctorUpdate", CvDocRouter);
+app.use("/JobPost", RecuiterJobPost);
+app.use("/JobSearch", JobSearch);
+app.use("/JobApplication", jobApplicationRoutes);
+app.use("/degrees", degreeListingRoutes);
+app.use("/higherDegrees", higherEducationRoutes);
+app.use('/degreeApplications', DegreeApplicationRoutes);
+app.use('/viewDegreeApplications', viewDegreeApplicationRoutes);
+app.use('/jobApplicationControl', jobApplicationContolByRecuiterRoutes);
 app.use('/image', express.static(path.join(__dirname, "../image")));
 
-// Error handling middleware
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-    console.error(err.stack);
-    res.status(500).send('Something broke!');
-});
+app.use('/physician', CvDocRouter);
 
-// Start server
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-}).on('error', (err: Error) => {
-    console.error("Failed to start server:", err);
+// Start the server
+app.use("/auth", LoginRegisterRoutes);
+
+// Create HTTP server from existing Express app
+const httpServer = createServer(app);
+
+// Attach Socket.IO to this server
+attachSocket(httpServer);
+
+httpServer.listen(PORT, () => {
+  console.log(`Server and Socket.IO are running on port ${PORT}`);
 });
 
 export default app;
