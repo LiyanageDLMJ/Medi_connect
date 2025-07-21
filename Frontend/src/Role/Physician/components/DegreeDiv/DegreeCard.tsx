@@ -23,7 +23,12 @@ const DegreeCard: React.FC<DegreeCardProps> = ({ degrees, totalDegrees }) => {
     if (!imagePath) {
       return "/assets/images/default-image.jpg";
     }
-    const cleanedPath = imagePath.replace(/^\/image\//, "");
+    // If already a full URL (Cloudinary or other), use as-is
+    if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+      return imagePath;
+    }
+    // Otherwise, treat as local image
+    const cleanedPath = imagePath.replace(/^\/?image\//, "");
     return `http://localhost:3000/image/${cleanedPath}`;
   };
 
@@ -50,8 +55,16 @@ const DegreeCard: React.FC<DegreeCardProps> = ({ degrees, totalDegrees }) => {
             </div>
             <div className="p-4">
               <div className="flex justify-between items-center">
-                <h5 className="text-lg font-bold">{degree.degreeName}</h5>
+                <h5
+                  className="text-lg font-bold line-clamp-2"
+                  title={degree.degreeName}
+                  style={{ maxWidth: "180px", minHeight: "3em", maxHeight: "3em", display: "block" }}
+                >
+                  {degree.degreeName}
+                </h5>
+                <Link to={`/physician/degree-details/${degree.courseId}`}>
                 <button className="px-3 py-1 text-sm bg-gray-200 rounded">Details</button>
+                </Link>
               </div>
               <p className="text-gray-600 flex items-center gap-2 mt-1">
                 <FaUniversity className="text-gray-500" /> {degree.institution}
@@ -72,11 +85,11 @@ const DegreeCard: React.FC<DegreeCardProps> = ({ degrees, totalDegrees }) => {
               <Link
                 to="/physician/degreeapplication"
                 state={{
-                  degree: { 
-                    name: degree.degreeName, 
-                    institution: degree.institution 
-                  },
-                  degreeId: degree.courseId 
+                  degree: {
+                    name: degree.degreeName,
+                    institution: degree.institution,
+                    courseId: degree.courseId,
+                  }
                 }}
               >
                 <button className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2">

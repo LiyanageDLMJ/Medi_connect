@@ -19,6 +19,7 @@ import path from "path";
 
 
 import LoginRegisterRoutes from "./Routes/LoginRegisterRoutes";
+import faqRoutes from "./Routes/FAQRoutes";
 connectDB();
 
 const app = express();
@@ -28,7 +29,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors({
     origin: ['http://localhost:5173', 'http://localhost:3000'],
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    methods: ['GET', 'POST', 'PUT','PATCH','DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
@@ -55,12 +56,14 @@ app.use("/degrees", degreeListingRoutes);
 app.use("/higherDegrees", higherEducationRoutes);
 app.use('/degreeApplications', DegreeApplicationRoutes);
 app.use('/viewDegreeApplications', viewDegreeApplicationRoutes);
+app.use("/api/faqs", faqRoutes);
 // app.use('/images', express.static('src/image'));
 app.use('/image', express.static(path.join(__dirname, "../image")));
 
 
 // Start the server
-app.use("/auth", LoginRegisterRoutes); // Use the centralized login/register routes
+app.use("/auth", LoginRegisterRoutes); // /auth/api/me
+app.use("/", LoginRegisterRoutes);     // /api/me
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

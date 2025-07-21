@@ -9,12 +9,37 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically make an API call to authenticate
-    console.log('Login attempt with:', { email, password });
-    // For now, we'll just redirect to dashboard
-    navigate('/dashboard');
+    try {
+      const response = await fetch('http://localhost:3000/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      if (!response.ok) {
+        alert('Login failed');
+        return;
+      }
+      const data = await response.json();
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      // Redirect based on userType
+      const userType = data.user.userType;
+      if (userType === 'Doctor') {
+        navigate('/physician/Doctordashboard');
+      } else if (userType === 'MedicalStudent') {
+        navigate('/physician/MedicalStudentDashboard');
+      } else if (userType === 'Recruiter') {
+        navigate('/recuiter/Dashboard');
+      } else if (userType === 'EducationalInstitute') {
+        navigate('/higher-education/Dashboard');
+      } else {
+        navigate('/'); // fallback
+      }
+    } catch (err) {
+      alert('Login error');
+    }
   }
 
   return (

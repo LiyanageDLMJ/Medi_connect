@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import validator from "validator";
 import Degree from "../../models/Degree";
 import DegreeApplication from "../../models/DegreeApplication";
+import cloudinary from "../../Config/cloudinaryConfig";
+import fs from "fs";
 
 interface ApplicationRequestBody {
   name: string;
@@ -41,11 +43,11 @@ export const submitApplication = async (req: Request, res: Response) => {
       });
     }
 
-    // Validate degreeId is a number
-    if (typeof degreeId !== "number" || isNaN(degreeId)) {
+    // Validate degreeId is a non-empty string
+    if (!degreeId || typeof degreeId !== "string") {
       return res.status(400).json({
         success: false,
-        message: "Degree ID must be a valid number",
+        message: "Degree ID must be a valid string",
       });
     }
 
@@ -58,6 +60,25 @@ export const submitApplication = async (req: Request, res: Response) => {
     }
 
     // Create application record
+    let cvUrl = "";
+    if (req.file) {
+      try {
+        const result = await cloudinary.uploader.upload(req.file.path, {
+          folder: "degree-cvs",
+          resource_type: "raw",
+          use_filename: true,
+        });
+        cvUrl = result.secure_url;
+        fs.unlinkSync(req.file.path);
+      } catch (cloudinaryError) {
+        console.error("Cloudinary upload error:", cloudinaryError);
+        return res.status(500).json({
+          success: false,
+          message: "Failed to upload CV to cloud storage",
+        });
+      }
+    }
+
     const applicationData = {
       name,
       email,
@@ -69,15 +90,15 @@ export const submitApplication = async (req: Request, res: Response) => {
       degreeId,
       degreeName,
       institution,
+      cv: cvUrl,
       submissionDate: new Date(),
-      status: "Submitted",
     };
 
     const savedApplication = await DegreeApplication.create(applicationData);
 
     // Update degree statistics
     await Degree.findOneAndUpdate(
-      { courseId: degreeId },
+      { _id: degreeId },
       {
         $inc: { applicantsApplied: 1 },
         $set: { updatedAt: new Date() },

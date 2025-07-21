@@ -33,7 +33,7 @@ export const viewDegreeApplications: RequestHandler = async (req: Request, res: 
 
     // Degree program filter
     if (degreeId) {
-      filter.degreeId = Number(degreeId);
+      filter.degreeId = degreeId;
     }
 
     // Search filter (name, email, or degree name)
@@ -67,8 +67,7 @@ export const viewDegreeApplications: RequestHandler = async (req: Request, res: 
       email: app.email,
       phone: app.phone || "",
       currentEducation: app.currentEducation || "",
-      linkedIn: app.linkedIn || "",
-      portfolio: app.portfolio || "",
+      
       additionalInfo: app.additionalInfo || "",
       status: app.status,
       appliedDate: app.submissionDate.toISOString().split("T")[0],
@@ -96,5 +95,44 @@ export const viewDegreeApplications: RequestHandler = async (req: Request, res: 
       message: "An error occurred while fetching applications",
       error: process.env.NODE_ENV === "development" ? errorMessage : undefined,
     });
+  }
+};
+
+// GET endpoint to fetch a single application by ID
+export const getSingleApplication: RequestHandler = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const application = await DegreeApplication.findById(id);
+    if (!application) {
+      res.status(404).json({ error: "Application not found" });
+      return;
+    }
+    res.json(application);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch application" });
+  }
+};
+
+// GET a single application by ID
+export const getApplicationById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const app = await DegreeApplication.findById(id);
+    if (!app) return res.status(404).json({ error: "Not found" });
+    res.json(app);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch application" });
+  }
+};
+
+// PATCH endpoint to update application status
+export const updateApplicationStatus = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    await DegreeApplication.findByIdAndUpdate(id, { status });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to update status" });
   }
 };

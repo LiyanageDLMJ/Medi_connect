@@ -19,18 +19,28 @@ import Login from "./LoginRegister/login/Login";
 import Footer from "./Components/FooterDiv/Footer"; // Adjust the path as needed
 import WithFooter from "./Layout/WithFooter"; // Adjust the path as needed
 import DegreeListing from "./Role/higherEducation/pages/DegreeListing";
-import Dashborad from "./Role/higherEducation/pages/dashborad";
+import DashboradAdmin from "./Role/Admin/pages/Dashboard";
 import DoctorDashboard from "./Role/Physician/pages/Doctordashboard";
 import  DegreeApplication from "./Role/Physician/pages/DegreeApplicationForm"
 
 import  ViewApplications from "./Role/higherEducation/pages/ViewApplications"
 import ViewCandidates from "./Role/Recuiter/pages/VeiwCandidates";
+import SeeApplication from "./Role/higherEducation/pages/SeeApplication";
+import DegreeDetails from "./Role/Physician/pages/DegreeDetails";
+import InstituteDegreeDetails from "./Role/higherEducation/pages/InstituteDegreeDetails";
+import Feedbacks from "./Role/higherEducation/pages/Feedbackslist";
 
-
+import Dashborad from "./Role/higherEducation/pages/dashborad";
 import { FormProvider } from "./context/FormContext";
 import MedicalStudentDashboard from "./Role/Physician/pages/MedicalStudentDashboard";
 import Cvcompare from "./Role/Physician/pages/Cvcompare";
 import PostDegree from "./Role/higherEducation/pages/PostDegree";
+import FAQ from "./Components/FAQ/FAQ";
+import PerformanceInsights from "./Role/higherEducation/pages/PerformanceInsights";
+import FloatingFeedbackButton from "./Components/Feedback/FloatingFeedbackButton";
+import FAQAdd from "./Role/Admin/pages/FAQAdd";
+import AdminFeedbacks from "./Role/Admin/pages/AdminFeedbacks";
+
 const App = () => {
   return (
     <FormProvider>
@@ -55,6 +65,7 @@ const App = () => {
         {/* Physician Routes */}
         <Route path="/physician">
           <Route path="Doctordashboard" element={<DoctorDashboard />} />
+          <Route path="dashboard" element={<DoctorDashboard />} />
           <Route path="higher-education" element={<HigherEducationSearch />} />
           <Route path="job-internship" element={<JobInternshipSearch />} />
           <Route path="job-application" element={<JobApplicationForm />} />
@@ -65,6 +76,7 @@ const App = () => {
           <Route path="job-details/:jobId" element={<JobInternshipDetails />} />
           <Route path="Cvcompare" element={<Cvcompare />} />
           <Route path="degreeapplication" element={<DegreeApplication />} />
+          <Route path="degree-details/:id" element={<DegreeDetails />} />
 
         </Route>
 
@@ -72,8 +84,23 @@ const App = () => {
           <Route path="/higher-education">
             <Route path="messages" element={<Messages />} />
             <Route path="view-applications" element={<ViewApplications />} />
+            <Route path="view-applications/:id" element={<SeeApplication />} />
             <Route path="degree-listing" element={<DegreeListing />} />
-            <Route path="deshboard" element={<Dashborad />} />
+            <Route path="degree-listing/institute-degree-details/:id" element={<InstituteDegreeDetails />} />
+            <Route path="degree-listing/feedbackslist" element={<Feedbacks />} />
+            <Route path="dashboard" element={<Dashborad />} />
+            <Route path="performance-insights" element={<PerformanceInsights />} />
+            {/* Add this route to support navigation from applicants table */}
+            <Route path="degree-listing/view-applications/:id" element={<SeeApplication />} />
+          </Route>
+          <Route path="/admin">
+            <Route path="messages" element={<Messages />} />
+           
+            <Route path="dashboard" element={<DashboradAdmin />} />
+            <Route path="performance-insights" element={<PerformanceInsights />} />
+            <Route path="faq-add" element={<FAQAdd />} />
+            <Route path="feedbacks" element={<AdminFeedbacks />} />
+         
           </Route>
 
         {/* Recruiter Routes */}
@@ -85,13 +112,15 @@ const App = () => {
           <Route path="Dashborad" element={<Dashborad />} />
         </Route>
 
-      
+  
         
         <Route path="/postdegree" element={<PostDegree />} />
+        <Route path="/faq" element={<FAQ />} />
  
 
       </Route>
     </Routes>
+    <FloatingFeedbackButton />
     </FormProvider>
   );
 };

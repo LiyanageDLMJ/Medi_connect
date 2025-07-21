@@ -14,6 +14,10 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Password is required'],
     minlength: [6, 'Password must be at least 6 characters long'],
   },
+  profilePic: {
+    type: String,
+    required: false,
+  },
   userType: {
     type: String,
     required: [true, 'User type is required'],
@@ -27,5 +31,6 @@ const userSchema = new mongoose.Schema({
   discriminatorKey: 'userType',
 });
 
-const User = mongoose.model('User', userSchema); 
+const db = mongoose.connection.useDb('EducationalInstitution');
+const User = db.model('User', userSchema); 
 export default User;

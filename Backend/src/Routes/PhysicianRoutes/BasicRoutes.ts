@@ -1,4 +1,6 @@
 import express, { Request, Response } from "express"; // ✅ Fix: Combined import statement
+import { getCurrentUser } from '../../controllers/AuthControllers/UserController';
+import { authMiddleware } from '../../middleware/authMiddleware';
 
 const router = express.Router();
 
@@ -14,5 +16,8 @@ router.get("/CvUpdate", (req: Request, res: Response) => {
         "Message": "this is CvUpdate page"
     });
 });
+
+// Endpoint to get current user info
+router.get('/me', authMiddleware, getCurrentUser);
 
 export default router; 

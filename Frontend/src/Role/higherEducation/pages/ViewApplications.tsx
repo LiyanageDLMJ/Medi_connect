@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from "react";
+import { Menu, Transition } from '@headlessui/react';
+import { Fragment } from 'react';
+import { FiFilter } from 'react-icons/fi';
 import Sidebar from "../components/Sidebar";
 import TopBar from "../components/TopBar";
+import { BsThreeDotsVertical } from 'react-icons/bs';
+import { useNavigate } from "react-router-dom";
+import FeedbackModal from "../../../Components/Feedback/FeedbackModal";
 
 interface Application {
   id: string;
   degreeId: string;
   degreeName: string;
-  institution: string;
   name: string;
-  email: string;
+  profilePic?: string;
   phone: string;
   currentEducation: string;
-  linkedIn: string;
-  portfolio: string;
   additionalInfo: string;
   status: string;
   appliedDate: string;
@@ -21,10 +24,36 @@ interface Application {
 interface FilterOptions {
   statuses: string[];
   degrees: Array<{
-    id: number;
+    id: string; // Change from number to string
     name: string;
   }>;
 }
+
+type FilterKey = "degreeId" | "fromDate" | "toDate" | "search";
+const filterKeys: FilterKey[] = ["degreeId", "fromDate", "toDate", "search"];
+type ActiveFilters = {
+  degreeId: string;
+  fromDate: string;
+  toDate: string;
+  search: string;
+};
+
+const initialFilters: ActiveFilters = {
+  degreeId: "",
+  fromDate: "",
+  toDate: "",
+  search: ""
+};
+
+// Add a status badge function for consistent color logic
+const statusBadge = (status: string) => {
+  let color = "bg-gray-500";
+  let text = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+  if (status.toLowerCase() === "pending") color = "bg-yellow-500";
+  else if (status.toLowerCase() === "approved") color = "bg-green-500";
+  else if (status.toLowerCase() === "rejected") color = "bg-red-500";
+  return <span className={`px-2 py-1 text-xs font-semibold text-white rounded ${color}`}>{text}</span>;
+};
 
 const ViewApplications: React.FC = () => {
   const [applications, setApplications] = useState<Application[]>([]);
@@ -32,40 +61,40 @@ const ViewApplications: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterOptions>({
     statuses: [],
-    degrees: []
+    degrees: [] as { id: string; name: string }[]
   });
-  const [activeFilters, setActiveFilters] = useState({
-    status: "",
-    degreeId: "",
-    fromDate: "",
-    toDate: "",
-    search: ""
-  });
+  const [activeFilters, setActiveFilters] = useState<ActiveFilters>(initialFilters);
+  const [applicantsPerPage, setApplicantsPerPage] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+  const navigate = useNavigate();
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
   useEffect(() => {
     fetchApplications();
-  }, [activeFilters]);
+  }, [activeFilters, applicantsPerPage, currentPage]);
 
   const fetchApplications = async () => {
     setLoading(true);
     setError(null);
     try {
       const queryParams = new URLSearchParams();
-      if (activeFilters.status) queryParams.append('status', activeFilters.status);
       if (activeFilters.degreeId) queryParams.append('degreeId', activeFilters.degreeId);
       if (activeFilters.fromDate) queryParams.append('fromDate', activeFilters.fromDate);
       if (activeFilters.toDate) queryParams.append('toDate', activeFilters.toDate);
       if (activeFilters.search) queryParams.append('search', activeFilters.search);
 
       const response = await fetch(
-        `http://localhost:3000/viewDegreeApplications/view?${queryParams.toString()}`
+        `http://localhost:3000/viewDegreeApplications/view?${queryParams.toString()}&page=${currentPage}&limit=${applicantsPerPage}`
       );
       
       if (!response.ok) throw new Error("Failed to fetch applications");
       
       const data = await response.json();
       setApplications(data.applications);
-      if (data.filters) setFilters(data.filters);
+      if (data.filters) setFilters({
+        ...data.filters,
+        degrees: data.filters.degrees.map((deg: any) => ({ ...deg, id: String(deg.id) }))
+      });
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "An unknown error occurred";
       setError(errorMessage);
@@ -75,13 +104,19 @@ const ViewApplications: React.FC = () => {
   };
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setActiveFilters(prev => ({ ...prev, [name]: value }));
+    const name = e.target.name;
+    const value = e.target.value;
+    if (filterKeys.includes(name as FilterKey)) {
+      const key = name as FilterKey;
+      setActiveFilters(prev => ({
+        ...prev,
+        [key]: value
+      }));
+    }
   };
 
   const clearFilters = () => {
     setActiveFilters({
-      status: "",
       degreeId: "",
       fromDate: "",
       toDate: "",
@@ -89,35 +124,69 @@ const ViewApplications: React.FC = () => {
     });
   };
 
+  // Handler to update application status
+  const handleStatusChange = async (applicationId: string, newStatus: string) => {
+    // Optimistically update UI
+    setApplications(apps =>
+      apps.map(app =>
+        app.id === applicationId ? { ...app, status: newStatus } : app
+      )
+    );
+    // Call backend to update status
+    try {
+      await fetch(`http://localhost:3000/viewDegreeApplications/updateStatus/${applicationId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+    } catch (err) {
+      // Optionally handle error and revert UI
+    }
+  };
+
+  // Calculate paginated applications
+  const indexOfLastApplicant = currentPage * applicantsPerPage;
+  const indexOfFirstApplicant = indexOfLastApplicant - applicantsPerPage;
+  const currentApplications = applications.slice(indexOfFirstApplicant, indexOfLastApplicant);
+  const totalPages = Math.ceil(applications.length / applicantsPerPage);
+
   return (
     <div className="flex h-screen">
       <Sidebar />
-      <div className="flex-1 overflow-auto md:pl-60">
+      <div className="flex-1 overflow-auto">
         <TopBar />
-        <div className="flex flex-col min-h-[calc(100vh-80px)] p-4">
-          <h2 className="text-2xl font-semibold mb-4">View Applications</h2>
-          
-          {/* Filter Controls */}
-          <div className="bg-white p-4 rounded-lg shadow mb-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-              {/* Status Filter */}
+        <div className="flex flex-col min-h-[calc(100vh-80px)] p-4 md:pl-72 h-full">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
+            <h2 className="text-2xl font-semibold whitespace-nowrap">Total Applicants: {applications.length}</h2>
+            <div className="flex flex-wrap gap-2 items-center w-full md:w-auto">
+              {/* Search by Applicant */}
+              <input
+                type="text"
+                name="search"
+                value={activeFilters.search}
+                onChange={handleFilterChange}
+                placeholder="Search by applicant name or email"
+                className="p-2 border border-gray-300 rounded w-56"
+              />
+              {/* Filter Dropdown */}
+              <Menu as="div" className="relative inline-block text-left">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                <select
-                  name="status"
-                  value={activeFilters.status}
-                  onChange={handleFilterChange}
-                  className="w-full p-2 border border-gray-300 rounded"
+                  <Menu.Button className="inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm bg-white text-sm font-medium rounded hover:bg-gray-50 focus:outline-none">
+                    <FiFilter className="mr-2" />
+                    Filter
+                  </Menu.Button>
+                </div>
+                <Transition
+                  as={Fragment}
+                  enter="transition ease-out duration-100"
+                  enterFrom="transform opacity-0 scale-95"
+                  enterTo="transform opacity-100 scale-100"
+                  leave="transition ease-in duration-75"
+                  leaveFrom="transform opacity-100 scale-100"
+                  leaveTo="transform opacity-0 scale-95"
                 >
-                  <option value="">All Statuses</option>
-                  {filters.statuses.map(status => (
-                    <option key={status} value={status}>
-                      {status}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
+                  <Menu.Items className="absolute left-0 mt-2 w-56 origin-top-left bg-white border border-gray-200 divide-y divide-gray-100 rounded-md shadow-lg focus:outline-none z-50">
+                    <div className="p-4 space-y-3">
               {/* Degree Filter */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Degree Program</label>
@@ -128,15 +197,14 @@ const ViewApplications: React.FC = () => {
                   className="w-full p-2 border border-gray-300 rounded"
                 >
                   <option value="">All Degrees</option>
-                  {filters.degrees.map(degree => (
+                  {(filters.degrees as { id: string; name: string }[]).map(degree => (
                     <option key={degree.id} value={degree.id}>
                       {degree.name}
                     </option>
                   ))}
                 </select>
               </div>
-
-              {/* Date Range Filters */}
+                      {/* From Date Filter */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">From Date</label>
                 <input
@@ -147,126 +215,183 @@ const ViewApplications: React.FC = () => {
                   className="w-full p-2 border border-gray-300 rounded"
                 />
               </div>
-              {/* <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">To Date</label>
-                <input
-                  type="date"
-                  name="toDate"
-                  value={activeFilters.toDate}
-                  onChange={handleFilterChange}
-                  className="w-full p-2 border border-gray-300 rounded"
-                />
-              </div> */}
-
-              {/* Search Filter */}
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
-                <div className="flex">
-                  <input
-                    type="text"
-                    name="search"
-                    value={activeFilters.search}
-                    onChange={handleFilterChange}
-                    placeholder="Search by name, email or degree"
-                    className="flex-1 p-2 border border-gray-300 rounded-l"
-                  />
+                    </div>
+                  </Menu.Items>
+                </Transition>
+              </Menu>
                   <button
-                    onClick={clearFilters}
-                    className="bg-gray-200 px-3 rounded-r hover:bg-gray-300"
+                onClick={() => navigate('/higher-education/degree-listing/feedbackslist')}
+                className="p-2 border border-gray-300 rounded w-40 hover:bg-gray-300 ml-2"
                   >
-                    Clear
+                Feedbacks
                   </button>
+             
+            </div>
+          </div>
+
+          {/* Table/List of Applications with scrollable area */}
+          <div className="flex-1 min-h-0">
+            <div className="bg-white rounded-lg shadow p-4 mt-4 h-full flex flex-col">
+              <div className="flex-1 overflow-auto">
+                {loading ? (
+                  <p className="text-center text-gray-500">Loading applications...</p>
+                ) : error ? (
+                  <p className="text-center text-red-500">Error: {error}</p>
+                ) : applications.length === 0 ? (
+                  <p className="text-center text-gray-500">No applications found.</p>
+                ) : (
+                  <div className="bg-white shadow rounded-lg overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      {/* Table Header */}
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Applicant
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Degree
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Applied Date
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Action
+                          </th>
+                        </tr>
+                      </thead>
+                      {/* Table Body */}
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {currentApplications.map((application) => (
+                          <tr key={application.id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center gap-3">
+                                <img
+                                  src={application.profilePic || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(application.name)}
+                                  alt={application.name}
+                                  className="w-8 h-8 rounded-full object-cover border"
+                                />
+                                <span className="font-medium">{application.name}</span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              {statusBadge(application.status)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div>{application.degreeName}</div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              {application.appliedDate}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center gap-2">
+                              <button
+                                className="bg-blue-100 text-blue-700 px-4 py-2 rounded hover:bg-blue-200 border border-blue-200"
+                                onClick={() => navigate(`/higher-education/view-applications/${application.id}`)}
+                              >
+                                See Application
+                              </button>
+                               <Menu as="div" className="relative inline-block text-left">
+                                 <Menu.Button className="ml-2 p-2 rounded hover:bg-gray-100 align-middle">
+                                   <BsThreeDotsVertical className="inline text-gray-500" size={18} />
+                                 </Menu.Button>
+                                 <Transition
+                                   as={Fragment}
+                                   enter="transition ease-out duration-100"
+                                   enterFrom="transform opacity-0 scale-95"
+                                   enterTo="transform opacity-100 scale-100"
+                                   leave="transition ease-in duration-75"
+                                   leaveFrom="transform opacity-100 scale-100"
+                                   leaveTo="transform opacity-0 scale-95"
+                                 >
+                                   <Menu.Items className="absolute right-0 mt-2 w-32 origin-top-right bg-white border border-gray-200 rounded-md shadow-lg focus:outline-none z-50 px-2 py-2 flex flex-col">
+                                     <Menu.Item>
+                                       {({ active }: { active: boolean }) => (
+                                         <button
+                                           className={`px-3 py-1 text-sm rounded ${active ? 'bg-gray-100' : ''}`}
+                                           onClick={() => handleStatusChange(application.id, "Approved")}
+                                         >
+                                           Approve
+                                         </button>
+                                       )}
+                                     </Menu.Item>
+                                     <Menu.Item>
+                                       {({ active }: { active: boolean }) => (
+                                         <button
+                                           className={`px-3 py-1 text-sm rounded ${active ? 'bg-gray-100' : ''}`}
+                                           onClick={() => handleStatusChange(application.id, "Rejected")}
+                                         >
+                                           Reject
+                                         </button>
+                                       )}
+                                     </Menu.Item>
+                                     <Menu.Item>
+                                       {({ active }: { active: boolean }) => (
+                                         <button
+                                           className={`px-3 py-1 text-sm rounded ${active ? 'bg-gray-100' : ''}`}
+                                           onClick={() => handleStatusChange(application.id, "Pending")}
+                                         >
+                                           Pending
+                                         </button>
+                                       )}
+                                     </Menu.Item>
+                                   </Menu.Items>
+                                 </Transition>
+                               </Menu>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+              {/* Pagination fixed at bottom */}
+              <div className=" bg-white sticky bottom-0 z-10">
+                <div className="flex items-center justify-between mt-6">
+                  <div className="flex items-center gap-2">
+                    <span>View</span>
+                    <select
+                      value={applicantsPerPage}
+                      onChange={e => setApplicantsPerPage(Number(e.target.value))}
+                      className="border rounded px-3 py-1"
+                    >
+                      {[10, 20, 50].map(num => (
+                        <option key={num} value={num}>{num}</option>
+                      ))}
+                    </select>
+                    <span>Applicants per page</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="px-2 py-1 rounded disabled:opacity-50"
+                    >
+                      &lt;
+                    </button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`px-3 py-1 rounded ${page === currentPage ? "bg-indigo-600 text-white" : "bg-white text-gray-700 border"}`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="px-2 py-1 rounded disabled:opacity-50"
+                    >
+                      &gt;
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-
-          {/* Applications Table */}
-          {loading ? (
-            <p className="text-center text-gray-500">Loading applications...</p>
-          ) : error ? (
-            <p className="text-center text-red-500">Error: {error}</p>
-          ) : applications.length === 0 ? (
-            <p className="text-center text-gray-500">No applications found.</p>
-          ) : (
-            <div className="bg-white shadow rounded-lg overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                {/* Table Header */}
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Applicant
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Degree
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Institution
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Applied Date
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                
-                {/* Table Body */}
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {applications.map((application) => (
-                    <tr key={application.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="font-medium">{application.name}</div>
-                        <div className="text-sm text-gray-500">{application.email}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>{application.degreeName}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {application.institution}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {application.appliedDate}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`px-2 py-1 text-xs font-semibold text-white rounded ${
-                            application.status === "Submitted" || application.status === "PENDING"
-                              ? "bg-yellow-500"
-                              : application.status === "ACCEPTED"
-                              ? "bg-green-500"
-                              : application.status === "REJECTED"
-                              ? "bg-red-500"
-                              : "bg-gray-500"
-                          }`}
-                        >
-                          {application.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button
-                          className="text-blue-600 hover:text-blue-900 mr-3"
-                          onClick={() => {/* View details logic */}}
-                        >
-                          View
-                        </button>
-                        <button
-                          className="text-green-600 hover:text-green-900"
-                          onClick={() => {/* Update status logic */}}
-                        >
-                          Update
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
         </div>
       </div>
     </div>

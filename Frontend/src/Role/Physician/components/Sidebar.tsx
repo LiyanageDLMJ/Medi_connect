@@ -9,36 +9,26 @@ import {
   FiBarChart2,
   FiSettings,
   FiLogOut,
+  FiFileText,
+  FiClipboard,
+  FiBriefcase,
+  FiSearch,
+  FiCalendar
 } from "react-icons/fi";
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const upperLinks = [
-    { to: "/physician/deshboard", label: "Dashboard", icon: <FiHome size={20} /> },
+    { to: "/physician/dashboard", label: "Dashboard", icon: <FiHome size={20} /> },
     { to: "/physician/your-profile", label: "Your Profile", icon: <FiUser size={20} /> },
-   {
-      to: "/physician/update-cv",
-      label: "Update CV",
-      icon: <FiBook size={20} />,
-    },
-    {
-      to: "/physician/job-internship",
-      label: "Job & Internships",
-      icon: <FiBook size={20} />,
-    },
-    {
-      to: "/physician/higher-education",
-      label: " Higher Education",
-      icon: <FiBook size={20} />,
-    },
-   
+    { to: "/physician/update-cv", label: "Update CV", icon: <FiFileText size={20} /> },
+    { to: "/physician/compare-cv", label: "CompareCV", icon: <FiClipboard size={20} /> },
+    { to: "/physician/job-internship", label: "Job & Internships", icon: <FiBriefcase size={20} /> },
+    { to: "/physician/track-job-application", label: "Track job Application", icon: <FiSearch size={20} /> },
+    { to: "/physician/higher-education", label: "Higher Education", icon: <FiBook size={20} /> },
     { to: "/physician/messages", label: "Messages", icon: <FiMessageSquare size={20} /> },
-    {
-      to: "/physician/interview-invitations",
-      label: "Interview Invitations",
-      icon: <FiBarChart2 size={20} />,
-    },
+    { to: "/physician/interview-invitations", label: "Interview Invitations", icon: <FiCalendar size={20} /> },
   ];
 
   const lowerLinks = [

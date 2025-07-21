@@ -23,7 +23,6 @@ import axios from "axios";
 interface DegreeFormData {
   courseId?: number; // Auto-incremented by backend
   degreeName: string;
-  institution: string;
   status: string;
   mode: string;
   duration: string;
@@ -34,7 +33,7 @@ interface DegreeFormData {
   eligibility: string;
   description?: string;
   skillsRequired?: string;
-  perks?: string;
+  perks?: string[]; // changed from string to string[]
   image?: string;
 }
 
@@ -44,7 +43,6 @@ const PostDegree: React.FC = () => {
   // State for form data
   const [formData, setFormData] = useState<DegreeFormData>({
     degreeName: "",
-    institution: "",
     status: "Open",
     mode: "Online",
     duration: "4 Years",
@@ -54,7 +52,7 @@ const PostDegree: React.FC = () => {
     eligibility: "",
     description: "",
     skillsRequired: "",
-    perks: "",
+    perks: [],
   });
 
   // State for image file and preview
@@ -71,13 +69,21 @@ const PostDegree: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  // In the component state, use a string for perks input and an array for the data
+  const [perksInput, setPerksInput] = useState<string>("");
+
   // Handle form input changes for TextField and Select
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    setErrors((prev) => ({ ...prev, [name]: "" }));
+    if (name === "perks") {
+      setPerksInput(value);
+      setErrors((prev) => ({ ...prev, perks: "" }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
   };
 
   // Handle image file change with validation
@@ -113,7 +119,6 @@ const PostDegree: React.FC = () => {
 
     if (step === 1) {
       if (!formData.degreeName) newErrors.degreeName = "Degree name is required";
-      if (!formData.institution) newErrors.institution = "Institution is required";
       if (!formData.status) newErrors.status = "Status is required";
       if (!formData.mode) newErrors.mode = "Mode is required";
       if (!formData.duration) newErrors.duration = "Duration is required";
@@ -127,7 +132,7 @@ const PostDegree: React.FC = () => {
       if (!formData.eligibility) newErrors.eligibility = "Eligibility criteria are required";
       if (!formData.description) newErrors.description = "Degree description is required";
     } else if (step === 3) {
-      if (!formData.perks) newErrors.perks = "Perks & benefits are required";
+      if (!formData.perks || formData.perks.length === 0) newErrors.perks = "At least one perk is required";
     }
 
     setErrors(newErrors);
@@ -136,6 +141,26 @@ const PostDegree: React.FC = () => {
 
   // Handle next step
   const handleNextStep = () => {
+    // If on the perks step, update formData.perks from perksInput before validating
+    if (currentStep === 3) {
+      const perksArray = perksInput
+        .split(/,|\n/)
+        .map((p) => p.trim())
+        .filter(Boolean);
+      setFormData((prev) => ({ ...prev, perks: perksArray }));
+
+      // Validate after updating perks
+      // Since setState is async, validate using the new array directly:
+      const newErrors: { [key: string]: string } = {};
+      if (perksArray.length === 0) newErrors.perks = "At least one perk is required";
+      setErrors(newErrors);
+      if (Object.keys(newErrors).length === 0) {
+        setCurrentStep((prev) => Math.min(prev + 1, 4));
+      }
+      return;
+    }
+
+    // For other steps, use normal validation
     if (validateStep(currentStep)) {
       setCurrentStep((prev) => Math.min(prev + 1, 4));
     }
@@ -152,29 +177,32 @@ const PostDegree: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
-
+        // Split perksInput by comma or newlines, trim, and filter empty
+        const perksArray = perksInput
+          .split(/,|\n/)
+          .map((p) => p.trim())
+          .filter(Boolean);
         // Create FormData for multipart/form-data submission
         const formDataToSend = new FormData();
-        Object.entries(formData).forEach(([key, value]) => {
+        Object.entries({ ...formData, perks: perksArray }).forEach(([key, value]) => {
           if (value !== null && value !== undefined) {
             if (key === "applicationDeadline" && value instanceof Date) {
               formDataToSend.append(key, value.toISOString());
+            } else if (key === "perks" && Array.isArray(value)) {
+              value.forEach((perk) => formDataToSend.append("perks", perk));
             } else {
               formDataToSend.append(key, value.toString());
             }
           }
         });
-
         // Append the image file if selected
         if (imageFile) {
           formDataToSend.append("image", imageFile);
         }
-
         // Send the request to the backend
         const response = await axios.post("http://localhost:3000/degrees/postDegree", formDataToSend, {
           headers: { "Content-Type": "multipart/form-data" },
         });
-
         console.log("Degree posted successfully:", response.data);
         navigate("/higher-education/degree-listing"); // Redirect to the degree listing page
       } catch (err: any) {
@@ -312,26 +340,6 @@ const PostDegree: React.FC = () => {
                       <p className="text-gray-500 text-xs mt-1">
                         Degree titles must be descriptive
                       </p>
-                    </div>
-
-                    {/* Institution */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Institution
-                      </label>
-                      <TextField
-                        name="institution"
-                        value={formData.institution}
-                        onChange={handleInputChange}
-                        variant="outlined"
-                        size="small"
-                        fullWidth
-                        placeholder="e.g. University of Oxford"
-                        error={!!errors.institution}
-                        helperText={errors.institution}
-                        InputProps={{ style: { fontSize: "0.875rem" } }}
-                        InputLabelProps={{ style: { fontSize: "0.875rem" } }}
-                      />
                     </div>
 
                     {/* Status */}
@@ -574,16 +582,16 @@ const PostDegree: React.FC = () => {
                     </label>
                     <TextField
                       name="perks"
-                      value={formData.perks}
+                      value={perksInput}
                       onChange={handleInputChange}
                       variant="outlined"
                       size="small"
                       fullWidth
                       multiline
                       rows={5}
-                      placeholder="e.g., Scholarships, Industry Exposure"
+                      placeholder="Enter each perk separated by a comma or new line.\nE.g. Scholarships, Industry Exposure, Free Lab Access"
                       error={!!errors.perks}
-                      helperText={errors.perks}
+                      helperText={errors.perks || "Separate perks with commas or new lines."}
                       InputProps={{ style: { fontSize: "0.875rem" } }}
                       InputLabelProps={{ style: { fontSize: "0.875rem" } }}
                     />

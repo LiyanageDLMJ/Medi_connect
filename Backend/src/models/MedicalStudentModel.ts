@@ -16,6 +16,37 @@ const medicalStudentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  gender: {
+    type: String,
+    enum: ['Male', 'Female', 'Other'],
+    required: false,
+  },
+  language: {
+    type: String,
+    required: false,
+  },
+  dateOfBirth: {
+    type: Date,
+    required: false,
+  },
+  skills: {
+    type: [String],
+    required: false,
+    default: [],
+  },
+  about: {
+    type: String,
+    required: false,
+  },
+  experienceYears: {
+    type: Number,
+    required: false,
+    min: 0,
+  },
+  highestQualification: {
+    type: String,
+    required: false,
+  },
 }, { timestamps: true });
 
 

@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import Degree, { IDegree } from '../../models/Degree';
 import { parseTuitionFee } from '../../utils/degreeUtils';
+import cloudinary from "../../Config/cloudinaryConfig";
+import fs from "fs";
 
 type AsyncRequestHandler = (req: Request, res: Response, next: NextFunction) => Promise<void>;
 
@@ -9,9 +11,9 @@ export const createDegree: AsyncRequestHandler = async (req, res, next) => {
     console.log("Received degree data:", req.body);
     console.log("Received file:", req.file);
 
+    // Remove institution from req.body destructuring
     const {
       degreeName,
-      institution, // Added since it's required in the schema
       status,
       mode,
       applicationDeadline,
@@ -25,10 +27,17 @@ export const createDegree: AsyncRequestHandler = async (req, res, next) => {
       perks,
     } = req.body;
 
+    // Get institution from logged-in user (adjust as needed for your auth system)
+    // Quick fix: cast req as any to access user
+    let institution = (req as any).user?.institution || (req as any).user?.instituteName;
+    if (!institution) {
+      institution = "ABC Institute"; // TEMP: fallback for development
+    }
+
     // Prepare the degree data
     const degreeData: Partial<IDegree> = {
       degreeName,
-      institution,
+      institution, // Set automatically
       status,
       mode,
       applicationDeadline: new Date(applicationDeadline), // Convert string to Date
@@ -42,9 +51,31 @@ export const createDegree: AsyncRequestHandler = async (req, res, next) => {
       perks,
     };
 
+    // Convert perks to array if needed
+    let perksArray = req.body.perks;
+    if (typeof perksArray === 'string') {
+      perksArray = perksArray.split(/,|\n/).map((p: string) => p.trim()).filter(Boolean);
+    }
+    if (Array.isArray(perksArray)) {
+      degreeData.perks = perksArray;
+    }
+
     // Handle the uploaded image
     if (req.file) {
-      degreeData.image = `/image/${req.file.filename}`; // Save the path to the image
+      try {
+        const result = await cloudinary.uploader.upload(req.file.path, {
+          folder: "degree-images",
+          resource_type: "image",
+          use_filename: true,
+        });
+        degreeData.image = result.secure_url;
+        // Delete the local file after upload
+        fs.unlinkSync(req.file.path);
+      } catch (cloudinaryError) {
+        console.error("Cloudinary upload error:", cloudinaryError);
+        res.status(500).json({ message: "Failed to upload image to cloud storage" });
+        return;
+      }
     }
 
     const newDegree: IDegree = new Degree(degreeData);
@@ -82,9 +113,22 @@ export const updateDegree: AsyncRequestHandler = async (req, res, next) => {
       updateData.applicationDeadline = new Date(updateData.applicationDeadline);
     }
 
-    // Handle the uploaded image
+    // Handle the uploaded image (Cloudinary)
     if (req.file) {
-      updateData.image = `/image/${req.file.filename}`;
+      try {
+        const result = await cloudinary.uploader.upload(req.file.path, {
+          folder: "degree-images",
+          resource_type: "image",
+          use_filename: true,
+        });
+        updateData.image = result.secure_url;
+        // Delete the local file after upload
+        fs.unlinkSync(req.file.path);
+      } catch (cloudinaryError) {
+        console.error("Cloudinary upload error:", cloudinaryError);
+        res.status(500).json({ message: "Failed to upload image to cloud storage" });
+        return;
+      }
     }
 
     const updatedDegree = await Degree.findByIdAndUpdate(req.params.id, updateData, { new: true });

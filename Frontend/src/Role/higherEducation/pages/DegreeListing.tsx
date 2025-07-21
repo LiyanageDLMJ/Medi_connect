@@ -18,6 +18,8 @@ import DatePicker from "react-datepicker";
 import TopBar from "../components/TopBar";
 import "react-datepicker/dist/react-datepicker.css";
 import axios from "axios";
+import DegreeApplicationForm from "../../Physician/pages/DegreeApplicationForm";
+import FeedbackModal from "../../../Components/Feedback/FeedbackModal";
 
 // Interface for Degree, aligned with backend schema (Degree.ts)
 interface Degree {
@@ -61,10 +63,26 @@ const DegreeListing: React.FC = () => {
   const [filterDuration, setFilterDuration] = useState<string>("all");
   const [filterTuitionFee, setFilterTuitionFee] = useState<string>("all");
   const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
+  const [degreesPerPage, setDegreesPerPage] = useState(10);
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [showApplicationForm, setShowApplicationForm] = useState(false);
+  const [selectedDegree, setSelectedDegree] = useState<Degree | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+
+  // Calculate paginated degrees
+  const indexOfLastDegree = currentPage * degreesPerPage;
+  const indexOfFirstDegree = indexOfLastDegree - degreesPerPage;
+  const currentDegrees = degrees.slice(indexOfFirstDegree, indexOfLastDegree);
+  const totalPages = Math.ceil(degrees.length / degreesPerPage);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   // Fetch degrees from the backend
   const fetchDegrees = async () => {
@@ -157,7 +175,7 @@ const DegreeListing: React.FC = () => {
 
   // Handle view details
   const handleViewDetails = (degree: Degree) => {
-    console.log("View Details for:", degree);
+    navigate(`/higher-education/degree-listing/institute-degree-details/${degree._id}`);
     setMenuOpen(null);
   };
 
@@ -183,12 +201,17 @@ const DegreeListing: React.FC = () => {
       ? `Here is your degrees listing status from ${formatDate(startDate)} - ${formatDate(endDate)}.`
       : "Here is your full degrees listing status.";
 
+  const handleApplicationSuccess = () => {
+    setShowApplicationForm(false);
+    setTimeout(() => setShowSuccessModal(true), 100);
+  };
+
   return (
     <div className="flex h-screen">
       <Sidebar />
       <div className="flex-1 overflow-auto md:pl-64">
         <TopBar />
-        <div className="p-4">
+        <div className="p-4 flex flex-col min-h-screen">
           <div className="flex items-center bg-white px-3 py-1 rounded-t-lg border-gray-200">
             <div className="flex items-center justify-start w-1/2">
               <div className="space-y-2 md:space-y-3">
@@ -339,81 +362,166 @@ const DegreeListing: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className="px-4 mt-4 overflow-x-auto">
-            {loading && <p>Loading...</p>}
-            {error && <p className="text-red-500">{error}</p>}
-            {!loading && !error && degrees.length === 0 && <p>No degrees found.</p>}
-            <table className="min-w-full bg-white border border-gray-200 rounded-b-lg">
-              <thead className="bg-white border-b border-gray-200">
-                <tr>
-                  <th className="p-3 text-left">Degree Name</th>
-                  <th className="p-3 text-left">Institution</th>
-                  <th className="p-3 text-center">Duration</th>
-                  <th className="p-3 text-center">Mode</th>
-                  <th className="p-3 text-center">Application Deadline</th>
-                  <th className="p-3 text-center">Seats Available</th>
-                  <th className="p-3 text-center">Applicants Applied</th>
-                  <th className="p-3 text-center">Tuition Fee</th>
-                  <th className="p-3 text-left">Status</th>
-                  <th className="p-3 text-center"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {degrees.map((degree, index) => (
-                  <tr
-                    key={degree._id}
-                    className={`${index % 2 === 0 ? "bg-white" : "bg-gray-100"}`}
-                  >
-                    <td className="p-3">{degree.degreeName}</td>
-                    <td className="p-3">{degree.institution}</td>
-                    <td className="p-3 text-center">{degree.duration}</td>
-                    <td className="p-3 text-center">{degree.mode}</td>
-                    <td className="p-3 text-center">{formatDate(degree.applicationDeadline)}</td>
-                    <td className="p-3 text-center">{degree.seatsAvailable}</td>
-                    <td className="p-3 text-center">{degree.applicantsApplied}</td>
-                    <td className="p-3 text-center">{degree.tuitionFee}</td>
-                    <td className="p-3 text-center">
-                      <span
-                        className={`w-16 h-8 flex items-center justify-center px-2 py-1 text-sm font-medium rounded-full ${
-                          degree.status === "Open"
-                            ? "bg-green-100 text-green-600"
-                            : "bg-red-100 text-red-600"
-                        }`}
-                      >
-                        {degree.status}
-                      </span>
-                    </td>
-                    <td className="p-3 text-center relative">
-                      <button onClick={() => handleMenuToggle(degree._id)}>
-                        <BsThreeDotsVertical className="text-gray-600 hover:text-gray-800" />
-                      </button>
-                      {menuOpen === degree._id && (
-                        <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-200 shadow-lg rounded-lg z-10">
-                          <button
-                            onClick={() => console.log("Edit", degree._id)}
-                            className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDelete(degree._id)}
-                            className="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-100"
-                          >
-                            Delete
-                          </button>
-                          <button
-                            onClick={() => handleViewDetails(degree)}
-                            className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
-                          >
-                            View Details
-                          </button>
-                        </div>
-                      )}
-                    </td>
+          <div className="flex-1 flex flex-col">
+            <div className="px-4 mt-4 overflow-x-auto">
+              {loading && <p>Loading...</p>}
+              {error && <p className="text-red-500">{error}</p>}
+              {!loading && !error && degrees.length === 0 && <p>No degrees found.</p>}
+              <table className="min-w-full bg-white border border-gray-200 rounded-b-lg">
+                <thead className="bg-white border-b border-gray-200">
+                  <tr>
+                    <th className="p-3 text-left">Degree Name</th>
+                    <th className="p-3 text-center">Duration</th>
+                    <th className="p-3 text-center">Mode</th>
+                    <th className="p-3 text-center">Application Deadline</th>
+                    <th className="p-3 text-center">Seats Available</th>
+                    <th className="p-3 text-center">Applicants Applied</th>
+                    <th className="p-3 text-center">Tuition Fee</th>
+                    <th className="p-3 text-left">Status</th>
+                    <th className="p-3 text-center"></th>
                   </tr>
+                </thead>
+                <tbody>
+                  {currentDegrees.map((degree, index) => (
+                    <tr
+                      key={degree._id}
+                      className={`${index % 2 === 0 ? "bg-white" : "bg-gray-100"}`}
+                    >
+                      <td className="p-3">{degree.degreeName}</td>
+                      <td className="p-3 text-center">{degree.duration}</td>
+                      <td className="p-3 text-center">{degree.mode}</td>
+                      <td className="p-3 text-center">{formatDate(degree.applicationDeadline)}</td>
+                      <td className="p-3 text-center">{degree.seatsAvailable}</td>
+                      <td className="p-3 text-center">{degree.applicantsApplied}</td>
+                      <td className="p-3 text-center">{degree.tuitionFee}</td>
+                      <td className="p-3 text-center">
+                        <span
+                          className={`w-16 h-8 flex items-center justify-center px-2 py-1 text-sm font-medium rounded-full ${
+                            degree.status === "Open"
+                              ? "bg-green-100 text-green-600"
+                              : "bg-red-100 text-red-600"
+                          }`}
+                        >
+                          {degree.status}
+                        </span>
+                      </td>
+                      <td className="p-3 text-center relative">
+                        <button onClick={() => handleMenuToggle(degree._id)}>
+                          <BsThreeDotsVertical className="text-gray-600 hover:text-gray-800" />
+                        </button>
+                        {menuOpen === degree._id && (
+                          <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded shadow-lg z-50">
+                            <button
+                              className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                              onClick={() => handleViewDetails(degree)}
+                            >
+                              View Details
+                            </button>
+                            <button
+                              className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                              onClick={() => {
+                                navigate(`/higher-education/degree-listing/institute-degree-details/${degree._id}?edit=true`);
+                                setMenuOpen(null);
+                              }}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600"
+                              onClick={() => handleDelete(degree._id)}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {showApplicationForm && selectedDegree && (
+                <DegreeApplicationForm
+                  degree={{
+                    ...selectedDegree,
+                    name: selectedDegree.degreeName,
+                    institution: selectedDegree.institution,
+                  }}
+                  onClose={() => setShowApplicationForm(false)}
+                  onSuccess={handleApplicationSuccess}
+                />
+              )}
+              {showSuccessModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+                  <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm relative">
+                    <button
+                      className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 text-xl"
+                      onClick={() => setShowSuccessModal(false)}
+                      aria-label="Close"
+                    >
+                      &times;
+                    </button>
+                    <h2 className="text-lg font-semibold mb-3 text-green-700">Application submitted!</h2>
+                    <p className="mb-4 text-gray-700">Your application has been submitted successfully.</p>
+                    <button
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded transition mb-2"
+                      onClick={() => {
+                        setShowSuccessModal(false);
+                        setShowFeedbackModal(true);
+                      }}
+                    >
+                      Give Feedback
+                    </button>
+                  </div>
+                </div>
+              )}
+              <FeedbackModal
+                open={showFeedbackModal}
+                onClose={() => setShowFeedbackModal(false)}
+                title="How was your application experience?"
+                placeholder="Share your thoughts about the application process..."
+              />
+            </div>
+            {/* Pagination controls at the very bottom */}
+            <div className="flex items-center justify-between mt-auto pt-8">
+              <div className="flex items-center gap-2">
+                <span>View</span>
+                <select
+                  value={degreesPerPage}
+                  onChange={e => setDegreesPerPage(Number(e.target.value))}
+                  className="border rounded px-3 py-1"
+                >
+                  {[10, 20, 50].map(num => (
+                    <option key={num} value={num}>{num}</option>
+                  ))}
+                </select>
+                <span>Degrees per page</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="px-2 py-1 rounded disabled:opacity-50"
+                >
+                  &lt;
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page)}
+                    className={`px-3 py-1 rounded ${page === currentPage ? "bg-indigo-600 text-white" : "bg-white text-gray-700 border"}`}
+                  >
+                    {page}
+                  </button>
                 ))}
-              </tbody>
-            </table>
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="px-2 py-1 rounded disabled:opacity-50"
+                >
+                  &gt;
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

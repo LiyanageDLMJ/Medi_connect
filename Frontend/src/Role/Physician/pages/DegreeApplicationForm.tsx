@@ -1,10 +1,26 @@
 import React, { useState, FormEvent, ChangeEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import FeedbackModal from "../../../Components/Feedback/FeedbackModal";
 
 // Define interfaces for type safety
 interface Degree {
+  _id?: string;
+  courseId?: number;
+  degreeId?: number;
+  degreeName?: string;
   name: string;
   institution: string;
+  status?: string;
+  mode?: string;
+  applicationDeadline?: string;
+  eligibility?: string;
+  seatsAvailable?: number;
+  applicantsApplied?: number;
+  duration?: string;
+  tuitionFee?: string;
+  image?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface FormData {
@@ -12,8 +28,6 @@ interface FormData {
   email: string;
   phone: string;
   currentEducation: string;
-  linkedIn: string;
-  portfolio: string;
   additionalInfo: string;
 }
 
@@ -22,24 +36,30 @@ const initialFormData: FormData = {
   email: "",
   phone: "",
   currentEducation: "",
-  linkedIn: "",
-  portfolio: "",
   additionalInfo: "",
 };
 
-const DegreeApplicationForm: React.FC = () => {
+interface DegreeApplicationFormProps {
+  degree?: Degree;
+  onClose?: () => void;
+  onSuccess?: () => void;
+}
+
+const DegreeApplicationForm: React.FC<DegreeApplicationFormProps> = ({ degree, onClose, onSuccess }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [cvFile, setCvFile] = useState<File | null>(null);
+  const [cvError, setCvError] = useState<string | null>(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
-  // Hardcode degree and degreeId for testing
-  const degree: Degree = {
-    name: "Master of Computer Science",
-    institution: "University of XYZ",
-  };
-  const degreeId: number = 1; // Default degreeId set to 1 for testing
+  // Use degree from navigation state, or prop, or fallback
+  const location = useLocation();
+  const usedDegree: Degree = location.state?.degree;
+  const idToSend = (usedDegree?.degreeId || usedDegree?._id || usedDegree?.courseId)?.toString();
 
   const ADDITIONAL_INFO_MAX_LENGTH = 500;
 
@@ -48,27 +68,64 @@ const DegreeApplicationForm: React.FC = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleCvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      // Accept only PDF, max 10MB
+      if (file.type !== "application/pdf") {
+        setCvError("Only PDF files are allowed.");
+        setCvFile(null);
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        setCvError("File size must be less than 10MB.");
+        setCvFile(null);
+        return;
+      }
+      setCvFile(file);
+      setCvError(null);
+    }
+  };
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    console.log("usedDegree:", usedDegree);
+    console.log("courseId:", usedDegree?.courseId, "degreeId:", usedDegree?.degreeId, "idToSend:", idToSend);
     setLoading(true);
     setError(null);
     setSuccess(null);
+    // Validate CV presence
+    if (!cvFile) {
+      setCvError("Please upload your CV (PDF, DOC, or DOCX).");
+      setLoading(false);
+      return;
+    }
 
     try {
-      // Validate degreeId (should always pass since it's hardcoded)
-      if (typeof degreeId !== "number" || isNaN(degreeId)) {
-        throw new Error("Invalid degree ID format");
+      // Validate degreeId (should always pass if present)
+      if (!idToSend || typeof idToSend !== 'string') {
+        setError("Degree ID is missing or invalid. Please try again from the degree details page.");
+        setLoading(false);
+        return;
+      }
+
+      // Prepare FormData for file upload
+      const formDataToSend = new FormData();
+      formDataToSend.append("name", formData.name);
+      formDataToSend.append("email", formData.email);
+      formDataToSend.append("phone", formData.phone);
+      formDataToSend.append("currentEducation", formData.currentEducation);
+      formDataToSend.append("additionalInfo", formData.additionalInfo);
+      formDataToSend.append("degreeId", idToSend);
+      formDataToSend.append("degreeName", usedDegree.name);
+      formDataToSend.append("institution", usedDegree.institution);
+      if (cvFile) {
+        formDataToSend.append("cv", cvFile);
       }
 
       const response = await fetch("http://localhost:3000/degreeApplications/apply", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          degreeId, // Use hardcoded degreeId
-          degreeName: degree.name,
-          institution: degree.institution,
-        }),
+        body: formDataToSend,
       });
 
       const result = await response.json();
@@ -76,9 +133,9 @@ const DegreeApplicationForm: React.FC = () => {
         throw new Error(result.message || "Failed to submit application");
       }
 
-      setSuccess(result.message);
-      setFormData(initialFormData);
-      setTimeout(() => navigate(-1), 2000);
+      // On success:
+      setSuccess("Application submitted successfully!");
+      if (onSuccess) onSuccess();
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "An unknown error occurred";
       console.error("Error submitting application:", err);
@@ -88,18 +145,20 @@ const DegreeApplicationForm: React.FC = () => {
     }
   };
 
+  // Use onClose if provided, else fallback to navigate(-1)
   const handleClose = () => {
-    navigate(-1);
+    if (onClose) onClose();
+    else navigate(-1);
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/30 backdrop-blur-sm">
+    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/10 backdrop-blur-sm">
       <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="bg-gradient-to-tr from-[#2E5FB7] to-[#1a365d] py-6 px-8 relative">
           <h2 className="text-2xl font-bold text-white">Degree Application Form</h2>
           <p className="text-blue-100 text-sm mt-1">
-            {degree.name} - {degree.institution}
+            {usedDegree.name} - {usedDegree.institution}
           </p>
           <button
             onClick={handleClose}
@@ -112,18 +171,48 @@ const DegreeApplicationForm: React.FC = () => {
           </button>
         </div>
 
+        {/* Success Popup Modal */}
+        {success && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+            <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm relative">
+              <button
+                className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 text-xl"
+                onClick={() => setSuccess(null)}
+                aria-label="Close"
+              >
+                &times;
+              </button>
+              <h2 className="text-lg font-semibold mb-3 text-green-700">Success!</h2>
+              <p className="mb-4 text-gray-700">{success}</p>
+              <button
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded transition mb-2"
+                onClick={() => setShowFeedbackModal(true)}
+              >
+                Give Feedback
+              </button>
+              <button
+                className="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 rounded transition"
+                onClick={() => setSuccess(null)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+        <FeedbackModal
+          open={showFeedbackModal}
+          onClose={() => setShowFeedbackModal(false)}
+          title="How was your application experience?"
+          placeholder="Share your thoughts about the application process..."
+        />
+
         {/* Form Body */}
         <div className="py-8 px-8">
           <h3 className="text-xl font-semibold text-gray-800 mb-4">Submit Your Application</h3>
           <p className="text-sm text-gray-500 mb-6">
-            The following is required and will only be shared with {degree.institution}
+            The following is required and will only be shared with {usedDegree.institution}
           </p>
 
-          {success && (
-            <p className="text-green-600 bg-green-50 border border-green-200 rounded-md p-3 mb-6">
-              {success}
-            </p>
-          )}
           {error && (
             <p className="text-red-600 bg-red-50 border border-red-200 rounded-md p-3 mb-6">
               Error: {error}
@@ -188,36 +277,6 @@ const DegreeApplicationForm: React.FC = () => {
             </div>
 
             <div>
-              <h4 className="text-lg font-semibold text-gray-800 mb-4">Links</h4>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">LinkedIn URL</label>
-                  <input
-                    type="url"
-                    name="linkedIn"
-                    value={formData.linkedIn}
-                    onChange={handleChange}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
-                    placeholder="Link to your LinkedIn URL"
-                    aria-label="LinkedIn URL"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Portfolio URL</label>
-                  <input
-                    type="url"
-                    name="portfolio"
-                    value={formData.portfolio}
-                    onChange={handleChange}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
-                    placeholder="Link to your portfolio URL"
-                    aria-label="Portfolio URL"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Additional Information
               </label>
@@ -235,6 +294,20 @@ const DegreeApplicationForm: React.FC = () => {
                 <span>Maximum {ADDITIONAL_INFO_MAX_LENGTH} characters</span>
                 <span>{formData.additionalInfo.length}/{ADDITIONAL_INFO_MAX_LENGTH}</span>
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Upload CV (PDF, DOC, or DOCX, max 10MB)</label>
+              <input
+                type="file"
+                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                onChange={handleCvChange}
+                className="w-full p-2 border border-gray-300 rounded-lg"
+                required
+                aria-label="Upload CV"
+              />
+              {cvError && <p className="text-red-500 text-xs mt-1">{cvError}</p>}
+              {cvFile && !cvError && <p className="text-green-600 text-xs mt-1">Selected: {cvFile.name}</p>}
             </div>
 
             <div className="pt-4">

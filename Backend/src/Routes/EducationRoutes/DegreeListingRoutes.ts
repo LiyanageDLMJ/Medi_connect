@@ -30,6 +30,8 @@ router.post('/postDegree', imageUpload.single("image"), asyncHandler(createDegre
 
 // Route to update a degree by ID (also support image upload for updates)
 router.put('/updateDegree/:id', imageUpload.single("image"), asyncHandler(updateDegree));
+// Also allow PATCH for partial updates
+router.patch('/updateDegree/:id', imageUpload.single("image"), asyncHandler(updateDegree));
 
 // Route to delete a degree by ID
 router.delete('/deleteDegree/:id', asyncHandler(deleteDegree));

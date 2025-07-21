@@ -14,6 +14,7 @@ import UpdateCV02 from "../pages/UpdateCV02";
 import UpdateCV03 from "../pages/UpdateCV03";
 import MedicalStudentDashboard from "../pages/MedicalStudentDashboard";
 import CVComparison from "../pages/Cvcompare";
+import DegreeDetails from "../pages/DegreeDetails";
 
 // import { Cvcompare } from "../pages/Cvcompare";
 
@@ -39,6 +40,7 @@ const routes = () => {
           element={<JobApplicationForm />}
         />
         <Route path="/higher-education" element={<HigherEducation />} />
+        <Route path="/higher-education/degree-details/:id" element={<DegreeDetails />} />
         <Route path="/messages" element={<Messages />} />
         {/* <Route path="/cvCompare" element={<Cvcompare />} /> */}
       </Routes>
