@@ -41,8 +41,8 @@ export default function UpdateCV03() {
       const formDataCopy = { ...formData };
 
       // Remove fields that shouldn't be sent to the backend
-      if ("additionalCertifications" in formDataCopy) {
-        delete formDataCopy.additionalCertifications;
+      if ((formDataCopy as any).additionalCertifications !== undefined) {
+        delete (formDataCopy as any).additionalCertifications;
       }
 
       // Handle certification input array

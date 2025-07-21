@@ -1,6 +1,11 @@
 import mongoose from "mongoose";
 
 const JobApplicationSchema = new mongoose.Schema({
+  jobId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Job',
+    required: true,
+  },
   name: {
     type: String,
     required: true,
@@ -22,10 +27,30 @@ const JobApplicationSchema = new mongoose.Schema({
     type: String, // Store the file path or URL of the uploaded CV
     required: true,
   },
+  status: {
+    type: String,
+    enum: ['applied', 'phone-screen', 'interview-scheduled', 'in-review', 'final-interview', 'offer', 'rejected', 'withdrawn'],
+    default: 'applied'
+  },
+  recruiterFeedback: {
+    type: String,
+    default: ''
+  },
   appliedDate: {
     type: Date,
     default: Date.now,
   },
+  lastUpdate: {
+    type: Date,
+    default: Date.now,
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
+}, {
+  timestamps: true
 });
 
 

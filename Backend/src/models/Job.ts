@@ -6,6 +6,10 @@ const JobSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  recruiterId: {
+    type: String,
+    required: true,
+  },
   title: {
     type: String,
     required: true,
@@ -37,6 +41,10 @@ const JobSchema = new mongoose.Schema({
   },
   salaryRange: {
     type: String,
+  },
+  applicationDeadline: {
+    type: Date,
+    required: true,
   },
   status: {
     type: String,

@@ -11,6 +11,7 @@ interface Job {
   jobType: string;
   salaryRange: string;
   status: string;
+  applicationDeadline: string;
 }
 
 interface JobsProps {
@@ -65,7 +66,8 @@ const Jobs: React.FC<JobsProps> = ({ jobs, totalJobs }) => {
             {/* Job Details */}
             <div className="mt-4 text-gray-600">
               <p className="flex items-center gap-2">
-                <FaCalendarAlt className="text-gray-500" /> {new Date(job.postedDate).toLocaleDateString()}
+                <FaCalendarAlt className="text-gray-500" />
+                <span><strong>Posted Date:</strong> {new Date(job.postedDate).toLocaleDateString()}</span>
               </p>
               <p className="flex items-center gap-2">
                 <FaMapMarkerAlt className="text-gray-500" /> {job.location}
@@ -75,6 +77,10 @@ const Jobs: React.FC<JobsProps> = ({ jobs, totalJobs }) => {
               </p>
               <p className="flex items-center gap-2">
                 <FaMoneyBillAlt className="text-gray-500" /> {job.salaryRange}
+              </p>
+              <p className="flex items-center gap-2">
+                <FaCalendarAlt className="text-gray-500" />
+                <span style={{ color: 'red', fontWeight: 'bold' }}>Deadline: {job.applicationDeadline ? new Date(job.applicationDeadline).toLocaleDateString() : "N/A"}</span>
               </p>
             </div>
 
@@ -95,7 +101,10 @@ const Jobs: React.FC<JobsProps> = ({ jobs, totalJobs }) => {
               >
                 Details
               </button>
-              <button className="btn btn-apply" onClick={() => navigate("/physician/job-application")}>
+              <button 
+                className="btn btn-apply" 
+                onClick={() => navigate(`/physician/job-application/${job.jobId}`)}
+              >
                 Apply
               </button>
             </div>
@@ -123,4 +132,3 @@ Jobs.propTypes = {
 };
 
 export default Jobs;
-

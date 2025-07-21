@@ -3,42 +3,53 @@ import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
 import { InputGroup, Label, Input } from '../components/StyledFormComponents';
 import Navbar from '../components/Navbar';
+import toast from 'react-hot-toast';
+
+type UserType = 'Doctor' | 'MedicalStudent' | 'Recruiter' | 'EducationalInstitute';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setMessage(null);
+
     try {
-      const response = await fetch('http://localhost:3000/auth/login', {
+      const API_BASE = window.location.origin.includes('localhost') ? 'http://localhost:3000' : window.location.origin;
+      const res = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password }),
       });
-      if (!response.ok) {
-        alert('Login failed');
-        return;
+
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.message || 'Login failed'); // Show error toast
+        throw new Error(data.message || 'Login failed');
       }
-      const data = await response.json();
+
+      // Store token if needed
       localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      // Redirect based on userType
-      const userType = data.user.userType;
-      if (userType === 'Doctor') {
-        navigate('/physician/Doctordashboard');
-      } else if (userType === 'MedicalStudent') {
-        navigate('/physician/MedicalStudentDashboard');
-      } else if (userType === 'Recruiter') {
-        navigate('/recuiter/Dashboard');
-      } else if (userType === 'EducationalInstitute') {
-        navigate('/higher-education/Dashboard');
-      } else {
-        navigate('/'); // fallback
-      }
-    } catch (err) {
-      alert('Login error');
+      localStorage.setItem('userType', data.user.userType);
+      localStorage.setItem('userId', data.user.id);
+      setMessage('Login successful! Redirecting...');
+      toast.success('Login successful!'); // Show success toast
+
+      const redirectMap: Record<UserType, string> = {
+        Doctor: '/physician/DoctorDashboard',
+        MedicalStudent: '/medical_student/dashboard',
+        Recruiter: '/recruiter/dashboard',
+        EducationalInstitute: '/higher-education/dashboard',
+      };
+      navigate(redirectMap[data.user.userType as UserType] || '/');
+    } catch (err: any) {
+      setError(err.message || 'An error occurred');
+      // Error toast already shown above
     }
   }
 
@@ -72,6 +83,9 @@ const LoginPage = () => {
                 <Link to="/forgot-password">Forgot Password?</Link>
               </ForgotPasswordLink>
             </InputGroup>
+            {message && <p style={{ color: 'green', textAlign: 'center' }}>{message}</p>}
+            {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
+
             <LoginButton type="submit">
               Login <span>→</span>
             </LoginButton>
@@ -126,7 +140,8 @@ const LoginForm = styled.form`
 `;
 
 const LoginButton = styled.button`
-  background:rgb(238, 19, 143);
+  background:rgba(35, 23, 197, 0.84);
+  background:#2E5FB7;
   color: white;
   padding: 0.75rem;
   border: none;
@@ -140,7 +155,7 @@ const LoginButton = styled.button`
   transition: background 0.2s;
   
   &:hover {
-    background: #254a8f;
+    background:rgb(26, 33, 177);
   }
 `;
 

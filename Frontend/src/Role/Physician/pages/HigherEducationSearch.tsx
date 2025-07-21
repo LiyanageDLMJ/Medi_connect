@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Search from "../components/DegreeDiv/DegreeSearch";
 import DegreeCard from "../components/DegreeDiv/DegreeCard";
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../components/NavBar/Sidebar";
 import TopBar from "../components/TopBar";
 
 // Utility function to derive statusColor based on status
