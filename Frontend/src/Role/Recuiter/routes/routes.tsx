@@ -4,6 +4,7 @@ import { Routes, Route } from 'react-router-dom';
 import JobPost from "../pages/JobPost";
 import Dashboard from "../pages/Dashboard";
 import JobListing from "../pages/JobListing";
+import Messages from "../pages/Messages";
 
 const routes = () => {
   return (
@@ -12,7 +13,8 @@ const routes = () => {
     <Routes>
       <Route path="/" element={<Dashboard />} />
       <Route path="/jobPost" element={<JobPost />} />
-      <Route path="/jobListing" element={<JobListing />} /> 
+      <Route path="/jobListing" element={<JobListing />} />
+      <Route path="/messages" element={<Messages />} />
     </Routes>
 
     </div>

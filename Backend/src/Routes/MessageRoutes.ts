@@ -44,4 +44,48 @@ router.post('/', async (req, res) => {
   }
 });
 
+// DELETE /messages/:id - delete a single message by ID
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Validate ObjectId format
+    if (!id || !/^[0-9a-fA-F]{24}$/.test(id)) {
+      return res.status(400).json({ message: 'Invalid message ID format' });
+    }
+    
+    const deleted = await Message.findByIdAndDelete(id);
+    if (!deleted) {
+      return res.status(404).json({ message: 'Message not found' });
+    }
+    
+    console.log(`Message ${id} deleted successfully`);
+    res.json({ message: 'Message deleted successfully' });
+  } catch (err) {
+    console.error('Delete message error:', err);
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json({ message: 'Server error', error: errorMessage });
+  }
+});
+
+// DELETE /messages?user1=...&user2=... - delete all messages between two users
+router.delete('/', async (req, res) => {
+  const { user1, user2 } = req.query as { user1?: string; user2?: string };
+  if (!user1 || !user2) {
+    return res.status(400).json({ message: 'user1 and user2 are required' });
+  }
+  try {
+    const result = await Message.deleteMany({
+      $or: [
+        { senderId: user1, receiverId: user2 },
+        { senderId: user2, receiverId: user1 },
+      ],
+    });
+    res.json({ message: 'Chat cleared', deletedCount: result.deletedCount });
+  } catch (err) {
+    console.error('Clear chat error', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 export default router;

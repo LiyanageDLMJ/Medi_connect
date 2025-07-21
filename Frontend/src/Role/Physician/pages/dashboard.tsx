@@ -1,10 +1,25 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Bell, Search } from "lucide-react"
 import Sidebar from "../components/NavBar/Sidebar";
 import doctorImage from "../../../Doctor.png";
 
 
 const Dashboard: React.FC = () => {
+  const [profile, setProfile] = useState<{ name?: string; userType?: string }>({});
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
+    const API_BASE = window.location.origin.includes('localhost') ? 'http://localhost:3000' : window.location.origin;
+    fetch(`${API_BASE}/profile`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'x-user-id': userId || '',
+      },
+    })
+      .then(res => res.json())
+      .then(data => setProfile(data))
+      .catch(() => {});
+  }, []);
   return (
     <div>
       <Sidebar />
@@ -40,8 +55,8 @@ const Dashboard: React.FC = () => {
               <img src="/placeholder.svg?height=32&width=32" alt="User avatar" />
             </div>
             <div>
-              <p className="text-sm font-medium">Moni Roy</p>
-              <p className="text-xs text-gray-500">Dentist</p>
+              <p className="text-sm font-medium">{profile.name || 'User'}</p>
+              <p className="text-xs text-gray-500">{profile.userType || ''}</p>
             </div>
           </div>
         </div>

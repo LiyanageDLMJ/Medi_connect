@@ -29,17 +29,12 @@ io.on("connection", (socket) => {
   socket.on("send_message", async (data) => {
     const { to, from, message, fileUrl, fileType, userType } = data;
     const targetSocketId = userSocketMap[to];
-    const senderSocketId = userSocketMap[from];
     try {
       // Persist message and get the saved message with _id
       const savedMsg = await Message.create({ senderId: from, receiverId: to, content: message, fileUrl, fileType });
-      // Emit to receiver
+      // Emit to receiver only
       if (targetSocketId) {
         io.to(targetSocketId).emit("receive_message", { _id: savedMsg._id, from, to, message, fileUrl, fileType, userType, createdAt: savedMsg.createdAt });
-      }
-      // Emit to sender (if not the same socket)
-      if (senderSocketId && senderSocketId !== targetSocketId) {
-        io.to(senderSocketId).emit("receive_message", { _id: savedMsg._id, from, to, message, fileUrl, fileType, userType, createdAt: savedMsg.createdAt });
       }
     } catch (err) {
       console.error('Socket message save error', err);

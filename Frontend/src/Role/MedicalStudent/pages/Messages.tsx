@@ -1,12 +1,12 @@
 import React from 'react';
-import NavBar from "../components/NavBar/Sidebar";
-import MessageBox from '../../../Components/MessageBox/MessageBox';
+import Sidebar from "../components/Sidebar";
+import MessageBox from "../../../Components/MessageBox/MessageBox";
 
-const Messages = () => {
+const Messages: React.FC = () => {
   return (
     <div style={{ display: 'flex', height: '100vh', width: '100vw' }}>
       <div style={{ flex: '0 0 250px', height: '100vh' }}>
-        <NavBar />
+        <Sidebar />
       </div>
       <div style={{ flex: 1, height: '100vh', overflow: 'hidden' }}>
         <MessageBox />

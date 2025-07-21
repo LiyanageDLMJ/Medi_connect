@@ -3,18 +3,54 @@ import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
 import { InputGroup, Label, Input } from '../components/StyledFormComponents';
 import Navbar from '../components/Navbar';
+import toast from 'react-hot-toast';
+
+type UserType = 'Doctor' | 'MedicalStudent' | 'Recruiter' | 'EducationalInstitute';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically make an API call to authenticate
-    console.log('Login attempt with:', { email, password });
-    // For now, we'll just redirect to dashboard
-    navigate('/dashboard');
+    setError(null);
+    setMessage(null);
+
+    try {
+      const API_BASE = window.location.origin.includes('localhost') ? 'http://localhost:3000' : window.location.origin;
+      const res = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.message || 'Login failed'); // Show error toast
+        throw new Error(data.message || 'Login failed');
+      }
+
+      // Store token if needed
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('userType', data.user.userType);
+      localStorage.setItem('userId', data.user.id);
+      setMessage('Login successful! Redirecting...');
+      toast.success('Login successful!'); // Show success toast
+
+      const redirectMap: Record<UserType, string> = {
+        Doctor: '/physician/dashboard',
+        MedicalStudent: '/medical_student/dashboard',
+        Recruiter: '/recruiter/dashboard',
+        EducationalInstitute: '/higher-education/dashboard',
+      };
+      navigate(redirectMap[data.user.userType as UserType] || '/');
+    } catch (err: any) {
+      setError(err.message || 'An error occurred');
+      // Error toast already shown above
+    }
   }
 
   return (
@@ -47,6 +83,9 @@ const LoginPage = () => {
                 <Link to="/forgot-password">Forgot Password?</Link>
               </ForgotPasswordLink>
             </InputGroup>
+            {message && <p style={{ color: 'green', textAlign: 'center' }}>{message}</p>}
+            {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
+
             <LoginButton type="submit">
               Login <span>→</span>
             </LoginButton>
@@ -101,7 +140,7 @@ const LoginForm = styled.form`
 `;
 
 const LoginButton = styled.button`
-  background:rgb(238, 19, 143);
+  background:rgba(35, 23, 197, 0.84);
   color: white;
   padding: 0.75rem;
   border: none;
@@ -115,7 +154,7 @@ const LoginButton = styled.button`
   transition: background 0.2s;
   
   &:hover {
-    background: #254a8f;
+    background:rgb(26, 33, 177);
   }
 `;
 

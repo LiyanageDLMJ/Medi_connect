@@ -62,7 +62,6 @@ export const register = async (req: Request, res: Response) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Prepare user data
-    const Model = userModels[normalizedUserType];
     const userPayload = {
       email: normalizedEmail,
       password: hashedPassword,
@@ -70,11 +69,44 @@ export const register = async (req: Request, res: Response) => {
       ...otherFields, // Additional fields specific to the user type
     };
 
+    // Convert establishedYear to number for EducationalInstitute
+    if (normalizedUserType === 'EducationalInstitute' && userPayload.establishedYear) {
+      userPayload.establishedYear = parseInt(userPayload.establishedYear as string, 10);
+    }
+
+    // Map instituteName to name for EducationalInstitute
+    if (normalizedUserType === 'EducationalInstitute' && userPayload.instituteName) {
+      userPayload.name = userPayload.instituteName;
+    }
+
     // Validate required fields for discriminator
-    const modelFields = Object.keys(Model.schema.obj);
-    const missingFields = modelFields.filter(
-      (field) => Model.schema.obj[field].required && userPayload[field] === undefined
-    );
+    const Model = userModels[normalizedUserType];
+    
+    // Manual validation for each user type
+    let missingFields: string[] = [];
+    
+    if (normalizedUserType === 'Recruiter') {
+      const requiredFields = ['companyName', 'companyType', 'position', 'contactNumber'];
+      missingFields = requiredFields.filter(field => !userPayload[field] || userPayload[field].trim() === '');
+    } else if (normalizedUserType === 'Doctor') {
+      const requiredFields = ['name', 'profession', 'specialty', 'location', 'higherEducation'];
+      missingFields = requiredFields.filter(field => !userPayload[field] || userPayload[field].trim() === '');
+    } else if (normalizedUserType === 'MedicalStudent') {
+      const requiredFields = ['name', 'currentInstitute', 'yearOfStudy', 'fieldOfStudy'];
+      missingFields = requiredFields.filter(field => !userPayload[field] || userPayload[field].trim() === '');
+    } else if (normalizedUserType === 'EducationalInstitute') {
+      const requiredFields = ['name', 'instituteType', 'accreditation', 'establishedYear'];
+      missingFields = requiredFields.filter(field => {
+        if (field === 'establishedYear') {
+          return !userPayload[field] || isNaN(userPayload[field] as number);
+        }
+        return !userPayload[field] || userPayload[field].toString().trim() === '';
+      });
+    }
+    
+    console.log('User payload:', userPayload);
+    console.log('Missing fields:', missingFields);
+    
     if (missingFields.length > 0) {
       return res.status(400).json({ message: `Missing required fields for ${normalizedUserType}`, missingFields });
     }
