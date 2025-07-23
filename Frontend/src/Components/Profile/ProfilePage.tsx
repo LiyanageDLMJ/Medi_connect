@@ -25,19 +25,6 @@ const ICONS: Record<string, React.ReactNode> = {
   bio: <FaInfoCircle className={styles.inputIcon} />,
 };
 
-const InfoBox: React.FC<{ label: string; value: any; icon: React.ReactNode }> = ({ label, value, icon }) => (
-  <div className={styles.infoBox}>
-    <div className={styles.infoLeft}>
-      <span className={styles.infoIcon}>{icon}</span>
-      <div>
-        <div className={styles.infoLabel}>{label}</div>
-        <div className={styles.infoValue}>{value}</div>
-      </div>
-    </div>
-    <FaChevronRight className={styles.infoArrow} />
-  </div>
-);
-
 // Add a Switch component
 const Switch = ({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) => (
   <label className={styles.switch}>
@@ -81,7 +68,7 @@ const ProfilePage: React.FC = () => {
       });
       const data = await res.json();
       setProfile(data);
-      setFormState({ name: data.name, age: data.age, bio: data.bio });
+      setFormState({ ...data }); // Use all fields from profile
     } catch (err) {
       console.error(err);
     }
@@ -92,7 +79,8 @@ const ProfilePage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  // Update handleChange to accept HTMLSelectElement as well
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormState((prev) => ({ ...prev, [name]: value }));
   };
@@ -227,6 +215,18 @@ const ProfilePage: React.FC = () => {
     }
   };
 
+  const handleEditProfile = () => {
+    if (!profile) return;
+    setFormState({
+      ...profile,
+      higherEducation: profile.higherEducation || profile.higher_education || 'no',
+      companyType: profile.companyType ?? (profile as any).companyType ?? '',
+      instituteType: profile.instituteType ?? (profile as any).instituteType ?? '',
+      yearOfStudy: profile.yearOfStudy ?? profile.year_of_study ?? '',
+    });
+    setEditing(true);
+  };
+
   if (!profile) return (
     <div className={styles.profileRoot}>
       <div className={styles.spinner}></div>
@@ -239,24 +239,41 @@ const ProfilePage: React.FC = () => {
       ? profile.photoUrl // Cloudinary URLs are already complete
       : DEFAULT_AVATAR;
 
+  const normalizedUserType = (profile.userType || '').toLowerCase().replace(/\s/g, '');
+  const isDoctor = normalizedUserType === 'doctor';
+  const isMedicalStudent = normalizedUserType === 'medicalstudent';
+  const isRecruiter = normalizedUserType === 'recruiter';
+  const isEducationalInstitute = normalizedUserType === 'educationalinstitute';
+
   return (
-    <div className={styles.profileRoot}>
-      {/* Banner/Cover */}
-      <div className={styles.banner}></div>
-      <div className={styles.profileCard}>
-        {/* Avatar Section */}
-        <div
-          className={styles.avatarSection}
-          onDragEnter={handleDrag}
-          onDragOver={handleDrag}
-          onDragLeave={handleDrag}
-          onDrop={handleDrop}
-        >
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#f7f9fc' }}>
+      {/* Left column: Profile summary */}
+      {/* Replace the left column (profile summary card) with a more professional and attractive design */}
+      <div style={{
+        width: 320,
+        background: 'linear-gradient(135deg, #2563eb 0%, #184389 100%)',
+        color: '#fff',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        padding: '2.5rem 1rem 1.5rem 1rem',
+        minHeight: '100vh',
+        borderRadius: 10, // rectangle
+        boxShadow: '0 8px 32px rgba(24,67,137,0.18)',
+        position: 'relative'
+      }}>
+        <div style={{ position: 'relative', marginBottom: 18 }}>
           <img
             src={avatar}
             alt="Avatar"
-            className={styles.avatarImg + (dragActive ? ' ' + styles.avatarDrag : '')}
-            style={{ boxShadow: '0 4px 24px rgba(24,67,137,0.18)' }}
+            style={{
+              width: 130,
+              height: 130,
+              borderRadius: '50%',
+              objectFit: 'cover',
+              border: '5px solid #fff',
+              boxShadow: '0 4px 18px rgba(24,67,137,0.18)'
+            }}
           />
           {editing && (
             <button
@@ -264,184 +281,295 @@ const ProfilePage: React.FC = () => {
               type="button"
               title="Change photo"
               onClick={() => document.getElementById('profile-photo-input')?.click()}
+              style={{ position: 'absolute', right: -12, top: 8, background: '#fff', color: '#184389', borderRadius: '50%', border: 'none', width: 38, height: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', cursor: 'pointer', boxShadow: '0 2px 8px rgba(24,67,137,0.10)' }}
             >
               <FaCamera />
             </button>
           )}
-          <input
-            id="profile-photo-input"
-            type="file"
-            accept="image/*"
-            style={{ display: 'none' }}
-            onChange={handleFileChange}
-          />
-          <div style={{ marginTop: '2.2rem', textAlign: 'center' }}>
-            <div style={{ fontWeight: 700, fontSize: '1.25rem', marginBottom: 4 }}>{profile.name || '-'}</div>
-            <div style={{ opacity: 0.8 }}>{profile.email}</div>
-            <span className={styles.roleBadge}>{profile.userType}</span>
-            {/* Details list */}
-          <ul style={{ listStyle: 'none', marginTop: '1.8rem', padding: 0, lineHeight: 1.9, fontSize: '0.96rem' }}>
-            {profile.location && <li>📍 {profile.location}</li>}
-            {profile.specialty && <li>🏥 {profile.specialty}</li>}
-            {(profile as any).higherEducation && <li>🎓 Higher Education</li>}
-          </ul>
         </div>
-         {/* End inner content */}
-         {/* Small info card */}
-        <div className={styles.smallCard} style={{ position: 'absolute', left: 20, bottom: 20, right: 20 }}>
-          <div>🗓️ Created: {profile.createdAt ? new Date(profile.createdAt).toLocaleString() : '-'}</div>
-          <div style={{ marginTop: 4 }}>🔄 Updated: {profile.updatedAt ? new Date(profile.updatedAt).toLocaleString() : '-'}</div>
+        {/* Add more marginBottom to the name for better separation from the details below */}
+        <div style={{ fontWeight: 800, fontSize: 26, marginBottom: 32, letterSpacing: 0.5 }}>{profile.name || '-'}</div>
+        <div style={{ opacity: 0.92, fontSize: 15, marginBottom: 8 }}>{profile.email}</div>
+        <div style={{
+          background: 'rgba(37,99,235,0.18)',
+          color: '#fff',
+          borderRadius: 16,
+          padding: '4px 18px',
+          fontSize: 15,
+          fontWeight: 600,
+          marginBottom: 10,
+          letterSpacing: 1.2,
+          boxShadow: '0 2px 8px rgba(24,67,137,0.10)'
+        }}>
+          {profile.userType}
         </div>
+        {profile.location && (
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10, fontSize: 15 }}>
+            <FaMapMarkerAlt style={{ marginRight: 7, color: '#fff', opacity: 0.8 }} />
+            {profile.location}
+          </div>
+        )}
+        {(profile.higherEducation === 'yes' || profile.higher_education === 'yes') && (
+          <div style={{
+            marginBottom: 10,
+            color: '#22c55e',
+            fontWeight: 700,
+            fontSize: 17,
+            display: 'flex',
+            alignItems: 'center'
+          }}>
+            <FaGraduationCap style={{ marginRight: 7 }} />
+            Higher Education
+          </div>
+        )}
+        <div style={{
+          background: '#fff',
+          color: '#184389',
+          borderRadius: 14,
+          padding: '1.1rem 1.2rem',
+          marginTop: 'auto',
+          marginBottom: 8,
+          fontSize: 14,
+          boxShadow: '0 2px 10px rgba(24,67,137,0.10)'
+        }}>
+          <div><FaClock style={{ marginRight: 6 }} />Created: {profile.createdAt ? new Date(profile.createdAt).toLocaleString() : '-'}</div>
+          <div style={{ marginTop: 4 }}><FaClock style={{ marginRight: 6 }} />Updated: {profile.updatedAt ? new Date(profile.updatedAt).toLocaleString() : '-'}</div>
         </div>
-         {/* End Avatar Section */}
-
-        {/* Main Section */}
-        <div className={styles.profileMain}>
-          {editing ? (
-            <form className={styles.profileForm} onSubmit={handleSubmit}>
-              <div className={styles.detailGrid}>
-                {/* Name and Age (not for recruiters) */}
-                {profile.userType !== 'Recruiter' && <>
-                  <div className={styles.floatingLabel}>
-                    <FaUser className={styles.inputIcon} />
-                    <input name="name" type="text" placeholder=" " value={formState.name ?? profile.name ?? ''} onChange={handleChange} />
-                    <label>Full Name</label>
+      </div>
+      {/* Right column: Profile details/edit form */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', minHeight: '100vh', padding: '1.2rem 0.5rem' }}>
+        <div style={{ width: '100%', maxWidth: 1200, minHeight: 650, marginTop: 0 }}>
+          <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 4px 24px rgba(24,67,137,0.08)', padding: '1.2rem 1.5rem', marginBottom: 16, minHeight: 200 }}>
+            {editing ? (
+              <form className={styles.profileForm} onSubmit={handleSubmit}>
+                <div style={{
+                  background: '#f8fafc',
+                  borderRadius: 16,
+                  boxShadow: '0 4px 24px rgba(24,67,137,0.10)',
+                  padding: '1.2rem 1.5rem', // reduced padding
+                  maxWidth: 900,
+                  margin: '0 auto',
+                  width: '100%',
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '0.7rem 1.2rem', // reduced gap
+                  alignItems: 'start',
+                  minHeight: 350, // reduced minHeight
+                }}>
+                  {/* Section: Personal Info */}
+                  <div style={{ gridColumn: '1 / span 2', marginBottom: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Personal Information</div>
+                    <hr style={{ border: 'none', borderTop: '1px solid #e5e7eb', margin: 0, marginBottom: 18 }} />
                   </div>
-                  <div className={styles.floatingLabel}>
-                    <FaBirthdayCake className={styles.inputIcon} />
-                    <input name="age" type="number" placeholder=" " value={formState.age ?? profile.age ?? ''} onChange={handleChange} />
-                    <label>Age</label>
-                  </div>
-                </>}
-                {/* Recruiter fields */}
-                {profile.userType === 'Recruiter' && <>
-                  <div className={styles.floatingLabel}>
-                    <FaInfoCircle className={styles.inputIcon} />
-                    <input name="companyName" type="text" placeholder=" " value={(formState as any).companyName ?? (profile as any).companyName ?? ''} onChange={handleChange} />
-                    <label>Company Name</label>
-                  </div>
-                  <div className={styles.floatingLabel}>
-                    <FaInfoCircle className={styles.inputIcon} />
-                    <input name="companyType" type="text" placeholder=" " value={(formState as any).companyType ?? (profile as any).companyType ?? ''} onChange={handleChange} />
-                    <label>Company Type</label>
-                  </div>
-                  <div className={styles.floatingLabel}>
-                    <FaInfoCircle className={styles.inputIcon} />
-                    <input name="position" type="text" placeholder=" " value={(formState as any).position ?? (profile as any).position ?? ''} onChange={handleChange} />
-                    <label>Position</label>
-                  </div>
-                  <div className={styles.floatingLabel}>
-                    <FaInfoCircle className={styles.inputIcon} />
-                    <input name="contactNumber" type="text" placeholder=" " value={(formState as any).contactNumber ?? (profile as any).contactNumber ?? ''} onChange={handleChange} />
-                    <label>Contact Number</label>
-                  </div>
-                </>}
-                {/* Specialty */}
-                {profile.userType !== 'Recruiter' && (
-                  <div className={styles.floatingLabel}>
-                    <FaInfoCircle className={styles.inputIcon} />
-                    <input name="specialty" type="text" placeholder=" " value={(formState as any).specialty ?? (profile as any).specialty ?? ''} onChange={handleChange} />
-                    <label>Specialty</label>
-                  </div>
-                )}
-                {/* School */}
-                {profile.userType !== 'Recruiter' && (
-                  <div className={styles.floatingLabel}>
-                    <FaUniversity className={styles.inputIcon} />
-                    <input name="school" type="text" placeholder=" " value={(formState as any).school ?? (profile as any).school ?? ''} onChange={handleChange} />
-                    <label>School</label>
-                  </div>
-                )}
-                {/* Location */}
-                <div className={styles.floatingLabel}>
-                  <FaInfoCircle className={styles.inputIcon} />
-                  <input name="location" type="text" placeholder=" " value={(formState as any).location ?? (profile as any).location ?? ''} onChange={handleChange} />
-                  <label>Location</label>
-                </div>
-                {/* Higher Education toggle as switch (not for recruiters) */}
-                {profile.userType !== 'Recruiter' && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <span style={{ color: '#5a6a8e' }}>Higher Education Interest</span>
-                    <Switch
-                      checked={(formState as any).higherEducation === 'yes' || ((formState as any).higherEducation === undefined && (profile as any).higherEducation === 'yes')}
-                      onChange={v => setFormState(prev => ({ ...prev, higherEducation: v ? 'yes' : 'no' }))}
+                  {/* Render user-type-specific fields here, as before (do not change field logic) */}
+                  {isDoctor && <>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Full Name</label>
+                      <input name="name" type="text" value={formState.name ?? profile.name ?? ''} onChange={handleChange} required className={styles.inputCard} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Age</label>
+                      <input name="age" type="number" value={formState.age ?? profile.age ?? ''} onChange={handleChange} required className={styles.inputCard} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Profession</label>
+                      <input name="profession" type="text" value={formState.profession ?? profile.profession ?? ''} onChange={handleChange} required className={styles.inputCard} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Specialty</label>
+                      <input name="specialty" type="text" value={formState.specialty ?? profile.specialty ?? ''} onChange={handleChange} required className={styles.inputCard} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Location</label>
+                      <input name="location" type="text" value={formState.location ?? profile.location ?? ''} onChange={handleChange} required className={styles.inputCard} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Higher Education Interest</label>
+                      <Switch checked={formState.higherEducation === 'yes'} onChange={v => setFormState(prev => ({ ...prev, higherEducation: v ? 'yes' : 'no' }))} />
+                    </div>
+                  </>}
+                  {isMedicalStudent && <>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Full Name</label>
+                      <input name="name" type="text" value={formState.name ?? profile.name ?? ''} onChange={handleChange} required className={styles.inputCard} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Age</label>
+                      <input name="age" type="number" value={formState.age ?? profile.age ?? ''} onChange={handleChange} required className={styles.inputCard} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Current Institute</label>
+                      <input name="currentInstitute" type="text" value={formState.currentInstitute ?? profile.currentInstitute ?? ''} onChange={handleChange} required className={styles.inputCard} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Year of Study</label>
+                      <select name="yearOfStudy" value={formState.yearOfStudy ?? profile.yearOfStudy ?? ''} onChange={handleChange} required className={styles.inputCard}>
+                        <option value="">Select Year</option>
+                        <option value="1">First Year</option>
+                        <option value="2">Second Year</option>
+                        <option value="3">Third Year</option>
+                        <option value="4">Fourth Year</option>
+                        <option value="5">Fifth Year</option>
+                      </select>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Field of Study</label>
+                      <input name="fieldOfStudy" type="text" value={formState.fieldOfStudy ?? profile.fieldOfStudy ?? ''} onChange={handleChange} required className={styles.inputCard} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Location</label>
+                      <input name="location" type="text" value={formState.location ?? profile.location ?? ''} onChange={handleChange} required className={styles.inputCard} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Higher Education Interest</label>
+                      <Switch checked={formState.higherEducation === 'yes'} onChange={v => setFormState(prev => ({ ...prev, higherEducation: v ? 'yes' : 'no' }))} />
+                    </div>
+                  </>}
+                  {isRecruiter && <>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Company Name</label>
+                      <input name="companyName" type="text" value={formState.companyName ?? (profile as any).companyName ?? ''} onChange={handleChange} required className={styles.inputCard} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Company Type</label>
+                      <select name="companyType" value={(formState.companyType ?? (profile as any).companyType ?? '').toLowerCase()} onChange={handleChange} required className={styles.inputCard}>
+                        <option value="">Select Company Type</option>
+                        <option value="hospital">Hospital</option>
+                        <option value="clinic">Clinic</option>
+                        <option value="pharmaceutical">Pharmaceutical</option>
+                        <option value="medical device">Medical Device</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Position</label>
+                      <input name="position" type="text" value={formState.position ?? (profile as any).position ?? ''} onChange={handleChange} required className={styles.inputCard} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Contact Number</label>
+                      <input name="contactNumber" type="text" value={formState.contactNumber ?? (profile as any).contactNumber ?? ''} onChange={handleChange} required className={styles.inputCard} />
+                    </div>
+                  </>}
+                  {isEducationalInstitute && <>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Institute Name</label>
+                      <input name="instituteName" type="text" value={formState.instituteName ?? (profile as any).instituteName ?? ''} onChange={handleChange} required className={styles.inputCard} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Institute Type</label>
+                      <select name="instituteType" value={formState.instituteType ?? (profile as any).instituteType ?? ''} onChange={handleChange} required className={styles.inputCard}>
+                        <option value="">Select Institute Type</option>
+                        <option value="Medical College">Medical College</option>
+                        <option value="University">University</option>
+                        <option value="Nursing School">Nursing School</option>
+                        <option value="Research Institute">Research Institute</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Accreditation</label>
+                      <input name="accreditation" type="text" value={formState.accreditation ?? (profile as any).accreditation ?? ''} onChange={handleChange} required className={styles.inputCard} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Established Year</label>
+                      <input name="establishedYear" type="text" value={formState.establishedYear ?? (profile as any).establishedYear ?? ''} onChange={handleChange} required className={styles.inputCard} />
+                    </div>
+                  </>}
+                  {/* After user-type-specific fields, add the Bio field for all user types */}
+                  <div style={{ gridColumn: '1 / span 2', display: 'flex', flexDirection: 'column', marginTop: 2 }}>
+                    <label style={{ fontWeight: 600, marginBottom: 6 }}>Bio</label>
+                    <textarea
+                      name="bio"
+                      value={formState.bio ?? profile.bio ?? ''}
+                      onChange={handleChange}
+                      className={styles.inputCard}
+                      rows={2}
+                      style={{ resize: 'vertical', minHeight: 40, fontSize: 15 }}
+                      maxLength={500}
+                      placeholder="Tell us about yourself (max 500 characters)"
                     />
-                    <span style={{ color: (formState as any).higherEducation === 'yes' || ((formState as any).higherEducation === undefined && (profile as any).higherEducation === 'yes') ? '#22c55e' : '#ef4444', fontWeight: 600 }}>
-                      {(formState as any).higherEducation === 'yes' || ((formState as any).higherEducation === undefined && (profile as any).higherEducation === 'yes') ? 'On' : 'Off'}
-                    </span>
+                    <div style={{ alignSelf: 'flex-end', fontSize: 12, color: '#64748b', marginTop: 2 }}>
+                      {(formState.bio ?? profile.bio ?? '').length}/500
+                    </div>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', gap: 16, marginTop: 24 }}>
+                  <button className={styles.cancelBtn} type="button" onClick={() => setEditing(false)}>Cancel</button>
+                  <button className={styles.saveBtn} type="submit">Save Changes</button>
+                </div>
+              </form>
+            ) : (
+              <div className={styles.detailsContainer}>
+                {/* In view mode, remove the Profile Information title and subtitle. */}
+                {/* Place the Edit Profile button inline with the 'Profile Details' section header. */}
+                {!editing && (
+                  <div className={styles.detailsHeader} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+                    <div className={styles.profileTitle}>Profile Details</div>
+                    <button className={styles.editBtn} title="Edit Profile" onClick={handleEditProfile}>Edit Profile</button>
                   </div>
                 )}
-              </div>
-              <div className={styles.sectionDivider}></div>
-              <div className={styles.floatingLabel}>
-                <FaInfoCircle className={styles.inputIcon} />
-                <textarea name="bio" rows={4} maxLength={500} placeholder=" " value={formState.bio ?? profile.bio ?? ''} onChange={handleChange} />
-                <label>Bio</label>
-                <div className={styles.charCount}>{(formState.bio ?? profile.bio ?? '').length}/500 characters</div>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'row' }}>
-                <button className={styles.saveBtn} type="submit">Save</button>
-                <button className={styles.cancelBtn} type="button" onClick={() => setEditing(false)}>Cancel</button>
-              </div>
-            </form>
-          ) : (
-            <div className={styles.detailsContainer}>
-              <div className={styles.detailsHeader}>
-                <div className={styles.profileTitle}>Profile Details</div>
-                <button className={styles.editBtn} title="Edit Profile" onClick={() => setEditing(true)}>Edit Profile</button>
-              </div>
-              <div className={styles.detailGrid}>
-                {/* Name and Age (not for recruiters) */}
-                {profile.userType !== 'Recruiter' && <InfoBox label="Name" value={profile.name || '-'} icon={<FaUser />} />}
-                {profile.userType !== 'Recruiter' && <InfoBox label="Age" value={profile.age || '-'} icon={<FaBirthdayCake />} />}
-                <InfoBox label="Email" value={profile.email} icon={<FaEnvelope />} />
-                {/* No userType for recruiter */}
-                {profile.userType !== 'Recruiter' && <InfoBox label="User Type" value={profile.userType} icon={<FaIdBadge />} />}
-                <InfoBox label="Bio" value={profile.bio || '-'} icon={<FaInfoCircle />} />
-                {/* Recruiter fields */}
-                {profile.userType === 'Recruiter' && <>
-                  <InfoBox label="Company Name" value={(profile as any).companyName || '-'} icon={<FaInfoCircle />} />
-                  <InfoBox label="Company Type" value={(profile as any).companyType || '-'} icon={<FaInfoCircle />} />
-                  <InfoBox label="Position" value={(profile as any).position || '-'} icon={<FaInfoCircle />} />
-                  <InfoBox label="Contact Number" value={(profile as any).contactNumber || '-'} icon={<FaInfoCircle />} />
+                <div className={styles.detailGrid}>
+                  {/* Name and Age (only for Doctor and Medical Student) */}
+                  {(isDoctor || isMedicalStudent) && <InfoBox label="Name" value={profile.name || '-'} icon={<FaUser />} />}
+                  {(isDoctor || isMedicalStudent) && <InfoBox label="Age" value={profile.age || '-'} icon={<FaBirthdayCake />} />}
+                  <InfoBox label="Email" value={profile.email} icon={<FaEnvelope />} />
+                  {/* User Type (not for recruiter or educational institute) */}
+                  {(isDoctor || isMedicalStudent) && <InfoBox label="User Type" value={profile.userType} icon={<FaIdBadge />} />}
+                  <InfoBox label="Bio" value={profile.bio || '-'} icon={<FaInfoCircle />} />
+                  {/* Recruiter fields */}
+                  {isRecruiter && <>
+                    <InfoBox label="Company Name" value={(profile as any).companyName || '-'} icon={<FaInfoCircle />} />
+                    <InfoBox label="Company Type" value={(profile as any).companyType || '-'} icon={<FaInfoCircle />} />
+                    <InfoBox label="Position" value={(profile as any).position || '-'} icon={<FaInfoCircle />} />
+                    <InfoBox label="Contact Number" value={(profile as any).contactNumber || '-'} icon={<FaInfoCircle />} />
+                  </>}
+                  {/* Educational Institute fields */}
+                  {isEducationalInstitute && <>
+                    <InfoBox label="Institute Name" value={(profile as any).instituteName || '-'} icon={<FaUniversity />} />
+                    <InfoBox label="Institute Type" value={(profile as any).instituteType || '-'} icon={<FaInfoCircle />} />
+                    <InfoBox label="Accreditation" value={(profile as any).accreditation || '-'} icon={<FaInfoCircle />} />
+                    <InfoBox label="Established Year" value={(profile as any).establishedYear || '-'} icon={<FaInfoCircle />} />
+                  </>}
+                </div>
+                <div className={styles.sectionDivider}></div>
+                {/* Only show Professional Information for Doctor and Medical Student */}
+                {(isDoctor || isMedicalStudent) && <>
+                  <div className={styles.sectionSubTitle}>Professional Information</div>
+                  <div className={styles.detailGrid}>
+                    {isDoctor && <>
+                      <InfoBox label="Specialty" value={profile.specialty || '-'} icon={<FaStethoscope />} />
+                      <InfoBox label="Location" value={profile.location || '-'} icon={<FaMapMarkerAlt />} />
+                      <InfoBox
+                        label="Higher Education Interest"
+                        value={profile.higherEducation === 'yes' ? <span style={{ color: '#22c55e', fontWeight: 600 }}>Yes</span> : <span style={{ color: '#ef4444', fontWeight: 600 }}>No</span>}
+                        icon={<FaGraduationCap />}
+                      />
+                    </>}
+                    {isMedicalStudent && <>
+                      <InfoBox label="Current Institute" value={profile.currentInstitute || profile.current_institute || '-'} icon={<FaUniversity />} />
+                      <InfoBox label="Year of Study" value={profile.yearOfStudy || profile.year_of_study || '-'} icon={<FaInfoCircle />} />
+                      <InfoBox label="Field of Study" value={profile.fieldOfStudy || profile.field_of_study || '-'} icon={<FaInfoCircle />} />
+                      <InfoBox label="Location" value={profile.location || '-'} icon={<FaMapMarkerAlt />} />
+                      <InfoBox label="Higher Education Interest" value={(profile.higherEducation || profile.higher_education) === 'yes' ? <span style={{ color: '#22c55e', fontWeight: 600 }}>Yes</span> : <span style={{ color: '#ef4444', fontWeight: 600 }}>No</span>} icon={<FaGraduationCap />} />
+                    </>}
+                  </div>
+                  <div className={styles.sectionDivider}></div>
                 </>}
+                <div className={styles.sectionSubTitle}>Account Information</div>
+                <div className={styles.detailGrid}>
+                  <InfoBox label="Created" value={profile.createdAt ? new Date(profile.createdAt).toLocaleString() : '-'} icon={<FaClock />} />
+                  <InfoBox label="Last Updated" value={profile.updatedAt ? new Date(profile.updatedAt).toLocaleString() : '-'} icon={<FaClock />} />
+                </div>
+                <button
+                  className={styles.deleteAccountBtn}
+                  style={{ background: '#ef4444', color: '#fff', marginTop: 24, width: '100%' }}
+                  onClick={() => setShowDeleteModal(true)}
+                >
+                  Delete Account
+                </button>
               </div>
-              <div className={styles.sectionDivider}></div>
-              <div className={styles.sectionSubTitle}>Professional Information</div>
-              <div className={styles.detailGrid}>
-                {/* Only show for non-recruiters */}
-                {profile.userType !== 'Recruiter' && <InfoBox label="Specialty" value={(profile as any).specialty || '-'} icon={<FaStethoscope />} />}
-                {profile.userType !== 'Recruiter' && <InfoBox label="School" value={(profile as any).school || '-'} icon={<FaUniversity />} />}
-                {profile.userType !== 'Recruiter' && (
-                  <InfoBox
-                    label="Higher Education Interest"
-                    value={
-                      (profile as any).higherEducation === 'yes' ? (
-                        <span style={{ color: '#22c55e', fontWeight: 600 }}>Yes</span>
-                      ) : (
-                        <span style={{ color: '#ef4444', fontWeight: 600 }}>No</span>
-                      )
-                    }
-                    icon={<FaGraduationCap />}
-                  />
-                )}
-                <InfoBox label="Location" value={(profile as any).location || '-'} icon={<FaMapMarkerAlt />} />
-              </div>
-              <div className={styles.sectionDivider}></div>
-              <div className={styles.sectionSubTitle}>Account Information</div>
-              <div className={styles.detailGrid}>
-                <InfoBox label="Created" value={profile.createdAt ? new Date(profile.createdAt).toLocaleString() : '-'} icon={<FaClock />} />
-                <InfoBox label="Last Updated" value={profile.updatedAt ? new Date(profile.updatedAt).toLocaleString() : '-'} icon={<FaClock />} />
-              </div>
-              <button
-                className={styles.deleteAccountBtn}
-                style={{ background: '#ef4444', color: '#fff', marginTop: 24, width: '100%' }}
-                onClick={() => setShowDeleteModal(true)}
-              >
-                Delete Account
-              </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
       {showDeleteModal && (
@@ -497,5 +625,18 @@ const ProfilePage: React.FC = () => {
     </div>
   );
 };
+
+export const InfoBox: React.FC<{ label: string; value: any; icon: React.ReactNode }> = ({ label, value, icon }) => (
+  <div className={styles.infoBox} style={{ padding: '0.6rem 0.7rem', fontSize: '0.93rem', minHeight: 36 }}>
+    <div className={styles.infoLeft} style={{ gap: '0.5rem' }}>
+      <span className={styles.infoIcon} style={{ fontSize: '1.05rem', width: 26, height: 26 }}>{icon}</span>
+      <div>
+        <div className={styles.infoLabel} style={{ fontSize: '0.72rem', marginBottom: 1 }}>{label}</div>
+        <div className={styles.infoValue} style={{ fontSize: '0.98rem' }}>{value}</div>
+      </div>
+    </div>
+    <FaChevronRight className={styles.infoArrow} style={{ fontSize: '1rem' }} />
+  </div>
+);
 
 export default ProfilePage;

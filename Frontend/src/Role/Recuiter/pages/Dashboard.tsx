@@ -4,13 +4,16 @@ import { Link } from 'react-router-dom';
 import { FaBriefcase, FaList, FaEnvelope, FaUserTie, FaUsers, FaClipboardList } from 'react-icons/fa';
 
 const Dashboard = () => {
-  const [profile, setProfile] = useState<{ name?: string; userType?: string; companyName?: string }>({});
+  const [profile, setProfile] = useState<{ name?: string; userType?: string; companyName?: string; photoUrl?: string }>({});
   const [stats, setStats] = useState<{ jobs?: number; openJobs?: number; candidates?: number }>({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
     const API_BASE = window.location.origin.includes('localhost') ? 'http://localhost:3000' : window.location.origin;
+
+    // Fetch profile
     fetch(`${API_BASE}/profile`, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -18,10 +21,25 @@ const Dashboard = () => {
       },
     })
       .then(res => res.json())
-      .then(data => setProfile(data))
+      .then(data => {
+        setProfile(data);
+        console.log('Fetched profile:', data);
+      })
       .catch(() => {});
-    // Fetch recruiter stats (mocked for now)
-    setStats({ jobs: 12, openJobs: 5, candidates: 37 });
+
+    // Fetch recruiter stats from backend
+    fetch(`${API_BASE}/recruiter/stats?userId=${userId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
+        setStats(data);
+        console.log('Fetched stats:', data);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   return (
@@ -37,11 +55,15 @@ const Dashboard = () => {
               {profile.userType ? `Role: ${profile.userType}` : 'Manage your job posts, candidates, and messages.'}
             </p>
             {/* Recruiter-specific quick stats */}
-            <div style={{ display: 'flex', gap: 32, marginBottom: 32, flexWrap: 'wrap' }}>
-              <StatCard icon={<FaClipboardList size={28} style={{ color: '#2563eb' }} />} label="Total Job Posts" value={stats.jobs ?? '-'} />
-              <StatCard icon={<FaBriefcase size={28} style={{ color: '#16a34a' }} />} label="Open Positions" value={stats.openJobs ?? '-'} />
-              <StatCard icon={<FaUsers size={28} style={{ color: '#f59e0b' }} />} label="Candidates" value={stats.candidates ?? '-'} />
-            </div>
+            {loading ? (
+              <div>Loading stats...</div>
+            ) : (
+              <div style={{ display: 'flex', gap: 32, marginBottom: 32, flexWrap: 'wrap' }}>
+                <StatCard icon={<FaClipboardList size={28} style={{ color: '#2563eb' }} />} label="Total Job Posts" value={stats.jobs ?? '-'} />
+                <StatCard icon={<FaBriefcase size={28} style={{ color: '#16a34a' }} />} label="Open Positions" value={stats.openJobs ?? '-'} />
+                <StatCard icon={<FaUsers size={28} style={{ color: '#f59e0b' }} />} label="Candidates" value={stats.candidates ?? '-'} />
+              </div>
+            )}
             <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap', marginTop: 12 }}>
               <QuickActionCard to="/recruiter/jobPost" icon={<FaBriefcase size={32} style={{ color: '#2563eb' }} />} label="Post a Job" />
               <QuickActionCard to="/recruiter/jobListing" icon={<FaList size={32} style={{ color: '#16a34a' }} />} label="Job Listings" />

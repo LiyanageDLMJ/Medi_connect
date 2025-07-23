@@ -52,32 +52,43 @@ const ConversationList: React.FC<Props> = ({
     return u.name.toLowerCase().includes(search.toLowerCase());
   });
 
-  // Sort conversations by most recent message
-  const sortedConversations = filtered.sort((a, b) => {
+  // Separate users with messages from those without
+  const usersWithMessages = filtered.filter(user => {
+    return messages.some(m => (m.senderId === currentUserId && m.receiverId === user.id) || (m.senderId === user.id && m.receiverId === currentUserId));
+  });
+  const usersWithoutMessages = filtered.filter(user => {
+    return !messages.some(m => (m.senderId === currentUserId && m.receiverId === user.id) || (m.senderId === user.id && m.receiverId === currentUserId));
+  });
+  // Sort users with messages by most recent message
+  const sortedWithMessages = usersWithMessages.sort((a, b) => {
     if (!currentUserId) return 0;
-    
-    // Get the most recent message for each user
     const getLastMessageTime = (userId: string) => {
       const conversationMessages = messages.filter(
         m => (m.senderId === currentUserId && m.receiverId === userId) ||
              (m.senderId === userId && m.receiverId === currentUserId)
       );
-      
-      if (conversationMessages.length === 0) return new Date(0); // No messages = oldest
-      
+      if (conversationMessages.length === 0) return new Date(0);
       const lastMessage = conversationMessages.sort(
         (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       )[0];
-      
       return new Date(lastMessage.timestamp);
     };
-    
     const aLastMessageTime = getLastMessageTime(a.id);
     const bLastMessageTime = getLastMessageTime(b.id);
-    
-    // Sort by most recent first (descending order)
     return bLastMessageTime.getTime() - aLastMessageTime.getTime();
   });
+  // Sort users without messages by name (or registration time if available)
+  const sortedWithoutMessages = usersWithoutMessages.sort((a, b) => a.name.localeCompare(b.name));
+  // Combine for final sorted list
+  const sortedConversations = [...sortedWithMessages, ...sortedWithoutMessages];
+
+  // Helper to get user name by id
+  const getUserName = (id: string) => {
+    const user = users.find(u => u.id === id);
+    if (!user) return 'Unknown';
+    if (user.userType === 'Recruiter' && user.companyName) return user.companyName;
+    return user.name;
+  };
 
   // Get recent messages for preview
   const getLastMessage = (userId: string) => {
@@ -96,6 +107,11 @@ const ConversationList: React.FC<Props> = ({
       (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     )[0];
     
+    // If last message is from the other user and is unread, prefix with sender's name
+    const lastRead = unreadCounts[userId] > 0 && lastMessage.senderId === userId;
+    if (lastRead) {
+      return `${getUserName(userId)}: ${lastMessage.content || 'No message content'}`;
+    }
     return lastMessage.content || 'No message content';
   };
 
@@ -176,9 +192,19 @@ const ConversationList: React.FC<Props> = ({
           {sortedConversations.slice(0, 5).map((user) => {
             const displayName = user.userType === 'Recruiter' && user.companyName ? user.companyName : user.name;
             const initials = displayName.split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase();
+            const unreadCount = unreadCounts[user.id] || 0;
+            // Find the last message between current user and this user
+            const conversationMessages = messages.filter(
+              m => (m.senderId === currentUserId && m.receiverId === user.id) ||
+                   (m.senderId === user.id && m.receiverId === currentUserId)
+            );
+            const lastMessage = conversationMessages.length > 0 ? conversationMessages.sort(
+              (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+            )[0] : null;
+            const showUnreadBadge = unreadCount > 0 && lastMessage && lastMessage.senderId === user.id;
             return (
               <div key={user.id} className="top-avatar" onClick={() => setSelectedUserId(user.id)}>
-                <div className="avatar-circle">
+                <div className="avatar-circle" style={{ position: 'relative' }}>
                   {user.photoUrl ? (
                     <img 
                       src={user.photoUrl} 
@@ -188,7 +214,11 @@ const ConversationList: React.FC<Props> = ({
                   ) : (
                     initials
                   )}
+                  {showUnreadBadge && (
+                    <div className="unread-badge" style={{ position: 'absolute', top: -6, right: -6 }}>{unreadCount}</div>
+                  )}
                 </div>
+                <div style={{ fontSize: 12, marginTop: 2, textAlign: 'center', maxWidth: 60, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName}</div>
               </div>
             );
           })}
@@ -219,7 +249,15 @@ const ConversationList: React.FC<Props> = ({
           const initials = displayName.split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase();
           const isSelected = user.id === selectedUserId;
           const unreadCount = unreadCounts[user.id] || 0;
-          
+          // Find the last message between current user and this user
+          const conversationMessages = messages.filter(
+            m => (m.senderId === currentUserId && m.receiverId === user.id) ||
+                 (m.senderId === user.id && m.receiverId === currentUserId)
+          );
+          const lastMessage = conversationMessages.length > 0 ? conversationMessages.sort(
+            (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+          )[0] : null;
+          const showUnreadBadge = unreadCount > 0 && lastMessage && lastMessage.senderId === user.id;
           return (
             <div
               key={user.id}
@@ -243,7 +281,8 @@ const ConversationList: React.FC<Props> = ({
               <div className="contact-info">
                 <div className="contact-name">
                   {displayName}
-                  {unreadCount > 0 && (
+                  {/* Only show unread badge if last message is from the other user (sender) */}
+                  {showUnreadBadge && (
                     <div className="unread-badge">{unreadCount}</div>
                   )}
                 </div>

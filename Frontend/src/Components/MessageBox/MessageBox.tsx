@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import ConversationList from './ConversationList';
 import ConversationHeader from './ConversationHeader';
 import MessageThread from './MessageThread';
@@ -7,6 +7,7 @@ import ProfilePanel from './ProfilePanel';
 import toast from 'react-hot-toast';
 import './MessageBox.css';
 import { initiateSocket, getSocket, disconnectSocket } from './socket';
+import { useMessageNotification } from '../../context/MessageNotificationContext';
 
 // User type includes companyName for recruiters
 export type User = { id: string; name: string; userType: string; email: string; companyName?: string; photoUrl?: string };
@@ -54,6 +55,9 @@ const MessageBox: React.FC = () => {
   const [showProfile, setShowProfile] = useState(true); // Changed to true to show by default
   const [lastReadTimestamps, setLastReadTimestamps] = useState<{ [userId: string]: string }>({});
   const [showClearModal, setShowClearModal] = useState(false);
+  const { setUnreadCount } = useMessageNotification();
+  const fetchedUserIdsRef = useRef<Set<string>>(new Set());
+  const didInitialRead = useRef(false);
 
   const showToastMessage = (message: string) => {
     toast(message);
@@ -92,24 +96,110 @@ const MessageBox: React.FC = () => {
       .catch(console.error);
   }, [currentUserId]);
 
-  // Calculate unread counts from existing messages and lastReadTimestamps
+  // On mount, fetch all messages for the current user
+  useEffect(() => {
+    if (!currentUserId) return;
+    fetch(`${API_BASE}/messages?user1=${currentUserId}`)
+      .then(res => res.json())
+      .then((data: any[]) => {
+        if (Array.isArray(data) && data.length > 0) {
+          const allMessages: Message[] = data.map(m => ({
+            id: m._id,
+            senderId: m.senderId,
+            receiverId: m.receiverId,
+            content: m.content || '',
+            fileUrl: m.fileUrl,
+            fileType: m.fileType,
+            timestamp: m.createdAt || new Date().toISOString(),
+          }));
+          setMessages(allMessages);
+        }
+      })
+      .catch(console.error);
+  }, [currentUserId]);
+
+  // Ensure all messaged users are in the users list
+  useEffect(() => {
+    if (!currentUserId) return;
+    // Get all userIds from messages (excluding self)
+    const messageUserIds = Array.from(new Set(
+      messages.flatMap(m => [m.senderId, m.receiverId])
+        .filter(id => id !== currentUserId)
+    ));
+    // For any userId not in users, fetch and add
+    messageUserIds.forEach(async (id) => {
+      if (!users.find(u => u.id === id) && !fetchedUserIdsRef.current.has(id)) {
+        fetchedUserIdsRef.current.add(id);
+        try {
+          const res = await fetch(`${API_BASE}/users/${id}`);
+          if (res.ok) {
+            const u = await res.json();
+            const newUser = {
+              id: u._id,
+              name: u.userType === 'Recruiter' ? (u.companyName || 'Unnamed') : (u.name || 'Unnamed'),
+              userType: u.userType,
+              email: u.email,
+              companyName: u.companyName || undefined,
+              photoUrl: u.photoUrl || undefined,
+            };
+            setUsers(prev => [...prev, newUser]);
+          }
+        } catch (e) { /* ignore */ }
+      }
+    });
+  }, [messages, users, currentUserId]);
+
+  // Calculate unread counts from all messaged user IDs (not just users list)
   useEffect(() => {
     if (!currentUserId || messages.length === 0) return;
+    // Get all userIds from messages (excluding self)
+    const allUserIds = Array.from(new Set(
+      messages.flatMap(m => [m.senderId, m.receiverId])
+        .filter(id => id !== currentUserId)
+    ));
     const newUnreadCounts: { [userId: string]: number } = {};
-    users.forEach(user => {
-      if (user.id === currentUserId) return;
+    allUserIds.forEach(userId => {
       const conversationMessages = messages.filter(
-        m => (m.senderId === currentUserId && m.receiverId === user.id) ||
-             (m.senderId === user.id && m.receiverId === currentUserId)
+        m => (m.senderId === currentUserId && m.receiverId === userId) ||
+             (m.senderId === userId && m.receiverId === currentUserId)
       );
-      const lastRead = lastReadTimestamps[user.id];
+      const lastRead = lastReadTimestamps[userId];
       const unread = conversationMessages.filter(m =>
-        m.senderId === user.id && (!lastRead || new Date(m.timestamp) > new Date(lastRead))
+        m.senderId === userId && (!lastRead || new Date(m.timestamp) > new Date(lastRead))
       ).length;
-      newUnreadCounts[user.id] = user.id === selectedUserId ? 0 : unread;
+      newUnreadCounts[userId] = userId === selectedUserId ? 0 : unread;
     });
     setUnreadCounts(newUnreadCounts);
-  }, [messages, currentUserId, selectedUserId, users, lastReadTimestamps]);
+    // Update global unread count
+    const totalUnread = Object.values(newUnreadCounts).reduce((sum, count) => sum + count, 0);
+    setUnreadCount(totalUnread);
+  }, [messages, currentUserId, selectedUserId, lastReadTimestamps, setUnreadCount]);
+
+  // On mount, load lastReadTimestamps from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem('lastReadTimestamps');
+    if (stored) {
+      setLastReadTimestamps(JSON.parse(stored));
+    }
+  }, []);
+
+  // Fix: Mark as read after users and selectedUserId are set (not just on mount)
+  useEffect(() => {
+    if (
+      selectedUserId &&
+      currentUserId &&
+      users.length > 0 &&
+      !didInitialRead.current
+    ) {
+      setLastReadTimestamps(prev => ({ ...prev, [selectedUserId]: new Date().toISOString() }));
+      didInitialRead.current = true;
+    }
+  }, [selectedUserId, currentUserId, users]);
+
+  // When lastReadTimestamps changes, save to localStorage
+  useEffect(() => {
+    localStorage.setItem('lastReadTimestamps', JSON.stringify(lastReadTimestamps));
+  }, [lastReadTimestamps]);
 
   // When a conversation is selected, update lastReadTimestamps
   useEffect(() => {
@@ -124,7 +214,7 @@ const MessageBox: React.FC = () => {
     initiateSocket(currentUserId);
     const socket = getSocket();
     if (!socket) return;
-    socket.on('receive_message', (data: any) => {
+    socket.on('receive_message', async (data: any) => {
       if (data.to !== currentUserId && data.from !== currentUserId) return;
       const incoming: Message = {
         id: data._id || `m${Date.now()}`,
@@ -135,6 +225,24 @@ const MessageBox: React.FC = () => {
         fileType: data.fileType,
         timestamp: data.createdAt || new Date().toISOString(),
       };
+      // If sender is not in users, fetch and add them
+      if (data.from !== currentUserId && !users.find(u => u.id === data.from)) {
+        try {
+          const res = await fetch(`${API_BASE}/users/${data.from}`);
+          if (res.ok) {
+            const u = await res.json();
+            const newUser = {
+              id: u._id,
+              name: u.userType === 'Recruiter' ? (u.companyName || 'Unnamed') : (u.name || 'Unnamed'),
+              userType: u.userType,
+              email: u.email,
+              companyName: u.companyName || undefined,
+              photoUrl: u.photoUrl || undefined,
+            };
+            setUsers(prev => [...prev, newUser]);
+          }
+        } catch (e) { /* ignore */ }
+      }
       setMessages(prev => {
         const existingMessage = prev.find(m => {
           if (data._id && m.id === data._id) return true;
@@ -269,21 +377,38 @@ const MessageBox: React.FC = () => {
     )
     .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
-  // Sort users by most recent message timestamp
-  const sortedUsers = [...users].sort((a, b) => {
-    const aMsg = messages
-      .filter(m => (m.senderId === a.id && m.receiverId === currentUserId) || (m.senderId === currentUserId && m.receiverId === a.id))
-      .sort((m1, m2) => new Date(m2.timestamp).getTime() - new Date(m1.timestamp).getTime())[0];
-    const bMsg = messages
-      .filter(m => (m.senderId === b.id && m.receiverId === currentUserId) || (m.senderId === currentUserId && m.receiverId === b.id))
-      .sort((m1, m2) => new Date(m2.timestamp).getTime() - new Date(m1.timestamp).getTime())[0];
-    if (aMsg && bMsg) {
-      return new Date(bMsg.timestamp).getTime() - new Date(aMsg.timestamp).getTime();
+  // Build chat list from all users you have messages with
+  const allUserIds = Array.from(new Set([
+    ...users.map(u => String(u.id)),
+    ...messages.flatMap(m => [String(m.senderId), String(m.receiverId)].filter(id => id !== String(currentUserId))),
+  ]));
+  const allUsers = allUserIds.map(id => users.find(u => String(u.id) === id)).filter(Boolean) as User[];
+
+  // For each user, get the latest message timestamp (sent or received), or 0 if none
+  const userLatestTimestampMap: { [userId: string]: number } = {};
+  allUserIds.forEach(userId => {
+    const userMessages = messages.filter(m =>
+      (String(m.senderId) === userId && String(m.receiverId) === String(currentUserId)) ||
+      (String(m.senderId) === String(currentUserId) && String(m.receiverId) === userId)
+    );
+    if (userMessages.length > 0) {
+      userLatestTimestampMap[userId] = Math.max(...userMessages.map(m => new Date(m.timestamp).getTime()));
+    } else {
+      userLatestTimestampMap[userId] = 0;
     }
-    if (aMsg) return -1;
-    if (bMsg) return 1;
-    return 0;
   });
+
+  const sortedUsers = [...allUsers].sort((a, b) => {
+    const aTime = userLatestTimestampMap[String(a.id)] ?? 0;
+    const bTime = userLatestTimestampMap[String(b.id)] ?? 0;
+    return bTime - aTime;
+  });
+
+  console.log('allUserIds:', allUserIds);
+  console.log('allUsers:', allUsers);
+  console.log('sortedUsers:', sortedUsers);
+  console.log('userLatestTimestampMap:', userLatestTimestampMap);
+  console.log('messages:', messages);
 
   const selectedUser = users.find(u => u.id === selectedUserId);
 
