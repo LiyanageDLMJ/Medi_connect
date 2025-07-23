@@ -1,43 +1,16 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction, RequestHandler } from "express";
 import CvDoctorUpdate from "../../models/CvUpdate";
 import { Types } from "mongoose";
-import cloudinary from "../../Config/cloudinaryConfig";
 
-// Helper to generate Cloudinary URLs
-const generateCloudinaryUrl = (publicUrl: string, download: boolean = false): string => {
-  if (!publicUrl || !publicUrl.includes('cloudinary')) return publicUrl;
-
-  // Extract the public ID from the URL
-  // Example URL: https://res.cloudinary.com/db9rhbyij/image/upload/v1234567890/medical_cvs/filename.pdf
-  const urlParts = publicUrl.split('/');
-  const uploadIndex = urlParts.findIndex(part => part === 'upload');
-
-  if (uploadIndex === -1) return publicUrl;
-
-  // Get everything after 'upload' and before any version number
-  const afterUpload = urlParts.slice(uploadIndex + 1);
-  let publicId = afterUpload.join('/');
-
-  // Remove version number if present (starts with 'v')
-  if (publicId.startsWith('v')) {
-    publicId = publicId.substring(publicId.indexOf('/') + 1);
-  }
-
-  return cloudinary.url(publicId, {
-    secure: true,
-    resource_type: 'raw',
-    flags: download ? 'attachment' : undefined,
-    type: 'upload'
-  });
-};
+// Helper – return same URL object for view/download
+const getResumeImageUrl = (url?: string) => url || "";
 
 /*
  * Candidate Controller
  * Handles all CRUD and comparison operations for doctor CV data
  */
 
-// GET /candidates  – list with optional query filters & pagination
-import { RequestHandler } from "express";
+
 
 export const getAllCandidates: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -69,11 +42,14 @@ export const getAllCandidates: RequestHandler = async (req: Request, res: Respon
       .sort({ createdAt: -1 })
       .lean();
 
-    const enhancedDocs = docs.map(doc => ({
-      ...doc,
-      resumePdfUrl: doc.resumePdfUrl ? generateCloudinaryUrl(doc.resumePdfUrl) : null,
-      resumeDownloadUrl: doc.resumePdfUrl ? generateCloudinaryUrl(doc.resumePdfUrl, true) : null
-    }));
+    const enhancedDocs = docs.map(doc => {
+      const imageUrl = getResumeImageUrl((doc as any).resumeImageUrl || '');
+      return {
+        ...doc,
+        resumeImageUrl: imageUrl,
+        resumeDownloadUrl: imageUrl
+      };
+    });
 
     const total = await CvDoctorUpdate.countDocuments(filter);
 
@@ -87,6 +63,7 @@ export const getAllCandidates: RequestHandler = async (req: Request, res: Respon
       },
     });
   } catch (err: any) {
+    console.error('Error in getAllCandidates:', err);
     next(err);
   }
 };
@@ -127,7 +104,15 @@ export const getDoctorCvByName: RequestHandler = async (req: Request, res: Respo
       res.status(404).json({ success: false, message: "Doctor CV not found" });
       return;
     }
-    res.json(doc);
+    
+    const imageUrl = getResumeImageUrl((doc as any).resumeImageUrl || '');
+    const enhancedDoc = {
+      ...doc.toObject(),
+      resumeImageUrl: imageUrl,
+      resumeDownloadUrl: imageUrl
+    };
+    
+    res.json({ success: true, data: enhancedDoc });
   } catch (err: any) {
     next(err);
   }
@@ -136,13 +121,18 @@ export const getDoctorCvByName: RequestHandler = async (req: Request, res: Respo
 export const getCandidatesBySpecialty: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { specialty } = req.params;
-    const docs = await CvDoctorUpdate.find({ [SPECIALTY_FIELD]: { $regex: specialty, $options: "i" } }).sort({ [YEAR_FIELD]: -1, yourName: 1 }).lean();
+    const docs = await CvDoctorUpdate.find({ [SPECIALTY_FIELD]: { $regex: specialty, $options: "i" } })
+      .sort({ [YEAR_FIELD]: -1, yourName: 1 })
+      .lean();
 
-    const enhancedDocs = docs.map(doc => ({
-      ...doc,
-      resumePdfUrl: doc.resumePdfUrl ? generateCloudinaryUrl(doc.resumePdfUrl) : null,
-      resumeDownloadUrl: doc.resumePdfUrl ? generateCloudinaryUrl(doc.resumePdfUrl, true) : null
-    }));
+    const enhancedDocs = docs.map(doc => {
+      const imageUrl = getResumeImageUrl((doc as any).resumeImageUrl || '');
+      return {
+        ...doc,
+        resumeImageUrl: imageUrl,
+        resumeDownloadUrl: imageUrl
+      };
+    });
 
     res.status(200).json({ success: true, data: enhancedDocs, count: enhancedDocs.length });
   } catch (err: any) {
@@ -155,11 +145,14 @@ export const getCandidatesByGraduationYear: RequestHandler = async (req: Request
     const { year } = req.params;
     const docs = await CvDoctorUpdate.find({ [YEAR_FIELD]: year }).sort({ yourName: 1 }).lean();
 
-    const enhancedDocs = docs.map(doc => ({
-      ...doc,
-      resumePdfUrl: doc.resumePdfUrl ? generateCloudinaryUrl(doc.resumePdfUrl) : null,
-      resumeDownloadUrl: doc.resumePdfUrl ? generateCloudinaryUrl(doc.resumePdfUrl, true) : null
-    }));
+    const enhancedDocs = docs.map(doc => {
+      const imageUrl = getResumeImageUrl((doc as any).resumeImageUrl || '');
+      return {
+        ...doc,
+        resumeImageUrl: imageUrl,
+        resumeDownloadUrl: imageUrl
+      };
+    });
 
     res.status(200).json({ success: true, data: enhancedDocs, count: enhancedDocs.length });
   } catch (err: any) {
@@ -174,13 +167,18 @@ export const searchCandidatesByName: RequestHandler = async (req: Request, res: 
       res.status(400).json({ success: false, message: "name parameter required" });
       return;
     }
-    const docs = await CvDoctorUpdate.find({ yourName: { $regex: name as string, $options: "i" } }).sort({ yourName: 1 }).lean();
+    const docs = await CvDoctorUpdate.find({ yourName: { $regex: name as string, $options: "i" } })
+      .sort({ yourName: 1 })
+      .lean();
 
-    const enhancedDocs = docs.map(doc => ({
-      ...doc,
-      resumePdfUrl: doc.resumePdfUrl ? generateCloudinaryUrl(doc.resumePdfUrl) : null,
-      resumeDownloadUrl: doc.resumePdfUrl ? generateCloudinaryUrl(doc.resumePdfUrl, true) : null
-    }));
+    const enhancedDocs = docs.map(doc => {
+      const imageUrl = getResumeImageUrl((doc as any).resumeImageUrl || '');
+      return {
+        ...doc,
+        resumeImageUrl: imageUrl,
+        resumeDownloadUrl: imageUrl
+      };
+    });
 
     res.status(200).json({ success: true, data: enhancedDocs, count: enhancedDocs.length });
   } catch (err: any) {
@@ -207,11 +205,14 @@ export const compareCandidates: RequestHandler = async (req: Request, res: Respo
       return;
     }
 
-    const enhancedCandidates = candidates.map(candidate => ({
-      ...candidate.toObject(),
-      resumePdfUrl: candidate.resumePdfUrl ? generateCloudinaryUrl(candidate.resumePdfUrl) : null,
-      resumeDownloadUrl: candidate.resumePdfUrl ? generateCloudinaryUrl(candidate.resumePdfUrl, true) : null
-    }));
+    const enhancedCandidates = candidates.map(candidate => {
+      const imageUrl = getResumeImageUrl((candidate as any).resumeImageUrl || '');
+      return {
+        ...candidate.toObject(),
+        resumeImageUrl: imageUrl,
+        resumeDownloadUrl: imageUrl
+      };
+    });
 
     // Simple common feature calc
     const commonSpecialization = enhancedCandidates.every((c) => c.specialization === enhancedCandidates[0].specialization) ? enhancedCandidates[0].specialization : null;
@@ -234,7 +235,7 @@ export const compareCandidates: RequestHandler = async (req: Request, res: Respo
 export const getAvailableSpecialties: RequestHandler = async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const specs = await CvDoctorUpdate.distinct(SPECIALTY_FIELD);
-    res.status(200).json({ success: true, data: ["All Specialties", ...specs.sort()] });
+    res.status(200).json({ success: true, data: specs.filter(Boolean).sort() });
   } catch (err: any) {
     next(err);
   }
@@ -243,8 +244,13 @@ export const getAvailableSpecialties: RequestHandler = async (_req: Request, res
 export const getAvailableGraduationYears: RequestHandler = async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const years = await CvDoctorUpdate.distinct(YEAR_FIELD);
-    const sorted = years.sort((a: string, b: string) => Number(b.split("-")[0]) - Number(a.split("-")[0]));
-    res.status(200).json({ success: true, data: ["All Years", ...sorted] });
+    const validYears = years.filter(Boolean);
+    const sorted = validYears.sort((a: string, b: string) => {
+      const yearA = parseInt(a);
+      const yearB = parseInt(b);
+      return yearB - yearA; // Descending order
+    });
+    res.status(200).json({ success: true, data: sorted });
   } catch (err: any) {
     next(err);
   }
@@ -259,10 +265,11 @@ export const getCandidateById: RequestHandler = async (req: Request, res: Respon
       return;
     }
 
+    const imageUrl = getResumeImageUrl((doc as any).resumeImageUrl || '');
     const enhancedDoc = {
       ...doc,
-      resumePdfUrl: doc.resumePdfUrl ? generateCloudinaryUrl(doc.resumePdfUrl) : null,
-      resumeDownloadUrl: doc.resumePdfUrl ? generateCloudinaryUrl(doc.resumePdfUrl, true) : null
+      resumeImageUrl: imageUrl,
+      resumeDownloadUrl: imageUrl
     };
 
     res.status(200).json({ success: true, data: enhancedDoc });
@@ -300,11 +307,14 @@ export const advancedSearch: RequestHandler = async (req: Request, res: Response
       .skip((Number(page) - 1) * Number(limit))
       .lean();
 
-    const enhancedDocs = docs.map(doc => ({
-      ...doc,
-      resumePdfUrl: doc.resumePdfUrl ? generateCloudinaryUrl(doc.resumePdfUrl) : null,
-      resumeDownloadUrl: doc.resumePdfUrl ? generateCloudinaryUrl(doc.resumePdfUrl, true) : null
-    }));
+    const enhancedDocs = docs.map(doc => {
+      const imageUrl = getResumeImageUrl((doc as any).resumeImageUrl || '');
+      return {
+        ...doc,
+        resumeImageUrl: imageUrl,
+        resumeDownloadUrl: imageUrl
+      };
+    });
 
     const total = await CvDoctorUpdate.countDocuments(filter);
 

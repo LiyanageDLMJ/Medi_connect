@@ -3,46 +3,60 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-// 1. Check if environment variables are properly loaded
 const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
 const apiKey = process.env.CLOUDINARY_API_KEY;
 const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
-// 2. Log the configuration (for debugging only - remove in production)
-console.log("Cloudinary Configuration:", {
-  cloud_name: cloudName || "[USING FALLBACK]",
-  api_key: apiKey ? "[PRESENT]" : "[MISSING]",
-  api_secret: apiSecret ? "[PRESENT]" : "[MISSING]",
-});
-
-// 3. Configure cloudinary with the values
 cloudinary.config({
   cloud_name: cloudName || "db9rhbyij",
   api_key: apiKey || "884286557911137",
   api_secret: apiSecret || "ohshmCYeCPvFNXCMWaHboDHB7vI",
   secure: true,
-  transformation: {
-    quality: "auto",
-    fetch_format: "auto"
-  }
 });
 
-// Utility functions for PDF URLs
+// Utility functions for PDF URLs (now using default image resource_type)
 export const generatePdfUrl = (publicId: string) => {
   return cloudinary.url(publicId, {
-    resource_type: 'raw',
+    resource_type: 'image',
     type: 'upload',
-    flags: 'attachment',
-    format: 'pdf'
+    flags: 'attachment', // Forces download
+    secure: true
   });
 };
 
 export const generatePdfPreviewUrl = (publicId: string) => {
   return cloudinary.url(publicId, {
-    resource_type: 'raw',
+    resource_type: 'image',
     type: 'upload',
-    format: 'pdf'
+    secure: true
   });
+};
+
+// Helper to extract public ID from Cloudinary URL
+export const extractPublicIdFromUrl = (url: string): string | null => {
+  if (!url || !url.includes('cloudinary')) return null;
+  
+  try {
+    const urlParts = url.split('/');
+    const uploadIndex = urlParts.findIndex(part => part === 'upload');
+    
+    if (uploadIndex === -1) return null;
+    
+    // Get everything after 'upload'
+    const afterUpload = urlParts.slice(uploadIndex + 1);
+    let publicId = afterUpload.join('/');
+    
+    // Remove version number if present
+    publicId = publicId.replace(/^v\d+\//, '');
+    
+    // Remove file extension
+    publicId = publicId.replace(/\.[^/.]+$/, '');
+    
+    return publicId;
+  } catch (error) {
+    console.error('Error extracting public ID:', error);
+    return null;
+  }
 };
 
 export default cloudinary;

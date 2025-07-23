@@ -26,6 +26,7 @@ import WithFooter from "./Layout/WithFooter"; // Adjust the path as needed
 import DegreeListing from "./Role/higherEducation/pages/DegreeListing";
 import Dashborad from "./Role/higherEducation/pages/dashborad";
 import DoctorDashboard from "./Role/Physician/pages/Doctordashboard";
+import DoctorProfile from "./Role/Physician/pages/YourProfile";
 
 import  DegreeApplication from "./Role/Physician/pages/DegreeApplicationForm"
 
@@ -36,7 +37,7 @@ import CVComparison from "./Role/Recuiter/pages/CvComparison";
 import Dashboard from "./Role/Physician/pages/Doctordashboard";
 import RecruiterDashboard from "./Role/Recuiter/pages/Dashboard";
 import { FormProvider } from "./context/FormContext";
-import Cvcompare  from "./Role/Physician/pages/Cvcompare";
+// import Cvcompare  from "./Role/Physician/pages/Cvcompare";
 import { Toaster } from 'react-hot-toast';
 const App = () => {
   return (

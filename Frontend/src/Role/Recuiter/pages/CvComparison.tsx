@@ -23,9 +23,8 @@ import axios from "axios";
 const Container = styled.div`
   min-height: 100vh;
   background-color: #f9fafb;
+  display: flex;
 `
-
-
 
 const Logo = styled.div`
   display: flex;
@@ -74,7 +73,7 @@ const NavLink = styled.a<{ active?: boolean }>`
 `
 
 const MainContent = styled.div`
-  margin-left: 256px;
+  flex: 1;
   padding: 2rem;
 `
 
@@ -298,8 +297,6 @@ const EmptyState = styled.div`
   color: #6b7280;
 `
 
-
-
 // Helper function to find common elements between candidates
 const findCommonElements = (candidates: any[]) => {
   if (candidates.length < 2) return {}
@@ -330,8 +327,6 @@ const findCommonElements = (candidates: any[]) => {
   }
 }
 
-
-
 function truncateFileName(name: string, maxLength: number = 25) {
   if (!name) return "";
   if (name.length <= maxLength) return name;
@@ -339,15 +334,62 @@ function truncateFileName(name: string, maxLength: number = 25) {
   return name.slice(0, 10) + "..." + name.slice(-8);
 }
 
-// Enhanced PDF preview handling
-const handlePreviewPDF = (url: string) => {
-  if (url.includes('cloudinary')) {
-    // Use direct Cloudinary URL for preview instead of Google Docs Viewer
-    return url;
+// ---------------------------
+// PDF helpers ---------------
+// ---------------------------
+
+/**
+ * Opens the candidate PDF in a new tab for quick preview.
+ * Ensures Cloudinary serves the raw PDF instead of trying to transform it as an image.
+ */
+const handlePreviewPDF = (candidate: any) => {
+  const baseUrl: string | undefined =
+    candidate.resumeImageUrl || candidate.cvFile?.url || candidate.resumeDownloadUrl;
+
+  if (!baseUrl) {
+    console.error("No PDF URL found for preview");
+    alert("PDF not available for preview");
+    return;
   }
-  return url;
+
+  const previewUrl = baseUrl;
+  window.open(previewUrl, "_blank", "noopener,noreferrer");
 };
 
+/**
+ * Downloads the candidate PDF using fetch + blob to avoid CORS/download issues.
+ */
+const handleDownloadPDF = async (candidate: any) => {
+  const baseUrl: string | undefined =
+    candidate.resumeDownloadUrl || candidate.resumeImageUrl || candidate.cvFile?.url;
+
+  if (!baseUrl) {
+    console.error("No PDF URL found for download");
+    alert("PDF not available for download");
+    return;
+  }
+
+  const downloadUrl = baseUrl;
+  const fileName = candidate.cvFile?.name || `${candidate.name || "candidate"}_CV.pdf`;
+
+  try {
+    const res = await fetch(downloadUrl);
+    if (!res.ok) throw new Error(`Failed to fetch PDF: ${res.status}`);
+    const blob = await res.blob();
+    const href = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = href;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(href);
+  } catch (err) {
+    console.error("PDF download error", err);
+    alert("Failed to download PDF. Please try again later.");
+  }
+};
 
 export default function CVComparison() {
   const [isLoading, setIsLoading] = useState(true);
@@ -382,27 +424,28 @@ export default function CVComparison() {
             size: "-",
             url: candidate.resumePdfUrl,
           },
+          resumePdfUrl: candidate.resumePdfUrl,
+          resumeDownloadUrl: candidate.resumeDownloadUrl,
         }));
         setCandidatesSource(formattedCandidates);
-// Fetch specialties
-     const specsRes = await axios.get("http://localhost:3000/api/recruiter/candidates/specialties");
-setSpecialties(["All Specialties", ...specsRes.data.data]);
 
-// Fetch graduation years
-const yearsRes = await axios.get("http://localhost:3000/api/recruiter/candidates/years");
-setGraduationYears(["All Years", ...yearsRes.data.data]);
+        // Fetch specialties
+        const specsRes = await axios.get("http://localhost:3000/api/recruiter/candidates/specialties");
+        setSpecialties(["All Specialties", ...specsRes.data.data]);
 
-} catch (error) {
-console.error("Failed to fetch data:", error);
-} finally {
-setIsLoading(false);
-}
-};
+        // Fetch graduation years
+        const yearsRes = await axios.get("http://localhost:3000/api/recruiter/candidates/years");
+        setGraduationYears(["All Years", ...yearsRes.data.data]);
 
-fetchData();
-}, []);
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-
+    fetchData();
+  }, []);
 
   const [selectedSpecialty, setSelectedSpecialty] = useState("All Specialties")
   const [selectedGraduationYear, setSelectedGraduationYear] = useState("All Years")
@@ -588,31 +631,29 @@ fetchData();
                                 <p style={{ fontSize: "0.75rem", fontWeight: "500", margin: 0 }}>
                                   {truncateFileName(candidate.cvFile.name)}
                                 </p>
-                                <p style={{ fontSize: "0.75rem", color: "#6b7280", margin: 0 }}>
+                                {/* <p style={{ fontSize: "0.75rem", color: "#6b7280", margin: 0 }}>
                                   {candidate.cvFile.size} • Updated {candidate.cvFile.uploadDate}
-                                </p>
+                                </p> */}
                               </div>
-                                                            <FlexContainer gap="0.25rem">
-                                <a href={handlePreviewPDF(candidate.cvFile.url)} target="_blank" rel="noopener noreferrer">
+                              <FlexContainer gap="0.25rem">
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                    onClick={e => e.stopPropagation()}
+                                  onClick={(e) => { e.stopPropagation(); handlePreviewPDF(candidate); }}
                                   style={{ padding: "0.25rem", width: "2rem", height: "2rem" }}
+                                  title="Preview PDF"
                                 >
                                   <FaEye size={12} />
                                 </Button>
-                                </a>
-                                <a href={candidate.cvFile.url} download>
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                    onClick={e => e.stopPropagation()}
+                                  onClick={(e) => { e.stopPropagation(); handleDownloadPDF(candidate); }}
                                   style={{ padding: "0.25rem", width: "2rem", height: "2rem" }}
+                                  title="Download PDF"
                                 >
                                   <FaDownload size={12} />
                                 </Button>
-                                </a>
                               </FlexContainer>
                             </FlexContainer>
                           </CVFileContainer>
@@ -801,18 +842,23 @@ fetchData();
                                   </p>
                                 </div>
                                 <FlexContainer gap="0.5rem">
-                                  <a href={handlePreviewPDF(candidate.cvFile.url)} target="_blank" rel="noopener noreferrer">
-                                    <Button size="sm" variant="outline">
-                                      <FaEye size={12} />
-                                      View
-                                    </Button>
-                                  </a>
-                                  <a href={candidate.cvFile.url} download>
-                                    <Button size="sm">
-                                      <FaDownload size={12} />
-                                      Download
-                                    </Button>
-                                  </a>
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => handlePreviewPDF(candidate)}
+                                    title="Preview PDF"
+                                  >
+                                    <FaEye size={12} />
+                                    View
+                                  </Button>
+                                  <Button 
+                                    size="sm"
+                                    onClick={() => handleDownloadPDF(candidate)}
+                                    title="Download PDF"
+                                  >
+                                    <FaDownload size={12} />
+                                    Download
+                                  </Button>
                                 </FlexContainer>
                               </FlexContainer>
                             </CVFileContainer>

@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import CvDoctorUpdate from '../../models/CvUpdate';
 const multer = require("multer");
 const upload = multer();
-import cloudinary from "../../Config/cloudinaryConfig";
+import cloudinary, { generatePdfUrl, generatePdfPreviewUrl, extractPublicIdFromUrl } from "../../Config/cloudinaryConfig";
 import fs from "fs";
 
 
@@ -54,7 +54,8 @@ exports.getDoctorCv = async (req: Request, res: Response) => {
 
 export const addDoctorCv = async (req: Request, res: Response) => {
     try {
-        const { resumePdfUrl, certificationInput: certInput, ...bodyData } = req.body;
+        const { resumeImageUrl, certificationInput: certInput, ...bodyData } = req.body;
+
 
 
         // Validate required fields
@@ -88,7 +89,7 @@ export const addDoctorCv = async (req: Request, res: Response) => {
         // Create doctor data
         const doctorData = {
             ...bodyData,
-            resumePdfUrl, // Use Cloudinary URL from frontend
+            resumeImageUrl,
             certificationInput
         };
 
@@ -101,7 +102,7 @@ export const addDoctorCv = async (req: Request, res: Response) => {
         res.status(201).json({
             message: "Doctor CV added successfully",
             doctorId: result._id,
-            resumePdfUrl,
+            resumeImageUrl,
             data: result
         });
 

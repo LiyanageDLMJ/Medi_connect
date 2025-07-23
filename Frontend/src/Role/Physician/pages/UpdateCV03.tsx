@@ -56,20 +56,31 @@ export default function UpdateCV03() {
     formData.append("file", file);
     formData.append("upload_preset", "medical_cv_preset");
     
-    const response = await axios.post(
-      `https://api.cloudinary.com/v1_1/db9rhbyij/upload`,
-      formData,
-      {
-        onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round(
-            (progressEvent.loaded * 100) / (progressEvent.total || 1)
-          );
-          setUploadProgress(percentCompleted);
-        }
-      }
-    );
+    formData.append("folder", "medical_cvs"); // Optional folder organization
     
-    return response.data.secure_url;
+    try {
+      const response = await axios.post(
+        `https://api.cloudinary.com/v1_1/db9rhbyij/image/upload`, // changed to image upload
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round(
+              (progressEvent.loaded * 100) / (progressEvent.total || 1)
+            );
+            setUploadProgress(percentCompleted);
+          }
+        }
+      );
+      
+      console.log("Cloudinary response:", response.data); // Debug log
+      return response.data.secure_url;
+    } catch (error) {
+      console.error("Cloudinary upload error:", error);
+      throw error;
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -91,7 +102,7 @@ export default function UpdateCV03() {
       // Prepare payload
       const payload = {
         ...formData,
-        resumePdfUrl: cloudinaryUrl,
+        resumeImageUrl: cloudinaryUrl,
         jobTitle: formData.jobTitle,
         hospitalInstitution: formData.hospitalInstitution,
         employmentPeriod: formData.employmentPeriod,
