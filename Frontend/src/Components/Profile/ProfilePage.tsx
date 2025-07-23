@@ -276,15 +276,24 @@ const ProfilePage: React.FC = () => {
             }}
           />
           {editing && (
-            <button
-              className={styles.avatarEditBtn}
-              type="button"
-              title="Change photo"
-              onClick={() => document.getElementById('profile-photo-input')?.click()}
-              style={{ position: 'absolute', right: -12, top: 8, background: '#fff', color: '#184389', borderRadius: '50%', border: 'none', width: 38, height: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', cursor: 'pointer', boxShadow: '0 2px 8px rgba(24,67,137,0.10)' }}
-            >
-              <FaCamera />
-            </button>
+            <>
+              <input
+                type="file"
+                id="profile-photo-input"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={handleFileChange}
+              />
+              <button
+                className={styles.avatarEditBtn}
+                type="button"
+                title="Change photo"
+                onClick={() => document.getElementById('profile-photo-input')?.click()}
+                style={{ position: 'absolute', right: -12, top: 8, background: '#fff', color: '#184389', borderRadius: '50%', border: 'none', width: 38, height: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', cursor: 'pointer', boxShadow: '0 2px 8px rgba(24,67,137,0.10)' }}
+              >
+                <FaCamera />
+              </button>
+            </>
           )}
         </div>
         {/* Add more marginBottom to the name for better separation from the details below */}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './MessageBox.css';
 
 type Message = {
@@ -21,6 +21,43 @@ type Props = {
 
 const MessageThread: React.FC<Props> = ({ messages, users, currentUserId, onDeleteMessage }) => {
   const [selectedMsgId, setSelectedMsgId] = useState<string | null>(null);
+  const threadRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to bottom on new message
+  useEffect(() => {
+    if (threadRef.current) {
+      threadRef.current.scrollTop = threadRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  // Helper to get lastReadTimestamp for a user
+  const getLastReadTimestamp = (userId: string) => {
+    try {
+      const stored = localStorage.getItem('lastReadTimestamps');
+      if (stored) {
+        const obj = JSON.parse(stored);
+        return obj[userId];
+      }
+    } catch {}
+    return undefined;
+  };
+
+  // Helper to get message status
+  const getMessageStatus = (msg: Message) => {
+    if (msg.id.startsWith('temp_')) return 'sent';
+    if (msg.id.startsWith('m')) return 'delivered';
+    // Read: if receiver's lastReadTimestamp is after this message
+    const lastRead = getLastReadTimestamp(msg.receiverId);
+    if (lastRead && new Date(lastRead) > new Date(msg.timestamp)) return 'read';
+    return 'delivered';
+  };
+
+  const statusIcon = (status: string) => {
+    if (status === 'sent') return <span title="Sent">✓</span>;
+    if (status === 'delivered') return <span title="Delivered">✓✓</span>;
+    if (status === 'read') return <span title="Read" style={{ color: '#3b82f6' }}>✓✓</span>;
+    return null;
+  };
 
   const getUserName = (id: string) => {
     const user = users.find((u) => u.id === id);
@@ -39,7 +76,7 @@ const MessageThread: React.FC<Props> = ({ messages, users, currentUserId, onDele
   };
 
   return (
-    <div className="message-thread" onClick={() => setSelectedMsgId(null)}>
+    <div className="message-thread" ref={threadRef} onClick={() => setSelectedMsgId(null)}>
       {messages.length === 0 && (
         <div style={{ 
           textAlign: 'center', 
@@ -66,7 +103,7 @@ const MessageThread: React.FC<Props> = ({ messages, users, currentUserId, onDele
         <div
           key={msg.id}
           className={
-            msg.senderId === currentUserId ? 'message sent' : 'message received'
+            (msg.senderId === currentUserId ? 'message sent' : 'message received') + ' fade-in-message'
           }
           style={{
             border: msg.senderId === currentUserId && selectedMsgId === msg.id ? '2px solid #ef4444' : 'none',
@@ -125,6 +162,10 @@ const MessageThread: React.FC<Props> = ({ messages, users, currentUserId, onDele
           </div>
           <div className="message-meta">
             <span className="message-time">{formatTime(msg.timestamp)}</span>
+            {/* Show status ticks for sent messages */}
+            {msg.senderId === currentUserId && (
+              <span className="read-receipt" style={{ marginLeft: 6 }}>{statusIcon(getMessageStatus(msg))}</span>
+            )}
           </div>
         </div>
       ))}
