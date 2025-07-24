@@ -1,12 +1,6 @@
 import express, { Request, Response } from "express";
 import CvDoctorUpdate from '../../models/CvUpdate';
-const multer = require("multer");
-const upload = multer();
-import cloudinary, { generatePdfUrl, generatePdfPreviewUrl, extractPublicIdFromUrl } from "../../Config/cloudinaryConfig";
-import fs from "fs";
-
-
-
+import { supabase } from "../../utils/supabase";
 
 interface MulterRequest extends Request {
     file?: Express.Multer.File;
@@ -51,12 +45,11 @@ exports.getDoctorCv = async (req: Request, res: Response) => {
     }
 };
 
-
 export const addDoctorCv = async (req: Request, res: Response) => {
     try {
-        const { resumeImageUrl, certificationInput: certInput, ...bodyData } = req.body;
-
-
+        console.log("Received CV data:", req.body);
+        
+        const { resumeRawUrl, certificationInput: certInput, ...bodyData } = req.body;
 
         // Validate required fields
         const requiredFields = [
@@ -74,6 +67,28 @@ export const addDoctorCv = async (req: Request, res: Response) => {
             });
         }
 
+        // Validate resumeRawUrl (should be a Supabase storage URL)
+        if (!resumeRawUrl) {
+            return res.status(400).json({
+                message: "Resume file URL is required"
+            });
+        }
+
+        // Verify it's a Supabase URL and not Cloudinary
+        if (resumeRawUrl.includes('cloudinary.com')) {
+            return res.status(400).json({
+                message: "Cloudinary URLs are not allowed. Please use Supabase storage."
+            });
+        }
+
+        if (!resumeRawUrl.includes('supabase.co')) {
+            return res.status(400).json({
+                message: "Invalid storage URL. Only Supabase URLs are allowed."
+            });
+        }
+
+        console.log("Resume URL validation passed:", resumeRawUrl);
+
         // Handle certification input
         let certificationInput = [];
         if (certInput) {
@@ -89,20 +104,22 @@ export const addDoctorCv = async (req: Request, res: Response) => {
         // Create doctor data
         const doctorData = {
             ...bodyData,
-            resumeImageUrl,
+            resumeRawUrl, // This should be the Supabase URL
             certificationInput
         };
 
-
+        console.log("Saving doctor data to MongoDB:", doctorData);
 
         // Save to database
         const doctor = new CvDoctorUpdate(doctorData);
         const result = await doctor.save();
 
+        console.log("Doctor CV saved successfully:", result._id);
+
         res.status(201).json({
             message: "Doctor CV added successfully",
             doctorId: result._id,
-            resumeImageUrl,
+            resumeRawUrl, // Return the Supabase URL
             data: result
         });
 
@@ -114,53 +131,119 @@ export const addDoctorCv = async (req: Request, res: Response) => {
         });
     }
 };
-exports.ReplaceCv = async (req: Request, res: Response) => {
-    const id = req.params.id;
-    const deta = req.body;
 
-    const result = await CvDoctorUpdate.findOneAndReplace({ _id: id }, deta, { new: true });
-    if (result) {
-        res.send({
-            "Message": "Doctor Cv updated successfully",
-            "Doctor ID": result
-        }).status(200);
-    }
-    else {
-        res.send({
-            "Message": "Doctor Cv not updated"
-        }).status(500);
+exports.ReplaceCv = async (req: Request, res: Response) => {
+    try {
+        const id = req.params.id;
+        const data = req.body;
+
+        // If there's a new resume file, the frontend should handle Supabase upload
+        // and send the new URL in the request body
+        
+        const result = await CvDoctorUpdate.findOneAndReplace({ _id: id }, data, { new: true });
+        
+        if (result) {
+            res.status(200).json({
+                message: "Doctor CV updated successfully",
+                doctorId: result._id,
+                data: result
+            });
+        } else {
+            res.status(404).json({
+                message: "Doctor CV not found"
+            });
+        }
+    } catch (error) {
+        console.error("Error replacing Doctor CV:", error);
+        res.status(500).json({
+            message: "Doctor CV not updated",
+            error: error instanceof Error ? error.message : "Unknown error"
+        });
     }
 };
 
 exports.updateCv = async (req: Request, res: Response) => {
-    const id = req.params.id;
-    const deta = req.body;
+    try {
+        const id = req.params.id;
+        const data = req.body;
 
-    const result = await CvDoctorUpdate.findByIdAndUpdate(id, deta, { new: true });
-    if (result) {
-        res.send({
-            "Message": "Doctor Cv updated successfully",
-            "Doctor ID": result
-        }).status(200);
-    } else {
-        res.send({
-            "Message": "Doctor Cv not updated"
-        }).status(500);
+        // If there's a new resume file, the frontend should handle Supabase upload
+        // and send the new URL in the request body
+        
+        const result = await CvDoctorUpdate.findByIdAndUpdate(id, data, { new: true });
+        
+        if (result) {
+            res.status(200).json({
+                message: "Doctor CV updated successfully",
+                doctorId: result._id,
+                data: result
+            });
+        } else {
+            res.status(404).json({
+                message: "Doctor CV not found"
+            });
+        }
+    } catch (error) {
+        console.error("Error updating Doctor CV:", error);
+        res.status(500).json({
+            message: "Doctor CV not updated",
+            error: error instanceof Error ? error.message : "Unknown error"
+        });
     }
 };
 
 exports.deleteCv = async (req: Request, res: Response) => {
-    const id = req.params.id;
-    const result = await CvDoctorUpdate.findByIdAndDelete(id);
-    if (result) {
-        res.send({
-            "Message": "Doctor Cv deleted successfully",
-            "Doctor ID": result
-        }).status(200);
-    } else {
-        res.send({
-            "Message": "Doctor Cv not deleted"
-        }).status(500);
+    try {
+        const id = req.params.id;
+        
+        // First get the CV to extract the file URL for deletion
+        const cv = await CvDoctorUpdate.findById(id);
+        
+        if (!cv) {
+            return res.status(404).json({
+                message: "Doctor CV not found"
+            });
+        }
+
+        // Extract file path from Supabase URL and delete the file
+        if (cv.resumeRawUrl) {
+            try {
+                // Extract the file path from the Supabase URL
+                const url = new URL(cv.resumeRawUrl);
+                const pathParts = url.pathname.split('/');
+                const bucketIndex = pathParts.findIndex(part => part === 'cvdata');
+                
+                if (bucketIndex !== -1 && bucketIndex < pathParts.length - 1) {
+                    const filePath = pathParts.slice(bucketIndex + 1).join('/');
+                    
+                    // Delete the file from Supabase storage
+                    const { error: deleteError } = await supabase.storage
+                        .from('cvdata')
+                        .remove([filePath]);
+                    
+                    if (deleteError) {
+                        console.error("Error deleting file from Supabase:", deleteError);
+                    }
+                }
+            } catch (error) {
+                console.error("Error parsing Supabase URL:", error);
+            }
+        }
+
+        // Delete the CV document from database
+        const result = await CvDoctorUpdate.findByIdAndDelete(id);
+        
+        res.status(200).json({
+            message: "Doctor CV deleted successfully",
+            doctorId: result?._id
+        });
+        
+    } catch (error) {
+        console.error("Error deleting Doctor CV:", error);
+        res.status(500).json({
+            message: "Doctor CV not deleted",
+            error: error instanceof Error ? error.message : "Unknown error"
+        });
     }
 };
 

@@ -335,16 +335,24 @@ function truncateFileName(name: string, maxLength: number = 25) {
 }
 
 // ---------------------------
-// PDF helpers ---------------
+// PDF helpers for Supabase ---------------
 // ---------------------------
 
 /**
- * Opens the candidate PDF in a new tab for quick preview.
- * Ensures Cloudinary serves the raw PDF instead of trying to transform it as an image.
+ * Opens the candidate PDF (stored in Supabase) in a new tab for quick preview.
  */
+// For preview we can just open the original raw URL – most browsers will render the PDF viewer.
+const toPreviewUrl = (rawUrl: string): string => rawUrl;
+// Return a direct download URL for Supabase file; append download parameter so browser saves it.
+const toDownloadUrl = (url: string): string => {
+  if (!url) return url;
+  // If URL already has query params, append with & otherwise ?
+  return url.includes('?') ? `${url}&download=1` : `${url}?download=1`;
+};
+
 const handlePreviewPDF = (candidate: any) => {
   const baseUrl: string | undefined =
-    candidate.resumeImageUrl || candidate.cvFile?.url || candidate.resumeDownloadUrl;
+    candidate.resumeRawUrl || candidate.resumePdfUrl || candidate.resumeImageUrl || candidate.cvFile?.url;
 
   if (!baseUrl) {
     console.error("No PDF URL found for preview");
@@ -352,7 +360,7 @@ const handlePreviewPDF = (candidate: any) => {
     return;
   }
 
-  const previewUrl = baseUrl;
+  const previewUrl = toPreviewUrl(baseUrl);
   window.open(previewUrl, "_blank", "noopener,noreferrer");
 };
 
@@ -361,7 +369,7 @@ const handlePreviewPDF = (candidate: any) => {
  */
 const handleDownloadPDF = async (candidate: any) => {
   const baseUrl: string | undefined =
-    candidate.resumeDownloadUrl || candidate.resumeImageUrl || candidate.cvFile?.url;
+    candidate.resumeRawUrl || candidate.resumePdfUrl || candidate.cvFile?.url;
 
   if (!baseUrl) {
     console.error("No PDF URL found for download");
@@ -369,7 +377,7 @@ const handleDownloadPDF = async (candidate: any) => {
     return;
   }
 
-  const downloadUrl = baseUrl;
+  const downloadUrl = toDownloadUrl(baseUrl);
   const fileName = candidate.cvFile?.name || `${candidate.name || "candidate"}_CV.pdf`;
 
   try {
@@ -419,13 +427,15 @@ export default function CVComparison() {
                          .map((t: string) => t.trim())
                          .filter(Boolean),
           cvFile: {
-            name: candidate.resumePdfUrl?.split("/").pop() || "CV.pdf",
+            name: candidate.resumeRawUrl?.split("/").pop() || "CV.pdf",
             uploadDate: new Date(candidate.updatedAt || candidate.createdAt).toLocaleDateString(),
             size: "-",
-            url: candidate.resumePdfUrl,
+            url: candidate.resumeRawUrl,
           },
-          resumePdfUrl: candidate.resumePdfUrl,
-          resumeDownloadUrl: candidate.resumeDownloadUrl,
+          // keep synonyms for backward compatibility
+          resumeRawUrl: candidate.resumeRawUrl,
+          resumePdfUrl: candidate.resumeRawUrl,
+          resumeDownloadUrl: candidate.resumeRawUrl,
         }));
         setCandidatesSource(formattedCandidates);
 

@@ -20,7 +20,7 @@ const CvUpdateSchema = new Schema({
   jobTitle: { type: String, required: true },
   hospitalInstitution: { type: String, required: true },
   employmentPeriod: { type: String, required: true },
-  resumeImageUrl: { type: String, required: true },
+  resumeRawUrl: { type: String, required: true },
   
 });
 

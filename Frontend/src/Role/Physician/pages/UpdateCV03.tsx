@@ -2,7 +2,7 @@
 import { useNavigate } from "react-router-dom";
 import React, { useState } from "react";
 import { useFormContext } from "../../../context/FormContext";
-
+import { supabase } from "../../../utils/supabase";
 
 import {
   Bell,
@@ -51,34 +51,47 @@ export default function UpdateCV03() {
     }
   };
 
-  const uploadToCloudinary = async (file: File) => {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", "medical_cv_preset");
-    
-    formData.append("folder", "medical_cvs"); // Optional folder organization
-    
+  const uploadToSupabase = async (file: File): Promise<string> => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+    const filePath = `medical_cvs/${fileName}`;
+
+    console.log("Starting Supabase upload...");
+    console.log("File:", file.name, "Size:", file.size);
+    console.log("Target bucket: cvdata");
+    console.log("Target path:", filePath);
+
     try {
-      const response = await axios.post(
-        `https://api.cloudinary.com/v1_1/db9rhbyij/image/upload`, // changed to image upload
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-          onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round(
-              (progressEvent.loaded * 100) / (progressEvent.total || 1)
-            );
-            setUploadProgress(percentCompleted);
-          }
-        }
-      );
+      setUploadProgress(10);
       
-      console.log("Cloudinary response:", response.data); // Debug log
-      return response.data.secure_url;
+      // Upload to Supabase cvdata bucket
+      const { data, error } = await supabase.storage
+        .from('cvdata')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) {
+        console.error("Supabase storage error:", error);
+        throw new Error(`Upload failed: ${error.message}`);
+      }
+
+      console.log("Upload successful, data:", data);
+      setUploadProgress(70);
+
+      // Get the public URL from cvdata bucket
+      const { data: urlData } = supabase.storage
+        .from('cvdata')
+        .getPublicUrl(filePath);
+
+      setUploadProgress(100);
+      
+      console.log("Supabase upload completed successfully!");
+      console.log("Public URL:", urlData.publicUrl);
+      return urlData.publicUrl;
     } catch (error) {
-      console.error("Cloudinary upload error:", error);
+      console.error("Supabase upload failed:", error);
       throw error;
     }
   };
@@ -92,27 +105,37 @@ export default function UpdateCV03() {
       return;
     }
     
+    console.log("Form submission started...");
+    console.log("Form data:", formData);
+    
     try {
       setIsUploading(true);
       setUploadProgress(0);
       
-      // Upload to Cloudinary
-      const cloudinaryUrl = await uploadToCloudinary(resumeFile);
+      console.log("Uploading to Supabase cvdata bucket...");
+      // Upload to Supabase ONLY
+      const supabaseUrl = await uploadToSupabase(resumeFile);
       
-      // Prepare payload
+      console.log("File uploaded successfully, URL:", supabaseUrl);
+      
+      // Prepare payload with Supabase URL
       const payload = {
         ...formData,
-        resumeImageUrl: cloudinaryUrl,
+        resumeRawUrl: supabaseUrl, // This should be the Supabase URL
         jobTitle: formData.jobTitle,
         hospitalInstitution: formData.hospitalInstitution,
         employmentPeriod: formData.employmentPeriod,
       };
+
+      console.log("Sending payload to backend:", payload);
 
       // Send to backend
       const response = await axios.post(
         "http://localhost:3000/CvdoctorUpdate/addDoctorCv",
         payload
       );
+
+      console.log("Backend response:", response.data);
 
       // Handle response
       const newDoctorId = response.data?.doctorId || response.data?.id || response.data?._id;
@@ -122,10 +145,12 @@ export default function UpdateCV03() {
       }
 
       setSubmitSuccess(true);
+      console.log("CV submission completed successfully!");
     } catch (error: any) {
       console.error("CV upload failed:", error);
       setError(
         error.response?.data?.message || 
+        error.message ||
         "Failed to upload CV. Please try again later."
       );
     } finally {
@@ -294,12 +319,12 @@ export default function UpdateCV03() {
                       {isUploading && (
                         <div className="mt-2">
                           <div className="flex justify-between text-xs text-gray-600 mb-1">
-                            <span>Uploading...</span>
+                            <span>Uploading to Supabase...</span>
                             <span>{uploadProgress}%</span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
                             <div 
-                              className="bg-blue-600 h-2 rounded-full" 
+                              className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
                               style={{ width: `${uploadProgress}%` }}
                             ></div>
                           </div>

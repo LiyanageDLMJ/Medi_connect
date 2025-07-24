@@ -3,14 +3,13 @@ import CvDoctorUpdate from "../../models/CvUpdate";
 import { Types } from "mongoose";
 
 // Helper – return same URL object for view/download
-const getResumeImageUrl = (url?: string) => url || "";
+// For Supabase we simply return the raw file URL
+const getResumeUrl = (url?: string) => url || "";
 
 /*
  * Candidate Controller
  * Handles all CRUD and comparison operations for doctor CV data
  */
-
-
 
 export const getAllCandidates: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -21,7 +20,7 @@ export const getAllCandidates: RequestHandler = async (req: Request, res: Respon
       currentLocation,
       experience,
       page = 1,
-      limit = 50,
+      limit = 100,
     } = req.query as Record<string, any>;
 
     const filter: Record<string, any> = {};
@@ -30,11 +29,18 @@ export const getAllCandidates: RequestHandler = async (req: Request, res: Respon
       filter.specialization = { $regex: specialty, $options: "i" };
     }
     if (graduationYear && graduationYear !== "All Years") {
-      filter.graduationDate = graduationYear;
+      // Handle both string and numeric year formats
+      if (typeof graduationYear === 'string' && !isNaN(Number(graduationYear))) {
+        filter.graduationDate = graduationYear;
+      } else {
+        filter.graduationDate = { $regex: graduationYear, $options: "i" };
+      }
     }
     if (name) filter.yourName = { $regex: name, $options: "i" };
     if (currentLocation) filter.currentLocation = { $regex: currentLocation, $options: "i" };
     if (experience) filter.experience = { $regex: experience, $options: "i" };
+
+    console.log('Filter being applied:', filter); // Debug log
 
     const docs = await CvDoctorUpdate.find(filter)
       .limit(Number(limit))
@@ -42,16 +48,46 @@ export const getAllCandidates: RequestHandler = async (req: Request, res: Respon
       .sort({ createdAt: -1 })
       .lean();
 
+    console.log(`Found ${docs.length} candidates`); // Debug log
+
     const enhancedDocs = docs.map(doc => {
-      const imageUrl = getResumeImageUrl((doc as any).resumeImageUrl || '');
+      const resumeUrl = getResumeUrl((doc as any).resumeRawUrl || '');
+      
+      // Ensure we have proper data transformation
+      let graduationYear = 'N/A';
+      if (doc.graduationDate) {
+        try {
+          // Try to parse as Date first
+          const dateObj = new Date(doc.graduationDate as any);
+          if (!isNaN(dateObj.getTime())) {
+            graduationYear = dateObj.getFullYear().toString();
+          } else if (typeof doc.graduationDate === 'string' || typeof doc.graduationDate === 'number') {
+            // If it's already a year string/number, use it directly
+            const yearStr = doc.graduationDate.toString();
+            if (/^\d{4}$/.test(yearStr)) {
+              graduationYear = yearStr;
+            }
+          }
+        } catch (error) {
+          console.warn('Error parsing graduation date:', doc.graduationDate);
+          graduationYear = 'N/A';
+        }
+      }
+
       return {
         ...doc,
-        resumeImageUrl: imageUrl,
-        resumeDownloadUrl: imageUrl
+        graduationYear, // Add this field for frontend compatibility
+        // Map resumeRawUrl to resumePdfUrl for frontend compatibility
+        resumePdfUrl: resumeUrl,
+        resumeImageUrl: resumeUrl,
+        resumeDownloadUrl: resumeUrl,
+        resumeRawUrl: resumeUrl, // Keep this for backward compatibility
       };
     });
 
     const total = await CvDoctorUpdate.countDocuments(filter);
+
+    console.log('Sending response with', enhancedDocs.length, 'candidates'); // Debug log
 
     res.status(200).json({
       success: true,
@@ -105,11 +141,12 @@ export const getDoctorCvByName: RequestHandler = async (req: Request, res: Respo
       return;
     }
     
-    const imageUrl = getResumeImageUrl((doc as any).resumeImageUrl || '');
+    const resumeUrl = getResumeUrl((doc as any).resumeRawUrl || '');
     const enhancedDoc = {
       ...doc.toObject(),
-      resumeImageUrl: imageUrl,
-      resumeDownloadUrl: imageUrl
+      resumePdfUrl: resumeUrl,
+      resumeImageUrl: resumeUrl,
+      resumeDownloadUrl: resumeUrl
     };
     
     res.json({ success: true, data: enhancedDoc });
@@ -126,11 +163,12 @@ export const getCandidatesBySpecialty: RequestHandler = async (req: Request, res
       .lean();
 
     const enhancedDocs = docs.map(doc => {
-      const imageUrl = getResumeImageUrl((doc as any).resumeImageUrl || '');
+      const resumeUrl = getResumeUrl((doc as any).resumeRawUrl || '');
       return {
         ...doc,
-        resumeImageUrl: imageUrl,
-        resumeDownloadUrl: imageUrl
+        resumePdfUrl: resumeUrl,
+        resumeImageUrl: resumeUrl,
+        resumeDownloadUrl: resumeUrl
       };
     });
 
@@ -146,11 +184,12 @@ export const getCandidatesByGraduationYear: RequestHandler = async (req: Request
     const docs = await CvDoctorUpdate.find({ [YEAR_FIELD]: year }).sort({ yourName: 1 }).lean();
 
     const enhancedDocs = docs.map(doc => {
-      const imageUrl = getResumeImageUrl((doc as any).resumeImageUrl || '');
+      const resumeUrl = getResumeUrl((doc as any).resumeRawUrl || '');
       return {
         ...doc,
-        resumeImageUrl: imageUrl,
-        resumeDownloadUrl: imageUrl
+        resumePdfUrl: resumeUrl,
+        resumeImageUrl: resumeUrl,
+        resumeDownloadUrl: resumeUrl
       };
     });
 
@@ -172,11 +211,12 @@ export const searchCandidatesByName: RequestHandler = async (req: Request, res: 
       .lean();
 
     const enhancedDocs = docs.map(doc => {
-      const imageUrl = getResumeImageUrl((doc as any).resumeImageUrl || '');
+      const resumeUrl = getResumeUrl((doc as any).resumeRawUrl || '');
       return {
         ...doc,
-        resumeImageUrl: imageUrl,
-        resumeDownloadUrl: imageUrl
+        resumePdfUrl: resumeUrl,
+        resumeImageUrl: resumeUrl,
+        resumeDownloadUrl: resumeUrl
       };
     });
 
@@ -206,11 +246,12 @@ export const compareCandidates: RequestHandler = async (req: Request, res: Respo
     }
 
     const enhancedCandidates = candidates.map(candidate => {
-      const imageUrl = getResumeImageUrl((candidate as any).resumeImageUrl || '');
+      const resumeUrl = getResumeUrl((candidate as any).resumeRawUrl || '');
       return {
         ...candidate.toObject(),
-        resumeImageUrl: imageUrl,
-        resumeDownloadUrl: imageUrl
+        resumePdfUrl: resumeUrl,
+        resumeImageUrl: resumeUrl,
+        resumeDownloadUrl: resumeUrl
       };
     });
 
@@ -235,8 +276,10 @@ export const compareCandidates: RequestHandler = async (req: Request, res: Respo
 export const getAvailableSpecialties: RequestHandler = async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const specs = await CvDoctorUpdate.distinct(SPECIALTY_FIELD);
+    console.log('Available specialties:', specs); // Debug log
     res.status(200).json({ success: true, data: specs.filter(Boolean).sort() });
   } catch (err: any) {
+    console.error('Error fetching specialties:', err);
     next(err);
   }
 };
@@ -244,6 +287,7 @@ export const getAvailableSpecialties: RequestHandler = async (_req: Request, res
 export const getAvailableGraduationYears: RequestHandler = async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const years = await CvDoctorUpdate.distinct(YEAR_FIELD);
+    console.log('Available graduation years:', years); // Debug log
     const validYears = years.filter(Boolean);
     const sorted = validYears.sort((a: string, b: string) => {
       const yearA = parseInt(a);
@@ -252,6 +296,7 @@ export const getAvailableGraduationYears: RequestHandler = async (_req: Request,
     });
     res.status(200).json({ success: true, data: sorted });
   } catch (err: any) {
+    console.error('Error fetching graduation years:', err);
     next(err);
   }
 };
@@ -265,11 +310,12 @@ export const getCandidateById: RequestHandler = async (req: Request, res: Respon
       return;
     }
 
-    const imageUrl = getResumeImageUrl((doc as any).resumeImageUrl || '');
+    const resumeUrl = getResumeUrl((doc as any).resumeRawUrl || '');
     const enhancedDoc = {
       ...doc,
-      resumeImageUrl: imageUrl,
-      resumeDownloadUrl: imageUrl
+      resumePdfUrl: resumeUrl,
+      resumeImageUrl: resumeUrl,
+      resumeDownloadUrl: resumeUrl
     };
 
     res.status(200).json({ success: true, data: enhancedDoc });
@@ -308,11 +354,12 @@ export const advancedSearch: RequestHandler = async (req: Request, res: Response
       .lean();
 
     const enhancedDocs = docs.map(doc => {
-      const imageUrl = getResumeImageUrl((doc as any).resumeImageUrl || '');
+      const resumeUrl = getResumeUrl((doc as any).resumeRawUrl || '');
       return {
         ...doc,
-        resumeImageUrl: imageUrl,
-        resumeDownloadUrl: imageUrl
+        resumePdfUrl: resumeUrl,
+        resumeImageUrl: resumeUrl,
+        resumeDownloadUrl: resumeUrl
       };
     });
 
