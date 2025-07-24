@@ -134,15 +134,25 @@ router.put('/', mockAuth, upload.single('photo'), async (req: AuthRequest, res: 
     
     // If user is MedicalStudent and school is provided, update currentInstitute as well
     const user = await User.findById(userId);
-    if (user && user.userType === 'MedicalStudent' && updateData.school) {
-      updateData.currentInstitute = updateData.school;
+    if (user && user.userType === 'MedicalStudent') {
+      if (updateData.school) {
+        updateData.currentInstitute = updateData.school;
+      }
+      if (updateData.fieldOfStudy) {
+        updateData.field_of_study = updateData.fieldOfStudy;
+      }
     }
     
     const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true }).lean();
-    
+
     // Map currentInstitute to school for MedicalStudent
-    if (updatedUser && updatedUser.userType === 'MedicalStudent' && (updatedUser as any).currentInstitute) {
-      (updatedUser as any).school = (updatedUser as any).currentInstitute;
+    if (updatedUser && updatedUser.userType === 'MedicalStudent') {
+      if ((updatedUser as any).currentInstitute) {
+        (updatedUser as any).school = (updatedUser as any).currentInstitute;
+      }
+      if ((updatedUser as any).field_of_study) {
+        (updatedUser as any).fieldOfStudy = (updatedUser as any).field_of_study;
+      }
     }
     
     res.json({ 

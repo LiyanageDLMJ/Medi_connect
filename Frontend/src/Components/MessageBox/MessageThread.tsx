@@ -94,7 +94,8 @@ const MessageThread: React.FC<Props> = ({ messages, users, currentUserId, onDele
           padding: '8px',
           fontSize: '12px',
           backgroundColor: '#f9fafb',
-          borderBottom: '1px solid #e5e7eb'
+          borderBottom: '1px solid #e5e7eb',
+          marginBottom: '48px' // Further increased gap below the info text
         }}>
           💡 Click on your messages to delete them
         </div>

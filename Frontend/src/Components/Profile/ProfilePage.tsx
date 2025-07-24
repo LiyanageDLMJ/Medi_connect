@@ -246,33 +246,34 @@ const ProfilePage: React.FC = () => {
   const isEducationalInstitute = normalizedUserType === 'educationalinstitute';
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f7f9fc' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#fff' }}>
       {/* Left column: Profile summary */}
       {/* Replace the left column (profile summary card) with a more professional and attractive design */}
       <div style={{
-        width: 320,
-        background: 'linear-gradient(135deg, #2563eb 0%, #184389 100%)',
+        width: 340,
+        background: '#184389', // solid theme color
         color: '#fff',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        padding: '2.5rem 1rem 1.5rem 1rem',
+        padding: '3.5rem 1.5rem 2rem 1.5rem',
         minHeight: '100vh',
-        borderRadius: 10, // rectangle
+        // borderRadius: 18, // removed rounded edges
         boxShadow: '0 8px 32px rgba(24,67,137,0.18)',
-        position: 'relative'
+        position: 'relative',
       }}>
-        <div style={{ position: 'relative', marginBottom: 18 }}>
+        <div style={{ position: 'relative', marginBottom: 28 }}>
           <img
             src={avatar}
             alt="Avatar"
             style={{
-              width: 130,
-              height: 130,
+              width: 170, // increased size
+              height: 170,
               borderRadius: '50%',
               objectFit: 'cover',
-              border: '5px solid #fff',
-              boxShadow: '0 4px 18px rgba(24,67,137,0.18)'
+              border: '6px solid #fff',
+              boxShadow: '0 6px 24px rgba(24,67,137,0.18)',
+              background: '#f8fafc',
             }}
           />
           {editing && (
@@ -289,43 +290,41 @@ const ProfilePage: React.FC = () => {
                 type="button"
                 title="Change photo"
                 onClick={() => document.getElementById('profile-photo-input')?.click()}
-                style={{ position: 'absolute', right: -12, top: 8, background: '#fff', color: '#184389', borderRadius: '50%', border: 'none', width: 38, height: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', cursor: 'pointer', boxShadow: '0 2px 8px rgba(24,67,137,0.10)' }}
+                style={{ position: 'absolute', right: -16, top: 12, background: '#fff', color: '#184389', borderRadius: '50%', border: 'none', width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', cursor: 'pointer', boxShadow: '0 2px 8px rgba(24,67,137,0.10)' }}
               >
                 <FaCamera />
               </button>
             </>
           )}
         </div>
-        {/* Add more marginBottom to the name for better separation from the details below */}
-        <div style={{ fontWeight: 800, fontSize: 26, marginBottom: 32, letterSpacing: 0.5 }}>{profile.name || '-'}</div>
-        <div style={{ opacity: 0.92, fontSize: 15, marginBottom: 8 }}>{profile.email}</div>
+        <div style={{ fontWeight: 800, fontSize: 28, marginBottom: 18, letterSpacing: 0.5, textAlign: 'center', lineHeight: 1.2 }}>{profile.name || '-'}</div>
+        <div style={{ opacity: 0.95, fontSize: 16, marginBottom: 10, textAlign: 'center', wordBreak: 'break-all' }}>{profile.email}</div>
         <div style={{
           background: 'rgba(37,99,235,0.18)',
           color: '#fff',
           borderRadius: 16,
-          padding: '4px 18px',
-          fontSize: 15,
+          padding: '5px 22px',
+          fontSize: 16,
           fontWeight: 600,
-          marginBottom: 10,
+          marginBottom: 12,
           letterSpacing: 1.2,
-          boxShadow: '0 2px 8px rgba(24,67,137,0.10)'
-        }}>
-          {profile.userType}
-        </div>
+          boxShadow: '0 2px 8px rgba(24,67,137,0.10)',
+          textTransform: 'capitalize',
+        }}>{profile.userType}</div>
         {profile.location && (
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10, fontSize: 15 }}>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12, fontSize: 16 }}>
             <FaMapMarkerAlt style={{ marginRight: 7, color: '#fff', opacity: 0.8 }} />
             {profile.location}
           </div>
         )}
         {(profile.higherEducation === 'yes' || profile.higher_education === 'yes') && (
           <div style={{
-            marginBottom: 10,
+            marginBottom: 12,
             color: '#22c55e',
             fontWeight: 700,
-            fontSize: 17,
+            fontSize: 18,
             display: 'flex',
-            alignItems: 'center'
+            alignItems: 'center',
           }}>
             <FaGraduationCap style={{ marginRight: 7 }} />
             Higher Education
@@ -334,39 +333,41 @@ const ProfilePage: React.FC = () => {
         <div style={{
           background: '#fff',
           color: '#184389',
-          borderRadius: 14,
+          borderRadius: 16,
           padding: '1.1rem 1.2rem',
           marginTop: 'auto',
-          marginBottom: 8,
-          fontSize: 14,
-          boxShadow: '0 2px 10px rgba(24,67,137,0.10)'
+          marginBottom: 10,
+          fontSize: 15,
+          boxShadow: '0 2px 10px rgba(24,67,137,0.10)',
+          width: '100%',
+          textAlign: 'center',
         }}>
           <div><FaClock style={{ marginRight: 6 }} />Created: {profile.createdAt ? new Date(profile.createdAt).toLocaleString() : '-'}</div>
           <div style={{ marginTop: 4 }}><FaClock style={{ marginRight: 6 }} />Updated: {profile.updatedAt ? new Date(profile.updatedAt).toLocaleString() : '-'}</div>
         </div>
       </div>
       {/* Right column: Profile details/edit form */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', minHeight: '100vh', padding: '1.2rem 0.5rem' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', minHeight: '100vh', padding: '1.2rem 0.5rem', color: '#1e293b' }}>
         <div style={{ width: '100%', maxWidth: 1200, minHeight: 650, marginTop: 0 }}>
-          <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 4px 24px rgba(24,67,137,0.08)', padding: '1.2rem 1.5rem', marginBottom: 16, minHeight: 200 }}>
+          <div style={{ background: '#fff', padding: 0, marginBottom: 0, minHeight: 200 }}>
             {editing ? (
               <form className={styles.profileForm} onSubmit={handleSubmit}>
                 <div style={{
                   background: '#f8fafc',
                   borderRadius: 16,
                   boxShadow: '0 4px 24px rgba(24,67,137,0.10)',
-                  padding: '1.2rem 1.5rem', // reduced padding
+                  padding: '1.2rem 1.5rem',
                   maxWidth: 900,
                   margin: '0 auto',
                   width: '100%',
                   display: 'grid',
                   gridTemplateColumns: '1fr 1fr',
-                  gap: '0.7rem 1.2rem', // reduced gap
+                  gap: '1.3rem 2.2rem', // increased gap for more space
                   alignItems: 'start',
-                  minHeight: 350, // reduced minHeight
+                  minHeight: 350,
                 }}>
                   {/* Section: Personal Info */}
-                  <div style={{ gridColumn: '1 / span 2', marginBottom: 0 }}>
+                  <div style={{ gridColumn: '1 / span 2', marginBottom: 18 }}>
                     <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Personal Information</div>
                     <hr style={{ border: 'none', borderTop: '1px solid #e5e7eb', margin: 0, marginBottom: 18 }} />
                   </div>
@@ -503,8 +504,21 @@ const ProfilePage: React.FC = () => {
                   </div>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', gap: 16, marginTop: 24 }}>
-                  <button className={styles.cancelBtn} type="button" onClick={() => setEditing(false)}>Cancel</button>
-                  <button className={styles.saveBtn} type="submit">Save Changes</button>
+                  <button
+                    className={styles.editBtn}
+                    type="button"
+                    style={{ minWidth: 110, background: '#fff', color: '#2563eb', border: '2px solid #2563eb', borderRadius: 8, fontWeight: 600, padding: '0.6rem 1.2rem', cursor: 'pointer', transition: 'background 0.2s, color 0.2s' }}
+                    onClick={() => setEditing(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className={styles.editBtn}
+                    type="submit"
+                    style={{ minWidth: 140, background: '#2563eb', color: '#fff', border: '2px solid #2563eb', borderRadius: 8, fontWeight: 600, padding: '0.6rem 1.2rem', cursor: 'pointer', transition: 'background 0.2s, color 0.2s' }}
+                  >
+                    Save Changes
+                  </button>
                 </div>
               </form>
             ) : (
@@ -636,15 +650,14 @@ const ProfilePage: React.FC = () => {
 };
 
 export const InfoBox: React.FC<{ label: string; value: any; icon: React.ReactNode }> = ({ label, value, icon }) => (
-  <div className={styles.infoBox} style={{ padding: '0.6rem 0.7rem', fontSize: '0.93rem', minHeight: 36 }}>
-    <div className={styles.infoLeft} style={{ gap: '0.5rem' }}>
-      <span className={styles.infoIcon} style={{ fontSize: '1.05rem', width: 26, height: 26 }}>{icon}</span>
-      <div>
-        <div className={styles.infoLabel} style={{ fontSize: '0.72rem', marginBottom: 1 }}>{label}</div>
-        <div className={styles.infoValue} style={{ fontSize: '0.98rem' }}>{value}</div>
-      </div>
+  <div style={{ marginBottom: 22 }}>
+    <div style={{ display: 'flex', alignItems: 'center', fontSize: '0.97rem', color: '#184389', fontWeight: 600, marginBottom: 5, marginLeft: 2, letterSpacing: 0.1 }}>
+      <span style={{ fontSize: '1.05rem', width: 22, height: 22, marginRight: 7, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{icon}</span>
+      {label}
     </div>
-    <FaChevronRight className={styles.infoArrow} style={{ fontSize: '1rem' }} />
+    <div className={styles.infoBox} style={{ padding: '0.85rem 1rem', fontSize: '0.93rem', minHeight: 34, background: '#f8fafc', borderRadius: 10, boxShadow: '0 1px 4px rgba(24,67,137,0.04)' }}>
+      <div className={styles.infoValue} style={{ fontSize: '1.05rem', color: '#1e293b', fontWeight: 600, marginTop: 1 }}>{value}</div>
+    </div>
   </div>
 );
 
