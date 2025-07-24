@@ -6,92 +6,92 @@ import Navbar from '../components/Navbar';
 
 const Home = () => {
   return (
-    <Container>
-      <Navbar />
-      <HeroSection>
-        <HeroContent>
-          <HeroTitle>
-            Your Gateway to 
-          </HeroTitle>
-          <HeroSubtitle>
-            Connect with top healthcare institutions, advance your medical career, and make a difference in patient care.
-          </HeroSubtitle>
-          <HeroButtons>
-            <PrimaryButton to="/login">Login</PrimaryButton>
-            <SecondaryButton to="/register">Register Now</SecondaryButton>
-          </HeroButtons>
-        </HeroContent>
-      </HeroSection>
+    <>
+      <Container>
+        <Navbar />
+        <HeroSection>
+          <HeroContent>
+            <HeroTitle>
+              Your Gateway to 
+            </HeroTitle>
+            <HeroSubtitle>
+              Connect with top healthcare institutions, advance your medical career, and make a difference in patient care.
+            </HeroSubtitle>
+            <HeroButtons>
+              <PrimaryButton to="/login">Login</PrimaryButton>
+              <SecondaryButton to="/register">Register Now</SecondaryButton>
+            </HeroButtons>
+          </HeroContent>
+        </HeroSection>
 
-      <StatsSection>
-        <StatItem>
-          <StatNumber>5000+</StatNumber>
-          <StatLabel>Healthcare Professionals</StatLabel>
-        </StatItem>
-        <StatItem>
-          <StatNumber>1000+</StatNumber>
-          <StatLabel>Medical Institutions</StatLabel>
-        </StatItem>
-        <StatItem>
-          <StatNumber>98%</StatNumber>
-          <StatLabel>Satisfaction Rate</StatLabel>
-        </StatItem>
-      </StatsSection>
+        <StatsSection>
+          <StatItem>
+            <StatNumber>5000+</StatNumber>
+            <StatLabel>Healthcare Professionals</StatLabel>
+          </StatItem>
+          <StatItem>
+            <StatNumber>1000+</StatNumber>
+            <StatLabel>Medical Institutions</StatLabel>
+          </StatItem>
+          <StatItem>
+            <StatNumber>98%</StatNumber>
+            <StatLabel>Satisfaction Rate</StatLabel>
+          </StatItem>
+        </StatsSection>
 
-      <FeaturesSection>
-        <SectionTitle>Why Choose MediConnect?</SectionTitle>
-        <FeaturesGrid>
-          <FeatureCard>
-            <FeatureIcon><FaUserMd /></FeatureIcon>
-            <FeatureTitle>Expert Network</FeatureTitle>
-            <FeatureText>Connect with leading healthcare professionals and institutions worldwide.</FeatureText>
-          </FeatureCard>
-          <FeatureCard>
-            <FeatureIcon><FaHospital /></FeatureIcon>
-            <FeatureTitle>Top Institutions</FeatureTitle>
-            <FeatureText>Partner with prestigious medical facilities and organizations.</FeatureText>
-          </FeatureCard>
-          <FeatureCard>
-            <FeatureIcon><FaSearch /></FeatureIcon>
-            <FeatureTitle>Smart Matching</FeatureTitle>
-            <FeatureText>Find the perfect opportunities matching your skills and preferences.</FeatureText>
-          </FeatureCard>
-          <FeatureCard>
-            <FeatureIcon><FaCalendarCheck /></FeatureIcon>
-            <FeatureTitle>Easy Scheduling</FeatureTitle>
-            <FeatureText>Efficiently manage appointments and schedules in one place.</FeatureText>
-          </FeatureCard>
-          <FeatureCard>
-            <FeatureIcon><FaChartLine /></FeatureIcon>
-            <FeatureTitle>Career Growth</FeatureTitle>
-            <FeatureText>Access resources and opportunities for professional development.</FeatureText>
-          </FeatureCard>
-          <FeatureCard>
-            <FeatureIcon><FaUsers /></FeatureIcon>
-            <FeatureTitle>Community</FeatureTitle>
-            <FeatureText>Join a thriving community of healthcare professionals.</FeatureText>
-          </FeatureCard>
-        </FeaturesGrid>
-      </FeaturesSection>
+        <FeaturesSection>
+          <SectionTitle>Why Choose MediConnect?</SectionTitle>
+          <FeaturesGrid>
+            <FeatureCard>
+              <FeatureIcon><FaUserMd /></FeatureIcon>
+              <FeatureTitle>Expert Network</FeatureTitle>
+              <FeatureText>Connect with leading healthcare professionals and institutions worldwide.</FeatureText>
+            </FeatureCard>
+            <FeatureCard>
+              <FeatureIcon><FaHospital /></FeatureIcon>
+              <FeatureTitle>Top Institutions</FeatureTitle>
+              <FeatureText>Partner with prestigious medical facilities and organizations.</FeatureText>
+            </FeatureCard>
+            <FeatureCard>
+              <FeatureIcon><FaSearch /></FeatureIcon>
+              <FeatureTitle>Smart Matching</FeatureTitle>
+              <FeatureText>Find the perfect opportunities matching your skills and preferences.</FeatureText>
+            </FeatureCard>
+            <FeatureCard>
+              <FeatureIcon><FaCalendarCheck /></FeatureIcon>
+              <FeatureTitle>Easy Scheduling</FeatureTitle>
+              <FeatureText>Efficiently manage appointments and schedules in one place.</FeatureText>
+            </FeatureCard>
+            <FeatureCard>
+              <FeatureIcon><FaChartLine /></FeatureIcon>
+              <FeatureTitle>Career Growth</FeatureTitle>
+              <FeatureText>Access resources and opportunities for professional development.</FeatureText>
+            </FeatureCard>
+            <FeatureCard>
+              <FeatureIcon><FaUsers /></FeatureIcon>
+              <FeatureTitle>Community</FeatureTitle>
+              <FeatureText>Join a thriving community of healthcare professionals.</FeatureText>
+            </FeatureCard>
+          </FeaturesGrid>
+        </FeaturesSection>
 
-      <CTASection>
-        <CTAContent>
-          <CTATitle>Ready to Transform Healthcare?</CTATitle>
-          <CTAText>Join MediConnect today and be part of the future of healthcare staffing.</CTAText>
-          <CTAButtons>
-            <PrimaryButton to="/register">Get Started</PrimaryButton>
-            <SecondaryButton to="/login">Sign In</SecondaryButton>
-          </CTAButtons>
-        </CTAContent>
-      </CTASection>
-
-    </Container>
+        <CTASection>
+          <CTAContent>
+            <CTATitle>Ready to Transform Healthcare?</CTATitle>
+            <CTAText>Join MediConnect today and be part of the future of healthcare staffing.</CTAText>
+            <CTAButtons>
+              <PrimaryButton to="/register">Get Started</PrimaryButton>
+              <SecondaryButton to="/login">Sign In</SecondaryButton>
+            </CTAButtons>
+          </CTAContent>
+        </CTASection>
+      </Container>
+    </>
   );
 };
 
 const Container = styled.div`
-height: 100vh;
-width: 100%;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
 `;
@@ -263,7 +263,7 @@ const FeatureText = styled.p`
 `;
 
 const CTASection = styled.section`
-  background: linear-gradient(135deg, #2E5FB7 0%, #1a365d 100%);
+  background: linear-gradient(135deg, #e3f0ff 0%, #1a365d 100%);
   color: white;
   padding: 5rem 2rem;
   text-align: center;
