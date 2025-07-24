@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import axios from "axios"; // Install axios if not already installed
-import Search from "../components/SearchDiv/Search";
+
 import Jobs from "../components/JobDiv/Jobs";
 import Sidebar from "../components/NavBar/Sidebar";
+import SearchDoctor from "../components/SearchDiv/Search";
+import SearchMedicalStudent from '../../MedicalStudent/components/search';
 
 const JobInternshipSearch = () => {
   const [filters, setFilters] = useState({
@@ -17,6 +19,9 @@ const JobInternshipSearch = () => {
   const [jobs, setJobs] = useState([]); // State to store jobs fetched from the backend
   const [loading, setLoading] = useState(true); // State to handle loading
   const [error, setError] = useState(""); // State to handle errors
+
+  // Get user role from localStorage
+  const userType = localStorage.getItem('userType');
 
   // Fetch jobs from the backend
   useEffect(() => {
@@ -78,7 +83,17 @@ const JobInternshipSearch = () => {
     return !filters.salaryRange || job.salaryRange.toLowerCase() === filters.salaryRange.toLowerCase();
   };
 
-  const filteredJobs = jobs.filter((job: any) => {
+  // Role-based filtering: show only internships for medical students, only jobs for doctors
+  const roleFilteredJobs = jobs.filter((job: any) => {
+    if (userType === 'MedicalStudent') {
+      return job.jobType && job.jobType.toLowerCase() === 'internship';
+    } else if (userType === 'Doctor') {
+      return job.jobType && job.jobType.toLowerCase() !== 'internship';
+    }
+    return true; // fallback: show all
+  });
+
+  const filteredJobs = roleFilteredJobs.filter((job: any) => {
     return (
       filterBySearchText(job) &&
       filterByHospital(job) &&
@@ -101,7 +116,11 @@ const JobInternshipSearch = () => {
     <div>
       <Sidebar />
       <div className="flex-1 overflow-auto md:pl-64">
-        <Search filters={filters} onFilterChange={handleFilterChange} onClear={handleClearFilters} />
+        {userType === 'Doctor' ? (
+          <SearchDoctor filters={filters} onFilterChange={handleFilterChange} onClear={handleClearFilters} />
+        ) : (
+          <SearchMedicalStudent filters={filters} onFilterChange={handleFilterChange} onClear={handleClearFilters} />
+        )}
         <Jobs jobs={filteredJobs} totalJobs={jobs.length} />
       </div>
     </div>

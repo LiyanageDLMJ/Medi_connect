@@ -15,7 +15,7 @@ import UpdateCV02 from "./Role/Physician/pages/UpdateCV02";
 import UpdateCV03 from "./Role/Physician/pages/UpdateCV03";
 import Messages from "./Role/Physician/pages/Messages";
 import ProfilePage from "./Components/Profile/ProfilePage";
-import MedicalStudentDashboard from "./Role/MedicalStudent/pages/Dashboard";
+import MedicalStudentDashboard from "./Role/MedicalStudent/pages/MedStudentDashboard";
 import InstitutionDashboard from "./Role/higherEducation/pages/Dashboard";
 import "react-datepicker/dist/react-datepicker.css";
 import Home from "./LoginRegister/Home/Home";
@@ -31,9 +31,6 @@ import  DegreeApplication from "./Role/Physician/pages/DegreeApplicationForm"
 
 import  ViewApplications from "./Role/higherEducation/pages/ViewApplications"
 import ViewCandidates from "./Role/Recuiter/pages/VeiwCandidates";
-
-
-import Dashboard from "./Role/Physician/pages/Doctordashboard";
 import RecruiterDashboard from "./Role/Recuiter/pages/Dashboard";
 import { FormProvider } from "./context/FormContext";
 import Cvcompare  from "./Role/Physician/pages/Cvcompare";
@@ -89,6 +86,7 @@ const App = () => {
           <Route path="messages" element={<Messages />} />
           <Route path="update-profile" element={<ProfilePage />} />
           <Route path="message-box" element={<Messages />} />
+          
         </Route>
 
           {/* Higher Education Routes */}
