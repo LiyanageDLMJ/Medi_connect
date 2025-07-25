@@ -40,6 +40,7 @@ import MedicalStudentMessages from "./Role/MedicalStudent/pages/Messages";
 import PhysicianMessages from "./Role/Physician/pages/Messages";
 import RecruiterMessages from "./Role/Recuiter/pages/Messages";
 import HigherEducationMessages from "./Role/higherEducation/pages/Messages";
+import MedStudentDashboard from "./Role/MedicalStudent/pages/MedStudentDashboard";
 const App = () => {
   return (
     <MessageNotificationProvider>
@@ -92,6 +93,7 @@ const App = () => {
           <Route path="messages" element={<Messages />} />
           <Route path="update-profile" element={<ProfilePage />} />
           <Route path="message-box" element={<Messages />} />
+          <Route path="med-student-dashboard" element={<MedStudentDashboard />} />
           
         </Route>
           {/* Physician Routes */}
