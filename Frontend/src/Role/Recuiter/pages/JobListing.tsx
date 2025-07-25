@@ -71,6 +71,9 @@ export default function JobManagement() {
   const [departmentFilter, setDepartmentFilter] = useState('all');
   const [jobTypeFilter, setJobTypeFilter] = useState('all');
 
+  // Recruiter profile state
+  const [recruiterProfile, setRecruiterProfile] = useState<{ companyName?: string; photoUrl?: string }>({});
+
   // Initialize form
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -134,7 +137,12 @@ export default function JobManagement() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.get("http://localhost:3000/JobPost/viewJobs");
+      const token = localStorage.getItem('token');
+      const userId = localStorage.getItem('userId');
+      const headers: any = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      if (userId) headers['x-user-id'] = userId;
+      const response = await axios.get("http://localhost:3000/JobPost/viewJobs", { headers });
       if (!response.data) {
         throw new Error('No data received');
       }
@@ -270,31 +278,58 @@ export default function JobManagement() {
     return matchesSearch && matchesDepartment && matchesJobType;
   });
 
+  useEffect(() => {
+    // Fetch recruiter profile on mount
+    const fetchProfile = async () => {
+      const token = localStorage.getItem('token');
+      const userId = localStorage.getItem('userId');
+      if (!token || !userId) return;
+      try {
+        const res = await fetch('http://localhost:3000/profile', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'x-user-id': userId,
+          },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setRecruiterProfile({ companyName: data.companyName, photoUrl: data.photoUrl });
+        }
+      } catch (err) {
+        // Optionally handle error
+      }
+    };
+    fetchProfile();
+  }, []);
+
   return (
-    <div>
-      <Sidebar />
-      <div className="flex justify-end items-center p-4">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/340px-Default_pfp.svg.png"  className="w-10 h-10 rounded-full mr-2" />
-        <span className="font-semibold text-gray-700">Mayo Clinic</span>
+    <div className="min-h-screen bg-gradient-to-br from-[#f7fafd] to-[#e3eafc] flex flex-col md:flex-row">
+      {/* Sidebar */}
+      <div className="w-full md:w-64 flex-shrink-0 md:sticky md:top-0 md:h-screen z-10">
+        <Sidebar />
       </div>
-      <div className="flex-1 overflow-auto md:pl-64">
+      {/* Main Content */}
+      <div className="flex-1 overflow-auto" style={{ maxHeight: '100vh' }}>
+        {/* Top bar: Title + Profile */}
+        <div className="flex justify-between items-center pt-6 pb-4 px-4 bg-blue-50">
+          <h1 className="text-2xl font-bold text-gray-800">Job Listings</h1>
+          <div className="flex items-center">
+            <img
+              src={recruiterProfile.photoUrl || "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/340px-Default_pfp.svg.png"}
+              className="w-10 h-10 rounded-full mr-2"
+              alt="Profile"
+            />
+            <span className="font-semibold text-gray-700">{recruiterProfile.companyName || "Recruiter"}</span>
+          </div>
+        </div>
         {/* JOB LISTINGS VIEW */}
         {currentView === 'list' && (
           <div className="max-w-7xl mx-auto px-4 py-8">
-            <div className="flex justify-between items-center mb-6">
-              <h1 className="text-2xl font-bold text-gray-800">Job Listings</h1>
-              <button
-                onClick={() => router.push('/recruiter/jobPost')}
-                className="bg-[#184389] text-white px-4 py-2 rounded hover:bg-blue-700"
-              >
-                Post New Job
-              </button>
-            </div>
-
-            {/* Search and Filters */}
-            <div className="mb-6 space-y-4">
-              {/* Search bar */}
-              <div className="flex flex-col md:flex-row md:items-center gap-4">
+            {/* Search, Filters, and Post New Job Button Row */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+              {/* Search and Filters */}
+              <div className="flex flex-1 flex-col md:flex-row md:items-center gap-4">
+                {/* Search bar */}
                 <div className="relative flex-1 max-w-md">
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -309,7 +344,6 @@ export default function JobManagement() {
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
-                
                 {/* Department Filter */}
                 <div className="relative min-w-[200px]">
                   <select
@@ -331,7 +365,6 @@ export default function JobManagement() {
                     <option value="Other">Other</option>
                   </select>
                 </div>
-                
                 {/* Job Type Filter */}
                 <div className="relative min-w-[180px]">
                   <select
@@ -345,7 +378,6 @@ export default function JobManagement() {
                     <option value="Internship">Internship</option>
                   </select>
                 </div>
-                
                 {/* Clear Filters Button */}
                 <button
                   onClick={() => {
@@ -361,67 +393,72 @@ export default function JobManagement() {
                   Clear
                 </button>
               </div>
-              
-              {/* Results count and active filters */}
-              <div className="flex items-center justify-between text-sm text-gray-600">
-                <div>
-                  Showing {filteredJobs.length} of {jobs.length} jobs
-                  {departmentFilter !== 'all' && (
-                    <span className="ml-2">
-                      • Department: <span className="font-semibold">{departmentFilter}</span>
-                    </span>
-                  )}
-                  {jobTypeFilter !== 'all' && (
-                    <span className="ml-2">
-                      • Type: <span className="font-semibold">{jobTypeFilter}</span>
-                    </span>
-                  )}
-                  {searchTerm && (
-                    <span className="ml-2">
-                      • Search: <span className="font-semibold">"{searchTerm}"</span>
-                    </span>
-                  )}
-                </div>
-                
-                {/* Quick filter tags */}
-                <div className="flex items-center gap-2">
-                  {(departmentFilter !== 'all' || jobTypeFilter !== 'all' || searchTerm) && (
-                    <span className="text-xs text-gray-500">Active filters:</span>
-                  )}
-                  {departmentFilter !== 'all' && (
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      {departmentFilter}
-                      <button
-                        onClick={() => setDepartmentFilter('all')}
-                        className="ml-1 text-blue-600 hover:text-blue-800"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  )}
-                  {jobTypeFilter !== 'all' && (
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      {jobTypeFilter}
-                      <button
-                        onClick={() => setJobTypeFilter('all')}
-                        className="ml-1 text-green-600 hover:text-green-800"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  )}
-                  {searchTerm && (
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                      "{searchTerm}"
-                      <button
-                        onClick={() => setSearchTerm('')}
-                        className="ml-1 text-gray-600 hover:text-gray-800"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  )}
-                </div>
+              {/* Post New Job Button */}
+              <button
+                onClick={() => router.push('/recruiter/JobPost')}
+                className="bg-[#184389] text-white px-4 py-2 rounded hover:bg-blue-700 whitespace-nowrap"
+              >
+                Post New Job
+              </button>
+            </div>
+            {/* Results count and active filters */}
+            <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
+              <div>
+                Showing {filteredJobs.length} of {jobs.length} jobs
+                {departmentFilter !== 'all' && (
+                  <span className="ml-2">
+                    • Department: <span className="font-semibold">{departmentFilter}</span>
+                  </span>
+                )}
+                {jobTypeFilter !== 'all' && (
+                  <span className="ml-2">
+                    • Type: <span className="font-semibold">{jobTypeFilter}</span>
+                  </span>
+                )}
+                {searchTerm && (
+                  <span className="ml-2">
+                    • Search: <span className="font-semibold">"{searchTerm}"</span>
+                  </span>
+                )}
+              </div>
+              {/* Quick filter tags */}
+              <div className="flex items-center gap-2">
+                {(departmentFilter !== 'all' || jobTypeFilter !== 'all' || searchTerm) && (
+                  <span className="text-xs text-gray-500">Active filters:</span>
+                )}
+                {departmentFilter !== 'all' && (
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    {departmentFilter}
+                    <button
+                      onClick={() => setDepartmentFilter('all')}
+                      className="ml-1 text-blue-600 hover:text-blue-800"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+                {jobTypeFilter !== 'all' && (
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    {jobTypeFilter}
+                    <button
+                      onClick={() => setJobTypeFilter('all')}
+                      className="ml-1 text-green-600 hover:text-green-800"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+                {searchTerm && (
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                    "{searchTerm}"
+                    <button
+                      onClick={() => setSearchTerm('')}
+                      className="ml-1 text-gray-600 hover:text-gray-800"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
               </div>
             </div>
 

@@ -6,6 +6,10 @@ const JobSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  recruiterId: {
+    type: String,
+    required: true,
+  },
   title: {
     type: String,
     required: true,

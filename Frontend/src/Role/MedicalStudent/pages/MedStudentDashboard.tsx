@@ -1,11 +1,38 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Bell, Search } from "lucide-react";
-import Sidebar from "../components/NavBar/Sidebar";
+import Sidebar from "../components/Sidebar";
 import MedicalStudentImage from "../../../MedicalStudent.png";
-import Footer from "../../../Components/FooterDiv/Footer";
+
 import { FaSearch, FaFileAlt, FaComments } from "react-icons/fa";
 
+const DEFAULT_AVATAR = 'https://ui-avatars.com/api/?name=User';
+
 const MedicalStudentDashboard: React.FC = () => {
+  const [profile, setProfile] = useState<{ name?: string; photoUrl?: string }>({});
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const token = localStorage.getItem('token');
+      const userId = localStorage.getItem('userId');
+      if (!token || !userId) return;
+      try {
+        const res = await fetch('http://localhost:3000/profile', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'x-user-id': userId,
+          },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setProfile({ name: data.name, photoUrl: data.photoUrl });
+        }
+      } catch (err) {
+        // Optionally handle error
+      }
+    };
+    fetchProfile();
+  }, []);
+
   return (
     <div>
       <Sidebar />
@@ -39,13 +66,14 @@ const MedicalStudentDashboard: React.FC = () => {
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
                 <img
-                  src="/placeholder.svg?height=32&width=32"
+                  src={profile.photoUrl || DEFAULT_AVATAR}
                   alt="User avatar"
+                  className="object-cover w-8 h-8"
                 />
               </div>
               <div>
-                <p className="text-sm font-medium">Moni Roy</p>
-                <p className="text-xs text-gray-500">Dentist</p>
+                <p className="text-sm font-medium">{profile.name || "User"}</p>
+                <p className="text-xs text-gray-500">Medical Student</p>
               </div>
             </div>
           </div>
@@ -57,7 +85,7 @@ const MedicalStudentDashboard: React.FC = () => {
             <div className="flex flex-col md:flex-row items-center">
               <div className="md:w-1/2 mb-8 md:mb-0 z-10">
                 <h1 className="text-4xl md:text-5xl font-bold text-slate-700 mb-8">
-                  Doctors
+                  Medical Students
                 </h1>
                 <div className="bg-sky-200 rounded-xl p-8 md:p-10 max-w-2xl max-h-2xl ">
                   <h2 className="text-xl md:text-2xl font-semibold text-slate-800 leading-relaxed">
@@ -224,7 +252,7 @@ const MedicalStudentDashboard: React.FC = () => {
           </div>
         </div>
       </div>
-      <Footer />
+      
     </div>
   );
 };

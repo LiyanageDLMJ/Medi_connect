@@ -122,7 +122,7 @@ const SearchFilters: React.FC<{
 }> = ({ filters, onFilterChange, onClear }) => (
   <div className="secondDiv flex items-center gap-10 justify-center">
     <FilterSelect 
-      label="Field" 
+      label="Field of Study" 
       name="field" 
       value={filters.field} 
       options={[
@@ -137,17 +137,6 @@ const SearchFilters: React.FC<{
         "Hematologist", 
         "Radiologist", 
         "Dermatologist"
-      ]} 
-      onFilterChange={onFilterChange} 
-    />
-    <FilterSelect 
-      label="Type" 
-      name="jobType" 
-      value={filters.jobType} 
-      options={[
-        "Part-Time", 
-        "Full-Time", 
-        "Remote"
       ]} 
       onFilterChange={onFilterChange} 
     />

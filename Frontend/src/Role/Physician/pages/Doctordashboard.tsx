@@ -6,21 +6,30 @@ import Footer from "../../../Components/FooterDiv/Footer";
 import { FaSearch, FaFileAlt, FaComments } from "react-icons/fa";
 
 const DoctorDashboard: React.FC = () => {
-  const [profile, setProfile] = useState<{ name?: string; userType?: string; photoUrl?: string }>({});
+  const [profile, setProfile] = useState<{ name?: string; specialty?: string; photoUrl?: string }>({});
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const userId = localStorage.getItem('userId');
-    const API_BASE = window.location.origin.includes('localhost') ? 'http://localhost:3000' : window.location.origin;
-    fetch(`${API_BASE}/profile`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'x-user-id': userId || '',
-      },
-    })
-      .then(res => res.json())
-      .then(data => setProfile(data))
-      .catch(() => {});
+    // Fetch doctor profile on mount
+    const fetchProfile = async () => {
+      const token = localStorage.getItem('token');
+      const userId = localStorage.getItem('userId');
+      if (!token || !userId) return;
+      try {
+        const res = await fetch('http://localhost:3000/profile', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'x-user-id': userId,
+          },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setProfile({ name: data.name, specialty: data.specialty, photoUrl: data.photoUrl });
+        }
+      } catch (err) {
+        // Optionally handle error
+      }
+    };
+    fetchProfile();
   }, []);
 
   return (
@@ -58,11 +67,12 @@ const DoctorDashboard: React.FC = () => {
                 <img
                   src={profile.photoUrl || "/placeholder.svg?height=32&width=32"}
                   alt="User avatar"
+                  className="h-8 w-8 object-cover"
                 />
               </div>
               <div>
-                <p className="text-sm font-medium">{profile.name || "User"}</p>
-                <p className="text-xs text-gray-500">{profile.userType || ""}</p>
+                <p className="text-sm font-medium">{profile.name || "Doctor"}</p>
+                <p className="text-xs text-gray-500">{profile.specialty || "Specialty"}</p>
               </div>
             </div>
           </div>

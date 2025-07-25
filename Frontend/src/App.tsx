@@ -1,4 +1,4 @@
-import { Routes, Route, Outlet } from "react-router-dom";
+import { Route ,Outlet,Routes} from "react-router-dom";
 
 import JobInternshipSearch from "./Role/Physician/pages/JobInternshipSearch";
 import HigherEducationSearch from "./Role/Physician/pages/HigherEducationSearch";
@@ -15,7 +15,7 @@ import UpdateCV02 from "./Role/Physician/pages/UpdateCV02";
 import UpdateCV03 from "./Role/Physician/pages/UpdateCV03";
 import Messages from "./Role/Physician/pages/Messages";
 import ProfilePage from "./Components/Profile/ProfilePage";
-import MedicalStudentDashboard from "./Role/MedicalStudent/pages/Dashboard";
+import MedicalStudentDashboard from "./Role/MedicalStudent/pages/MedStudentDashboard";
 import InstitutionDashboard from "./Role/higherEducation/pages/Dashboard";
 import "react-datepicker/dist/react-datepicker.css";
 import Home from "./LoginRegister/Home/Home";
@@ -31,9 +31,6 @@ import  DegreeApplication from "./Role/Physician/pages/DegreeApplicationForm"
 
 import  ViewApplications from "./Role/higherEducation/pages/ViewApplications"
 import ViewCandidates from "./Role/Recuiter/pages/VeiwCandidates";
-
-
-import Dashboard from "./Role/Physician/pages/Doctordashboard";
 import RecruiterDashboard from "./Role/Recuiter/pages/Dashboard";
 import { FormProvider } from "./context/FormContext";
 import Cvcompare  from "./Role/Physician/pages/Cvcompare";
@@ -75,6 +72,28 @@ const App = () => {
             <Route path="message-box" element={<MedicalStudentMessages />} />
           </Route>
 
+        {/* Physician Routes */}
+        <Route path="/physician">
+          <Route path="Doctordashboard" element={<DoctorDashboard />} />
+          <Route path="higher-education" element={<HigherEducationSearch />} />
+          <Route path="job-internship" element={<JobInternshipSearch />} />
+          <Route path="job-application/:jobId" element={<JobApplicationForm />} /> {/* Add :jobId parameter */}
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="job-application" element={<JobApplicationForm />} />
+          <Route path="job-internship/:jobId" element={<JobInternshipDetails />} />
+          <Route path="update-cv01" element={<UpdateCV01 />} />
+          <Route path="update-cv02" element={<UpdateCV02 />} />
+          <Route path="update-cv03" element={<UpdateCV03 />} />
+          <Route path="job-details/:jobId" element={<JobInternshipDetails />} />
+          <Route path="Cvcompare" element={<Cvcompare />} />
+          <Route path="degreeapplication" element={<DegreeApplication />} />
+          <Route path="job-application-tracker" element={<JobApplicationTracker />} />
+          <Route path="medical-student-dashboard" element={<MedicalStudentDashboard />} />
+          <Route path="messages" element={<Messages />} />
+          <Route path="update-profile" element={<ProfilePage />} />
+          <Route path="message-box" element={<Messages />} />
+          
+        </Route>
           {/* Physician Routes */}
           <Route path="/physician">
             <Route path="Doctordashboard" element={<DoctorDashboard />} />

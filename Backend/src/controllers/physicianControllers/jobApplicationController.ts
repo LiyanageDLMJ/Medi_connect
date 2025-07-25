@@ -7,6 +7,12 @@ import mongoose from "mongoose";
 // Add a new job application
 export const addJobApplication = async (req: Request, res: Response) => {
   try {
+    // Get userId from authentication middleware (recommended)
+    // const userId = req.user.id;
+
+    // TEMPORARY: If you don't have auth, get userId from frontend (not secure, but works for now)
+    const userId = req.body.userId;
+
     console.log("Request body:", req.body);
     
     const { name, email, phone, experience, jobId } = req.body;
@@ -34,7 +40,8 @@ export const addJobApplication = async (req: Request, res: Response) => {
       jobId: job._id, // Store as string, matching your Job model
       cv: req.file ? req.file.path : null,
       appliedDate: new Date(),
-      status: 'applied'
+      status: 'applied',
+      userId, // <-- ADD THIS LINE
     });
     
     const savedApplication = await newApplication.save();
@@ -119,8 +126,8 @@ export const getUserApplications = async (req: Request, res: Response) => {
   try {
     const userId = req.params.userId;
     const applications = await JobApplication.find({ userId })
+      .populate('jobId') // <-- This will fetch the job details!
       .sort({ appliedDate: -1 });
-    
     res.status(200).json(applications);
   } catch (error: any) {
     res.status(500).json({ 
