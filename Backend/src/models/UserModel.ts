@@ -64,6 +64,14 @@ const userSchema = new mongoose.Schema({
     enum: ['yes', 'no'],
     default: 'no',
   },
+  resetPasswordToken: {
+    type: String,
+    default: '',
+  },
+  resetPasswordExpires: {
+    type: Date,
+    default: null,
+  },
 }, { 
   timestamps: true,
   discriminatorKey: 'userType',

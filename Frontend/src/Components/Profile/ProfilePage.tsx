@@ -560,7 +560,7 @@ const ProfilePage: React.FC = () => {
                   <div className={styles.sectionSubTitle}>Professional Information</div>
                   <div className={styles.detailGrid}>
                     {isDoctor && <>
-                      <InfoBox label="Specialty" value={profile.specialty || '-'} icon={<FaStethoscope />} />
+                      <InfoBox label="Specialty" value={profile.specialty === 'Other (please specify)' ? (profile.otherSpecialty || '-') : (profile.specialty || '-')} icon={<FaStethoscope />} />
                       <InfoBox label="Location" value={profile.location || '-'} icon={<FaMapMarkerAlt />} />
                       <InfoBox
                         label="Higher Education Interest"
@@ -571,7 +571,7 @@ const ProfilePage: React.FC = () => {
                     {isMedicalStudent && <>
                       <InfoBox label="Current Institute" value={profile.currentInstitute || profile.current_institute || '-'} icon={<FaUniversity />} />
                       <InfoBox label="Year of Study" value={profile.yearOfStudy || profile.year_of_study || '-'} icon={<FaInfoCircle />} />
-                      <InfoBox label="Field of Study" value={profile.fieldOfStudy || profile.field_of_study || '-'} icon={<FaInfoCircle />} />
+                      <InfoBox label="Field of Study" value={profile.fieldOfStudy === 'Other (please specify)' ? (profile.otherFieldOfStudy || '-') : (profile.fieldOfStudy || profile.field_of_study || '-')} icon={<FaInfoCircle />} />
                       <InfoBox label="Location" value={profile.location || '-'} icon={<FaMapMarkerAlt />} />
                       <InfoBox label="Higher Education Interest" value={(profile.higherEducation || profile.higher_education) === 'yes' ? <span style={{ color: '#22c55e', fontWeight: 600 }}>Yes</span> : <span style={{ color: '#ef4444', fontWeight: 600 }}>No</span>} icon={<FaGraduationCap />} />
                     </>}

@@ -94,6 +94,10 @@ router.put('/', mockAuth, upload.single('photo'), async (req: AuthRequest, res: 
     if (!userId) return res.status(401).json({ message: 'Unauthenticated' });
     
     const updateData: any = { ...req.body };
+    // Fix: Convert 'resetPasswordExpires' string 'null' to actual null
+    if (updateData.resetPasswordExpires === 'null') {
+      updateData.resetPasswordExpires = null;
+    }
     
     // Handle photo upload to Cloudinary
     if (req.file) {
