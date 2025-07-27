@@ -1,5 +1,5 @@
 import { AiOutlineCloseCircle, AiOutlineSearch } from "react-icons/ai";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { FaUniversity } from "react-icons/fa";
 
 interface SearchFilters {
