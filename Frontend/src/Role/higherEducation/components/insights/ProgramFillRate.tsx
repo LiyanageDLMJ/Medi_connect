@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 const getBarColor = (percent: number) => {
   if (percent > 0.8) return "bg-green-500";
