@@ -150,7 +150,7 @@ const Feedbacks: React.FC = () => {
       {/* Sidebar */}
       <Sidebar />
       {/* Main Content */}
-      <div className="flex-1 overflow-auto md:pl-64"> {/* Add padding for sidebar */}
+      <div className="flex-1 overflow-auto "> {/* Add padding for sidebar */}
         <TopBar />
         <div className="flex flex-col min-h-[calc(100vh-80px)] p-0 bg-white">
           <h1 className="text-2xl font-bold mb-6 pt-8 pl-10">User Feedbacks</h1>
