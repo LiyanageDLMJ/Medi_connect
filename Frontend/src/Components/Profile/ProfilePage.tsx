@@ -144,6 +144,10 @@ const ProfilePage: React.FC = () => {
         if (val !== undefined) formData.append(key, String(val));
       });
       if (selectedFile) formData.append('photo', selectedFile);
+      
+      // Debug: Log what's being sent
+      console.log('Form state being sent:', formState);
+      console.log('Contact number in form state:', formState.contactNumber);
 
       const res = await fetch(`${API_BASE}/profile`, {
         method: 'PUT',
@@ -217,13 +221,16 @@ const ProfilePage: React.FC = () => {
 
   const handleEditProfile = () => {
     if (!profile) return;
-    setFormState({
+    const newFormState = {
       ...profile,
       higherEducation: profile.higherEducation || profile.higher_education || 'no',
       companyType: profile.companyType ?? (profile as any).companyType ?? '',
       instituteType: profile.instituteType ?? (profile as any).instituteType ?? '',
       yearOfStudy: profile.yearOfStudy ?? profile.year_of_study ?? '',
-    });
+      contactNumber: (profile as any).contactNumber ?? '',
+    };
+    console.log('Setting form state:', newFormState); // Debug log
+    setFormState(newFormState);
     setEditing(true);
   };
 
@@ -233,17 +240,25 @@ const ProfilePage: React.FC = () => {
     </div>
   );
 
-  const avatar = selectedFile
-    ? URL.createObjectURL(selectedFile)
-    : profile.photoUrl
-      ? profile.photoUrl // Cloudinary URLs are already complete
-      : DEFAULT_AVATAR;
-
   const normalizedUserType = (profile.userType || '').toLowerCase().replace(/\s/g, '');
   const isDoctor = normalizedUserType === 'doctor';
   const isMedicalStudent = normalizedUserType === 'medicalstudent';
   const isRecruiter = normalizedUserType === 'recruiter';
   const isEducationalInstitute = normalizedUserType === 'educationalinstitute';
+
+  // Get the appropriate name for avatar generation
+  const getAvatarName = () => {
+    if (isRecruiter) {
+      return (profile as any).companyName || 'Recruiter';
+    }
+    return profile.name || 'User';
+  };
+
+  const avatar = selectedFile
+    ? URL.createObjectURL(selectedFile)
+    : profile.photoUrl
+      ? profile.photoUrl // Cloudinary URLs are already complete
+      : `https://ui-avatars.com/api/?name=${encodeURIComponent(getAvatarName())}&size=170&background=184389&color=fff`;
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#fff' }}>
@@ -297,7 +312,9 @@ const ProfilePage: React.FC = () => {
             </>
           )}
         </div>
-        <div style={{ fontWeight: 800, fontSize: 28, marginBottom: 18, letterSpacing: 0.5, textAlign: 'center', lineHeight: 1.2 }}>{profile.name || '-'}</div>
+        <div style={{ fontWeight: 800, fontSize: 28, marginBottom: 18, letterSpacing: 0.5, textAlign: 'center', lineHeight: 1.2 }}>
+          {isRecruiter ? ((profile as any).companyName || '-') : (profile.name || '-')}
+        </div>
         <div style={{ opacity: 0.95, fontSize: 16, marginBottom: 10, textAlign: 'center', wordBreak: 'break-all' }}>{profile.email}</div>
         <div style={{
           background: 'rgba(37,99,235,0.18)',
@@ -374,24 +391,69 @@ const ProfilePage: React.FC = () => {
                   {/* Render user-type-specific fields here, as before (do not change field logic) */}
                   {isDoctor && <>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Full Name</label>
-                      <input name="name" type="text" value={formState.name ?? profile.name ?? ''} onChange={handleChange} required className={styles.inputCard} />
+                      <label htmlFor="doctorName" style={{ fontWeight: 600, marginBottom: 6 }}>Full Name</label>
+                      <input 
+                        id="doctorName"
+                        name="name" 
+                        type="text" 
+                        value={formState.name ?? profile.name ?? ''} 
+                        onChange={handleChange} 
+                        required 
+                        className={styles.inputCard}
+                        placeholder="Enter your full name"
+                      />
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Age</label>
-                      <input name="age" type="number" value={formState.age ?? profile.age ?? ''} onChange={handleChange} required className={styles.inputCard} />
+                      <label htmlFor="doctorAge" style={{ fontWeight: 600, marginBottom: 6 }}>Age</label>
+                      <input 
+                        id="doctorAge"
+                        name="age" 
+                        type="number" 
+                        value={formState.age ?? profile.age ?? ''} 
+                        onChange={handleChange} 
+                        required 
+                        className={styles.inputCard}
+                        placeholder="Enter your age"
+                      />
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Profession</label>
-                      <input name="profession" type="text" value={formState.profession ?? profile.profession ?? ''} onChange={handleChange} required className={styles.inputCard} />
+                      <label htmlFor="profession" style={{ fontWeight: 600, marginBottom: 6 }}>Profession</label>
+                      <input 
+                        id="profession"
+                        name="profession" 
+                        type="text" 
+                        value={formState.profession ?? profile.profession ?? ''} 
+                        onChange={handleChange} 
+                        required 
+                        className={styles.inputCard}
+                        placeholder="Enter your profession"
+                      />
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Specialty</label>
-                      <input name="specialty" type="text" value={formState.specialty ?? profile.specialty ?? ''} onChange={handleChange} required className={styles.inputCard} />
+                      <label htmlFor="specialty" style={{ fontWeight: 600, marginBottom: 6 }}>Specialty</label>
+                      <input 
+                        id="specialty"
+                        name="specialty" 
+                        type="text" 
+                        value={formState.specialty ?? profile.specialty ?? ''} 
+                        onChange={handleChange} 
+                        required 
+                        className={styles.inputCard}
+                        placeholder="Enter your specialty"
+                      />
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Location</label>
-                      <input name="location" type="text" value={formState.location ?? profile.location ?? ''} onChange={handleChange} required className={styles.inputCard} />
+                      <label htmlFor="doctorLocation" style={{ fontWeight: 600, marginBottom: 6 }}>Location</label>
+                      <input 
+                        id="doctorLocation"
+                        name="location" 
+                        type="text" 
+                        value={formState.location ?? profile.location ?? ''} 
+                        onChange={handleChange} 
+                        required 
+                        className={styles.inputCard}
+                        placeholder="Enter your location"
+                      />
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <label style={{ fontWeight: 600, marginBottom: 6 }}>Higher Education Interest</label>
@@ -400,20 +462,54 @@ const ProfilePage: React.FC = () => {
                   </>}
                   {isMedicalStudent && <>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Full Name</label>
-                      <input name="name" type="text" value={formState.name ?? profile.name ?? ''} onChange={handleChange} required className={styles.inputCard} />
+                      <label htmlFor="studentName" style={{ fontWeight: 600, marginBottom: 6 }}>Full Name</label>
+                      <input 
+                        id="studentName"
+                        name="name" 
+                        type="text" 
+                        value={formState.name ?? profile.name ?? ''} 
+                        onChange={handleChange} 
+                        required 
+                        className={styles.inputCard}
+                        placeholder="Enter your full name"
+                      />
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Age</label>
-                      <input name="age" type="number" value={formState.age ?? profile.age ?? ''} onChange={handleChange} required className={styles.inputCard} />
+                      <label htmlFor="studentAge" style={{ fontWeight: 600, marginBottom: 6 }}>Age</label>
+                      <input 
+                        id="studentAge"
+                        name="age" 
+                        type="number" 
+                        value={formState.age ?? profile.age ?? ''} 
+                        onChange={handleChange} 
+                        required 
+                        className={styles.inputCard}
+                        placeholder="Enter your age"
+                      />
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Current Institute</label>
-                      <input name="currentInstitute" type="text" value={formState.currentInstitute ?? profile.currentInstitute ?? ''} onChange={handleChange} required className={styles.inputCard} />
+                      <label htmlFor="currentInstitute" style={{ fontWeight: 600, marginBottom: 6 }}>Current Institute</label>
+                      <input 
+                        id="currentInstitute"
+                        name="currentInstitute" 
+                        type="text" 
+                        value={formState.currentInstitute ?? profile.currentInstitute ?? ''} 
+                        onChange={handleChange} 
+                        required 
+                        className={styles.inputCard}
+                        placeholder="Enter your current institute"
+                      />
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Year of Study</label>
-                      <select name="yearOfStudy" value={formState.yearOfStudy ?? profile.yearOfStudy ?? ''} onChange={handleChange} required className={styles.inputCard}>
+                      <label htmlFor="yearOfStudy" style={{ fontWeight: 600, marginBottom: 6 }}>Year of Study</label>
+                      <select 
+                        id="yearOfStudy"
+                        name="yearOfStudy" 
+                        value={formState.yearOfStudy ?? profile.yearOfStudy ?? ''} 
+                        onChange={handleChange} 
+                        required 
+                        className={styles.inputCard}
+                      >
                         <option value="">Select Year</option>
                         <option value="1">First Year</option>
                         <option value="2">Second Year</option>
@@ -423,12 +519,30 @@ const ProfilePage: React.FC = () => {
                       </select>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Field of Study</label>
-                      <input name="fieldOfStudy" type="text" value={formState.fieldOfStudy ?? profile.fieldOfStudy ?? ''} onChange={handleChange} required className={styles.inputCard} />
+                      <label htmlFor="fieldOfStudy" style={{ fontWeight: 600, marginBottom: 6 }}>Field of Study</label>
+                      <input 
+                        id="fieldOfStudy"
+                        name="fieldOfStudy" 
+                        type="text" 
+                        value={formState.fieldOfStudy ?? profile.fieldOfStudy ?? ''} 
+                        onChange={handleChange} 
+                        required 
+                        className={styles.inputCard}
+                        placeholder="Enter your field of study"
+                      />
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Location</label>
-                      <input name="location" type="text" value={formState.location ?? profile.location ?? ''} onChange={handleChange} required className={styles.inputCard} />
+                      <label htmlFor="studentLocation" style={{ fontWeight: 600, marginBottom: 6 }}>Location</label>
+                      <input 
+                        id="studentLocation"
+                        name="location" 
+                        type="text" 
+                        value={formState.location ?? profile.location ?? ''} 
+                        onChange={handleChange} 
+                        required 
+                        className={styles.inputCard}
+                        placeholder="Enter your location"
+                      />
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <label style={{ fontWeight: 600, marginBottom: 6 }}>Higher Education Interest</label>
@@ -437,12 +551,28 @@ const ProfilePage: React.FC = () => {
                   </>}
                   {isRecruiter && <>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Company Name</label>
-                      <input name="companyName" type="text" value={formState.companyName ?? (profile as any).companyName ?? ''} onChange={handleChange} required className={styles.inputCard} />
+                      <label htmlFor="companyName" style={{ fontWeight: 600, marginBottom: 6 }}>Company Name</label>
+                      <input 
+                        id="companyName"
+                        name="companyName" 
+                        type="text" 
+                        value={formState.companyName ?? (profile as any).companyName ?? ''} 
+                        onChange={handleChange} 
+                        required 
+                        className={styles.inputCard}
+                        placeholder="Enter company name"
+                      />
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Company Type</label>
-                      <select name="companyType" value={(formState.companyType ?? (profile as any).companyType ?? '').toLowerCase()} onChange={handleChange} required className={styles.inputCard}>
+                      <label htmlFor="companyType" style={{ fontWeight: 600, marginBottom: 6 }}>Company Type</label>
+                      <select 
+                        id="companyType"
+                        name="companyType" 
+                        value={(formState.companyType ?? (profile as any).companyType ?? '').toLowerCase()} 
+                        onChange={handleChange} 
+                        required 
+                        className={styles.inputCard}
+                      >
                         <option value="">Select Company Type</option>
                         <option value="hospital">Hospital</option>
                         <option value="clinic">Clinic</option>
@@ -452,22 +582,56 @@ const ProfilePage: React.FC = () => {
                       </select>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Position</label>
-                      <input name="position" type="text" value={formState.position ?? (profile as any).position ?? ''} onChange={handleChange} required className={styles.inputCard} />
+                      <label htmlFor="position" style={{ fontWeight: 600, marginBottom: 6 }}>Position</label>
+                      <input 
+                        id="position"
+                        name="position" 
+                        type="text" 
+                        value={formState.position ?? (profile as any).position ?? ''} 
+                        onChange={handleChange} 
+                        required 
+                        className={styles.inputCard}
+                        placeholder="Enter your position"
+                      />
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Contact Number</label>
-                      <input name="contactNumber" type="text" value={formState.contactNumber ?? (profile as any).contactNumber ?? ''} onChange={handleChange} required className={styles.inputCard} />
+                      <label htmlFor="contactNumber" style={{ fontWeight: 600, marginBottom: 6 }}>Contact Number</label>
+                      <input 
+                        id="contactNumber"
+                        name="contactNumber" 
+                        type="tel" 
+                        value={formState.contactNumber ?? (profile as any).contactNumber ?? ''} 
+                        onChange={handleChange} 
+                        required 
+                        className={styles.inputCard}
+                        placeholder="Enter your contact number"
+                      />
                     </div>
                   </>}
                   {isEducationalInstitute && <>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Institute Name</label>
-                      <input name="instituteName" type="text" value={formState.instituteName ?? (profile as any).instituteName ?? ''} onChange={handleChange} required className={styles.inputCard} />
+                      <label htmlFor="instituteName" style={{ fontWeight: 600, marginBottom: 6 }}>Institute Name</label>
+                      <input 
+                        id="instituteName"
+                        name="instituteName" 
+                        type="text" 
+                        value={formState.instituteName ?? (profile as any).instituteName ?? ''} 
+                        onChange={handleChange} 
+                        required 
+                        className={styles.inputCard}
+                        placeholder="Enter institute name"
+                      />
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Institute Type</label>
-                      <select name="instituteType" value={formState.instituteType ?? (profile as any).instituteType ?? ''} onChange={handleChange} required className={styles.inputCard}>
+                      <label htmlFor="instituteType" style={{ fontWeight: 600, marginBottom: 6 }}>Institute Type</label>
+                      <select 
+                        id="instituteType"
+                        name="instituteType" 
+                        value={formState.instituteType ?? (profile as any).instituteType ?? ''} 
+                        onChange={handleChange} 
+                        required 
+                        className={styles.inputCard}
+                      >
                         <option value="">Select Institute Type</option>
                         <option value="Medical College">Medical College</option>
                         <option value="University">University</option>
@@ -477,18 +641,37 @@ const ProfilePage: React.FC = () => {
                       </select>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Accreditation</label>
-                      <input name="accreditation" type="text" value={formState.accreditation ?? (profile as any).accreditation ?? ''} onChange={handleChange} required className={styles.inputCard} />
+                      <label htmlFor="accreditation" style={{ fontWeight: 600, marginBottom: 6 }}>Accreditation</label>
+                      <input 
+                        id="accreditation"
+                        name="accreditation" 
+                        type="text" 
+                        value={formState.accreditation ?? (profile as any).accreditation ?? ''} 
+                        onChange={handleChange} 
+                        required 
+                        className={styles.inputCard}
+                        placeholder="Enter accreditation"
+                      />
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <label style={{ fontWeight: 600, marginBottom: 6 }}>Established Year</label>
-                      <input name="establishedYear" type="text" value={formState.establishedYear ?? (profile as any).establishedYear ?? ''} onChange={handleChange} required className={styles.inputCard} />
+                      <label htmlFor="establishedYear" style={{ fontWeight: 600, marginBottom: 6 }}>Established Year</label>
+                      <input 
+                        id="establishedYear"
+                        name="establishedYear" 
+                        type="text" 
+                        value={formState.establishedYear ?? (profile as any).establishedYear ?? ''} 
+                        onChange={handleChange} 
+                        required 
+                        className={styles.inputCard}
+                        placeholder="Enter established year"
+                      />
                     </div>
                   </>}
                   {/* After user-type-specific fields, add the Bio field for all user types */}
                   <div style={{ gridColumn: '1 / span 2', display: 'flex', flexDirection: 'column', marginTop: 2 }}>
-                    <label style={{ fontWeight: 600, marginBottom: 6 }}>Bio</label>
+                    <label htmlFor="bio" style={{ fontWeight: 600, marginBottom: 6 }}>Bio</label>
                     <textarea
+                      id="bio"
                       name="bio"
                       value={formState.bio ?? profile.bio ?? ''}
                       onChange={handleChange}

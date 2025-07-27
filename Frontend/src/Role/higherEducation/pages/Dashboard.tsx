@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Sidebar from "../components/Sidebar";
 
 const InstitutionDashboard: React.FC = () => {
-  const [profile, setProfile] = useState<{ name?: string; userType?: string }>({});
+  const [profile, setProfile] = useState<{ name?: string; userType?: string; instituteName?: string }>({});
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
@@ -23,7 +23,7 @@ const InstitutionDashboard: React.FC = () => {
       <div style={{ flex: 1, padding: '2rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '2rem' }}>
           <div>
-            <h1 style={{ fontSize: '2.5rem', fontWeight: 700, color: '#374151' }}>Welcome, {profile.name || 'Educational Institution'}!</h1>
+            <h1 style={{ fontSize: '2.5rem', fontWeight: 700, color: '#374151' }}>Welcome, {(profile as any).instituteName || profile.name || 'Educational Institution'}!</h1>
             <p style={{ color: '#64748b', fontSize: '1.2rem' }}>{profile.userType ? `Role: ${profile.userType}` : 'Manage your programs, connect with students, and post opportunities.'}</p>
           </div>
         </div>

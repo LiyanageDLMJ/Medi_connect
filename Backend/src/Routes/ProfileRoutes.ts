@@ -94,6 +94,8 @@ router.put('/', mockAuth, upload.single('photo'), async (req: AuthRequest, res: 
     if (!userId) return res.status(401).json({ message: 'Unauthenticated' });
     
     const updateData: any = { ...req.body };
+    console.log('Profile update request for user', userId, 'with data:', updateData); // DEBUG LOG
+    console.log('Contact number in request:', updateData.contactNumber); // DEBUG LOG for contact number
     // Fix: Convert 'resetPasswordExpires' string 'null' to actual null
     if (updateData.resetPasswordExpires === 'null') {
       updateData.resetPasswordExpires = null;
@@ -148,6 +150,7 @@ router.put('/', mockAuth, upload.single('photo'), async (req: AuthRequest, res: 
     }
     
     const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true }).lean();
+    console.log('Updated user contact number:', (updatedUser as any)?.contactNumber); // DEBUG LOG
 
     // Map currentInstitute to school for MedicalStudent
     if (updatedUser && updatedUser.userType === 'MedicalStudent') {

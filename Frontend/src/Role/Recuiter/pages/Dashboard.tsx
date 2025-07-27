@@ -5,7 +5,10 @@ import { useEffect, useState } from "react"
 import { Bell, Search, ClipboardList, MessageSquare } from "lucide-react"
 import Sidebar from "../components/NavBar/Sidebar" // Corrected import path
 
-const DEFAULT_AVATAR = "https://ui-avatars.com/api/?name=User"
+const getDefaultAvatar = (companyName?: string) => {
+  const name = companyName || 'Recruiter';
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&size=32&background=184389&color=fff`;
+};
 
 const RecruiterHospitalDashboard: React.FC = () => {
   const [recruiterProfile, setRecruiterProfile] = useState<{ companyName?: string; photoUrl?: string }>({});
@@ -58,7 +61,7 @@ const RecruiterHospitalDashboard: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                <img src={recruiterProfile.photoUrl || DEFAULT_AVATAR} alt="User avatar" className="object-cover w-8 h-8" />
+                <img src={recruiterProfile.photoUrl || getDefaultAvatar(recruiterProfile.companyName)} alt="User avatar" className="object-cover w-8 h-8" />
               </div>
               <div>
                 <p className="font-semibold text-gray-700">{recruiterProfile.companyName || "Recruiter"}</p>

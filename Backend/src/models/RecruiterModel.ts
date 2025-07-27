@@ -9,7 +9,7 @@ const recruiterSchema = new mongoose.Schema({
   companyType: {
     type: String,
     required: true,
-    enum: ['hospital', 'clinic', 'pharmaceutical', 'other'],
+    enum: ['hospital', 'clinic', 'pharmaceutical', 'medical device', 'other'],
   },
   position: {
     type: String,

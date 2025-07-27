@@ -411,31 +411,23 @@ const MessageBox: React.FC = () => {
   const handleSendMessage = async (text: string, file?: { url: string; type: string }) => {
     const socket = getSocket();
     if (!socket || !selectedUserId || !currentUserId) return;
+    
+    // Create a temporary message for immediate display
+    const tempMessage: Message = {
+      id: `temp_${Date.now()}`,
+      senderId: currentUserId,
+      receiverId: selectedUserId,
+      content: text,
+      fileUrl: file?.url,
+      fileType: file?.type,
+      timestamp: new Date().toISOString(),
+    };
+    
     try {
-      // Create a temporary message for immediate display
-      const tempMessage: Message = {
-        id: `temp_${Date.now()}`,
-        senderId: currentUserId,
-        receiverId: selectedUserId,
-        content: text,
-        fileUrl: file?.url,
-        fileType: file?.type,
-        timestamp: new Date().toISOString(),
-      };
       setMessages(prev => [...prev, tempMessage]);
       upsertLatestMessage(tempMessage);
-      const res = await fetch(`${API_BASE}/messages`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          senderId: currentUserId,
-          receiverId: selectedUserId,
-          content: text,
-          fileUrl: file?.url,
-          fileType: file?.type,
-        }),
-      });
-      if (!res.ok) throw new Error('Failed to send message');
+      
+      // Send message through socket only (removes duplicate database saves)
       socket.emit('send_message', {
         to: selectedUserId,
         from: currentUserId,
@@ -444,8 +436,14 @@ const MessageBox: React.FC = () => {
         fileType: file?.type,
         userType: users.find(u => u.id === currentUserId)?.userType || localStorage.getItem('userType') || '',
       });
-      refreshLatestMessages();
+      
+      // Add a small delay to ensure backend has processed the message before refreshing
+      setTimeout(() => {
+        refreshLatestMessages();
+      }, 500);
     } catch (err) {
+      // Remove the temporary message if sending failed
+      setMessages(prev => prev.filter(m => m.id !== tempMessage.id));
       showToastMessage('Failed to send message. Please try again.');
     }
   };
@@ -455,7 +453,7 @@ const MessageBox: React.FC = () => {
     if (!currentUserId) return;
     const socket = getSocket();
     if (!socket) return;
-    const handler = (data: any) => {
+    const handler = async (data: any) => {
       if (data.to !== currentUserId && data.from !== currentUserId) return;
       const incoming: Message = {
         id: data._id || `m${Date.now()}`,
@@ -466,13 +464,33 @@ const MessageBox: React.FC = () => {
         fileType: data.fileType,
         timestamp: data.createdAt || new Date().toISOString(),
       };
+      
+      // If sender is not in users list, fetch and add them
+      if (data.from !== currentUserId && !users.find(u => u.id === data.from)) {
+        try {
+          const res = await fetch(`${API_BASE}/users/${data.from}`);
+          if (res.ok) {
+            const u = await res.json();
+            const newUser = {
+              id: u._id,
+              name: u.userType === 'Recruiter' ? (u.companyName || 'Unnamed') : (u.name || 'Unnamed'),
+              userType: u.userType,
+              email: u.email,
+              companyName: u.companyName || undefined,
+              photoUrl: u.photoUrl || undefined,
+            };
+            setUsers(prev => [...prev, newUser]);
+          }
+        } catch (e) { /* ignore */ }
+      }
+      
       upsertLatestMessage(incoming);
     };
     socket.on('receive_message', handler);
     return () => {
       socket.off('receive_message', handler);
     };
-  }, [currentUserId, selectedUserId]);
+  }, [currentUserId, selectedUserId, users]);
 
   // Filter current conversation and sort by timestamp
   const conversationMessages = messages
@@ -610,6 +628,7 @@ const MessageBox: React.FC = () => {
             }
           }}
           unreadCounts={unreadCounts}
+          messages={messages}
           latestMessages={latestMessages}
           currentUserId={currentUserId}
         />
