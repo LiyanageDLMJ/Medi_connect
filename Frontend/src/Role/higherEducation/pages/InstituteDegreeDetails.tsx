@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import  { useState, useEffect } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Sidebar from "../components/Sidebar";
@@ -83,64 +83,64 @@ const InstituteDegreeDetails: React.FC = () => {
     return <span className={`px-2 py-1 text-xs font-semibold text-white rounded ${color}`}>{text}</span>;
   };
 
-  // Add mockApplicants definition back
-  const mockApplicants: Array<{
-    id: string;
-    name: string;
-    profilePic: string;
-    status: string;
-    appliedDate: string;
-    currentEducation: string;
-  }> = [
-    {
-      id: "1",
-      name: "Jake Gyll",
-      profilePic: "",
-      status: "PENDING",
-      appliedDate: "13 July, 2021",
-      currentEducation: "BSc Biology, 3rd Year",
-    },
-    {
-      id: "2",
-      name: "Cymdy Lillibridge",
-      profilePic: "",
-      status: "APPROVED",
-      appliedDate: "12 July, 2021",
-      currentEducation: "MBBS Graduate",
-    },
-    {
-      id: "3",
-      name: "Rodolfo Goode",
-      profilePic: "",
-      status: "REJECTED",
-      appliedDate: "11 July, 2021",
-      currentEducation: "BSc Microbiology, 2nd Year",
-    },
-    {
-      id: "4",
-      name: "Leif Floyd",
-      profilePic: "",
-      status: "APPROVED",
-      appliedDate: "11 July, 2021",
-      currentEducation: "BSc Chemistry, 4th Year",
-    },
-    {
-      id: "5",
-      name: "Jenny Wilson",
-      profilePic: "",
-      status: "APPROVED",
-      appliedDate: "9 July, 2021",
-      currentEducation: "BSc Biochemistry, 3rd Year",
-    },
-    {
-      id: "6",
-      name: "Jerome Bell",
-      profilePic: "",
-      status: "PENDING",
-      appliedDate: "5 July, 2021",
-      currentEducation: "BSc Medical Science, 2nd Year",
-    },
-  ];
+  // // Add mockApplicants definition back
+  // const mockApplicants: Array<{
+  //   id: string;
+  //   name: string;
+  //   profilePic: string;
+  //   status: string;
+  //   appliedDate: string;
+  //   currentEducation: string;
+  // }> = [
+  //   {
+  //     id: "1",
+  //     name: "Jake Gyll",
+  //     profilePic: "",
+  //     status: "PENDING",
+  //     appliedDate: "13 July, 2021",
+  //     currentEducation: "BSc Biology, 3rd Year",
+  //   },
+  //   {
+  //     id: "2",
+  //     name: "Cymdy Lillibridge",
+  //     profilePic: "",
+  //     status: "APPROVED",
+  //     appliedDate: "12 July, 2021",
+  //     currentEducation: "MBBS Graduate",
+  //   },
+  //   {
+  //     id: "3",
+  //     name: "Rodolfo Goode",
+  //     profilePic: "",
+  //     status: "REJECTED",
+  //     appliedDate: "11 July, 2021",
+  //     currentEducation: "BSc Microbiology, 2nd Year",
+  //   },
+  //   {
+  //     id: "4",
+  //     name: "Leif Floyd",
+  //     profilePic: "",
+  //     status: "APPROVED",
+  //     appliedDate: "11 July, 2021",
+  //     currentEducation: "BSc Chemistry, 4th Year",
+  //   },
+  //   {
+  //     id: "5",
+  //     name: "Jenny Wilson",
+  //     profilePic: "",
+  //     status: "APPROVED",
+  //     appliedDate: "9 July, 2021",
+  //     currentEducation: "BSc Biochemistry, 3rd Year",
+  //   },
+  //   {
+  //     id: "6",
+  //     name: "Jerome Bell",
+  //     profilePic: "",
+  //     status: "PENDING",
+  //     appliedDate: "5 July, 2021",
+  //     currentEducation: "BSc Medical Science, 2nd Year",
+  //   },
+  // ];
 
   // Open modal and prefill form
   const handleEditOpen = () => {
@@ -208,7 +208,7 @@ const InstituteDegreeDetails: React.FC = () => {
       <Sidebar />
       <div className="flex-1 overflow-auto">
         <TopBar />
-        <div className="flex flex-col p-6 md:pl-72 gap-6">
+        <div className="flex flex-col p-6  gap-6">
           {/* Header Row: Back button + Degree Name + Status */}
           <div className="flex items-center gap-4 mb-2">
             <button
@@ -267,10 +267,10 @@ const InstituteDegreeDetails: React.FC = () => {
                       )}
                     </div>
                     <div className="w-full md:pr-48 md:pl-0 md:pt-0 break-words">
-                      <h2 className="font-semibold text-lg mb-2">Description</h2>
-                      <p className="text-gray-700 mb-4">{degree.description}</p>
-                      <h3 className="font-semibold mb-1">Eligibility</h3>
-                      <p className="text-gray-700 mb-4">{degree.eligibility}</p>
+                    <h2 className="font-semibold text-lg mb-2">Description</h2>
+                    <p className="text-gray-700 mb-4">{degree.description}</p>
+                    <h3 className="font-semibold mb-1">Eligibility</h3>
+                    <p className="text-gray-700 mb-4">{degree.eligibility}</p>
                       <h3 className="font-semibold mb-1">Skills Required</h3>
                       <p className="text-gray-700 mb-4">{degree.skillsRequired ? degree.skillsRequired : <span className="italic text-gray-400">Not specified</span>}</p>
                     </div>
@@ -279,14 +279,14 @@ const InstituteDegreeDetails: React.FC = () => {
                   <div className="bg-white rounded-xl shadow p-6 mb-6">
                     <h2 className="font-semibold text-lg mb-4">Perks & Benefits</h2>
                     {degree.perks && degree.perks.length > 0 ? (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {degree.perks.map((perk: string, idx: number) => (
-                          <div key={idx} className="flex items-center gap-3">
-                            <span className="bg-blue-100 text-blue-600 p-2 rounded-full">✅</span>
-                            <span>{perk}</span>
-                          </div>
-                        ))}
-                      </div>
+                        <div key={idx} className="flex items-center gap-3">
+                          <span className="bg-blue-100 text-blue-600 p-2 rounded-full">✅</span>
+                          <span>{perk}</span>
+                        </div>
+                      ))}
+                    </div>
                     ) : (
                       <p className="text-gray-500">No perks or benefits listed for this degree.</p>
                     )}
@@ -362,51 +362,51 @@ const InstituteDegreeDetails: React.FC = () => {
                 ) : applicantsError ? (
                   <div className="text-red-600">{applicantsError}</div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full bg-white border border-gray-200 rounded-lg">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="p-3 text-left">Applicant</th>
-                          <th className="p-3 text-left">Current Education</th>
-                          <th className="p-3 text-left">Status</th>
-                          <th className="p-3 text-left">Applied Date</th>
-                          <th className="p-3 text-left">Action</th>
-                        </tr>
-                      </thead>
-                      <tbody>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full bg-white border border-gray-200 rounded-lg">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="p-3 text-left">Applicant</th>
+                        <th className="p-3 text-left">Current Education</th>
+                        <th className="p-3 text-left">Status</th>
+                        <th className="p-3 text-left">Applied Date</th>
+                        <th className="p-3 text-left">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
                         {applicants.length === 0 ? (
                           <tr><td colSpan={5} className="text-center p-4">No applicants found.</td></tr>
                         ) : (
                           applicants.map((applicant) => (
-                            <tr key={applicant.id} className="hover:bg-gray-50">
-                              <td className="p-3">
-                                <div className="flex items-center gap-3">
-                                  <img
+                        <tr key={applicant.id} className="hover:bg-gray-50">
+                          <td className="p-3">
+                            <div className="flex items-center gap-3">
+                              <img
                                     src={applicant.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(applicant.name || 'Applicant')}`}
-                                    alt={applicant.name}
-                                    className="w-8 h-8 rounded-full object-cover border"
+                                alt={applicant.name}
+                                className="w-8 h-8 rounded-full object-cover border"
                                     onError={e => { (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(applicant.name || 'Applicant')}`; }}
-                                  />
-                                  <span className="font-medium">{applicant.name}</span>
-                                </div>
-                              </td>
+                              />
+                              <span className="font-medium">{applicant.name}</span>
+                            </div>
+                          </td>
                               <td className="p-3">{applicant.currentEducation || '-'}</td>
-                              <td className="p-3">{statusBadge(applicant.status)}</td>
-                              <td className="p-3">{applicant.appliedDate}</td>
-                              <td className="p-3 text-sm font-medium flex items-center gap-2">
+                          <td className="p-3">{statusBadge(applicant.status)}</td>
+                          <td className="p-3">{applicant.appliedDate}</td>
+                          <td className="p-3 text-sm font-medium flex items-center gap-2">
                                 <button
                                   onClick={() => navigate(`/higher-education/degree-listing/view-applications/${applicant.id}`)}
                                   className="bg-blue-100 text-blue-700 px-4 py-2 rounded hover:bg-blue-200 border border-blue-200"
                                 >
-                                  See Application
-                                </button>
-                              </td>
-                            </tr>
+                              See Application
+                            </button>
+                          </td>
+                        </tr>
                           ))
                         )}
-                      </tbody>
-                    </table>
-                  </div>
+                    </tbody>
+                  </table>
+                </div>
                 )}
               </div>
             )}

@@ -1,5 +1,5 @@
 // src/Role/Physician/pages/DegreeApplicationForm.tsx
-import React, { useState, FormEvent, ChangeEvent } from "react";
+import  { useState, FormEvent, ChangeEvent } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 // Define interfaces for type safety

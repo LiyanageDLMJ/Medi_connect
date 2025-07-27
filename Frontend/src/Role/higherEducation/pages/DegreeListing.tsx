@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { FiFilter, FiGlobe } from "react-icons/fi";
 import { FaCalendarAlt } from "react-icons/fa";
@@ -209,7 +209,7 @@ const DegreeListing: React.FC = () => {
   return (
     <div className="flex h-screen">
       <Sidebar />
-      <div className="flex-1 overflow-auto md:pl-64">
+      <div className="flex-1 overflow-auto ">
         <TopBar />
         <div className="p-4 flex flex-col min-h-screen">
           <div className="flex items-center bg-white px-3 py-1 rounded-t-lg border-gray-200">

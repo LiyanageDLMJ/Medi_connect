@@ -1,6 +1,6 @@
 
 
-import React, { useState } from "react";
+import  { useState } from "react";
 import Sidebar from "../components/Sidebar";
 import TopBar from "../components/TopBar";
 import FiltersBar from "../components/insights/FiltersBar";
@@ -21,7 +21,7 @@ const PerformanceInsights: React.FC = () => {
       <Sidebar />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col pl-0 md:pl-64">
+      <div className="flex-1 flex flex-col pl-0 ">
         <TopBar />
         <div className="flex items-center justify-between mb-2 px-8">
           <h1 className="text-3xl font-bold">Performance Insights</h1>

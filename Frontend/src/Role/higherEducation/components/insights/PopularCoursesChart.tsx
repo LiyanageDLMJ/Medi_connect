@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import  { useEffect, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 type PopularCoursesChartProps = {
@@ -28,20 +28,20 @@ const PopularCoursesChart: React.FC<PopularCoursesChartProps> = ({ dateRange }) 
       ) : error ? (
         <div className="text-red-500">{error}</div>
       ) : (
-        <ResponsiveContainer width="100%" height={320}>
+      <ResponsiveContainer width="100%" height={320}>
           <BarChart data={data}>
-            <XAxis
-              dataKey="name"
-              angle={-15}
-              textAnchor="end"
-              interval={0}
-              height={70}
-            />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="applications" fill="#3b82f6" />
-          </BarChart>
-        </ResponsiveContainer>
+          <XAxis
+            dataKey="name"
+            angle={-15}
+            textAnchor="end"
+            interval={0}
+            height={70}
+          />
+          <YAxis />
+          <Tooltip />
+          <Bar dataKey="applications" fill="#3b82f6" />
+        </BarChart>
+      </ResponsiveContainer>
       )}
     </div>
   );

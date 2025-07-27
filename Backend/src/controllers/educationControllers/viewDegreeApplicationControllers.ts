@@ -9,9 +9,11 @@ export const viewDegreeApplications: RequestHandler = async (req: Request, res: 
       fromDate, 
       toDate, 
       degreeId,
-      search 
+      search,
+      institutionId: queryInstitutionId
     } = req.query;
 
+    const institutionId = queryInstitutionId || req.headers['x-user-id'];
     // Build filter object
     const filter: any = {};
 
@@ -34,6 +36,13 @@ export const viewDegreeApplications: RequestHandler = async (req: Request, res: 
     // Degree program filter
     if (degreeId) {
       filter.degreeId = degreeId;
+    }
+
+    // Institution filter
+    if (institutionId) {
+      // Find all degrees for this institution
+      const degrees = await Degree.find({ institutionId }).select('courseId');
+      filter.degreeId = { $in: degrees.map(d => d.courseId) };
     }
 
     // Search filter (name, email, or degree name)

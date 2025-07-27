@@ -34,10 +34,17 @@ export const createDegree: AsyncRequestHandler = async (req, res, next) => {
       institution = "ABC Institute"; // TEMP: fallback for development
     }
 
+    const institutionId = req.headers['x-user-id'] || (req as any).user?._id;
+    if (!institutionId) {
+      res.status(401).json({ message: "Unauthorized: institution id missing" });
+      return;
+    }
+
     // Prepare the degree data
-    const degreeData: Partial<IDegree> = {
+    const degreeData = {
       degreeName,
       institution, // Set automatically
+      institutionId,
       status,
       mode,
       applicationDeadline: new Date(applicationDeadline), // Convert string to Date
@@ -49,7 +56,7 @@ export const createDegree: AsyncRequestHandler = async (req, res, next) => {
       description,
       skillsRequired,
       perks,
-    };
+    } as Partial<IDegree>;
 
     // Convert perks to array if needed
     let perksArray = req.body.perks;
@@ -89,14 +96,24 @@ export const createDegree: AsyncRequestHandler = async (req, res, next) => {
   } catch (error: any) {
     console.error("Error creating degree:", error);
     res.status(500).json({ message: 'Error creating degree', error: error.message });
+    return;
   }
 };
 
 export const updateDegree: AsyncRequestHandler = async (req, res, next) => {
   try {
+    const institutionId = req.headers['x-user-id'] || (req as any).user?._id;
+    if (!institutionId) {
+      res.status(401).json({ message: "Unauthorized: institution id missing" });
+      return;
+    }
     const degree = await Degree.findById(req.params.id);
     if (!degree) {
       res.status(404).json({ message: 'Degree not found' });
+      return;
+    }
+    if (degree.institutionId !== institutionId) {
+      res.status(403).json({ message: 'Forbidden: You can only update your own degrees' });
       return;
     }
 
@@ -131,11 +148,12 @@ export const updateDegree: AsyncRequestHandler = async (req, res, next) => {
       }
     }
 
-    const updatedDegree = await Degree.findByIdAndUpdate(req.params.id, updateData, { new: true });
-    res.status(200).json(updatedDegree);
+    await Degree.findByIdAndUpdate(req.params.id, updateData, { new: true });
+    res.status(200).json({ message: 'Degree updated successfully' });
+    return;
   } catch (error: any) {
-    console.error("Error updating degree:", error);
     res.status(500).json({ message: 'Error updating degree', error: error.message });
+    return;
   }
 };
 
@@ -151,8 +169,10 @@ export const getAllDegrees: AsyncRequestHandler = async (req, res, next) => {
       startDate,
       endDate,
       instituteOnly = 'false',
+      institutionId: queryInstitutionId
     } = req.query;
 
+    const institutionId = queryInstitutionId || req.headers['x-user-id'];
     const query: any = {};
 
     if (searchQuery) {
@@ -186,6 +206,9 @@ export const getAllDegrees: AsyncRequestHandler = async (req, res, next) => {
         $gte: new Date(startDate as string),
         $lte: new Date(endDate as string),
       };
+    }
+    if (institutionId) {
+      query.institutionId = institutionId;
     }
 
     const total = await Degree.countDocuments(query);

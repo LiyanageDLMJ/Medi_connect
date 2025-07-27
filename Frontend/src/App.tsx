@@ -1,4 +1,4 @@
-import { Route ,Outlet,Routes} from "react-router-dom";
+import { Route,Outlet,Routes } from "react-router-dom";
 
 import JobInternshipSearch from "./Role/Physician/pages/JobInternshipSearch";
 import HigherEducationSearch from "./Role/Physician/pages/HigherEducationSearch";
@@ -37,20 +37,18 @@ import InstituteDegreeDetails from "./Role/higherEducation/pages/InstituteDegree
 import Feedbacks from "./Role/higherEducation/pages/Feedbackslist";
 
 import Dashborad from "./Role/higherEducation/pages/dashborad";
+import './App.css'; // ✅ if App.css is in the same folder as App.tsx
 
 import Dashboard from "./Role/Physician/pages/Doctordashboard";
 import RecruiterDashboard from "./Role/Recuiter/pages/Dashboard";
 import { FormProvider } from "./context/FormContext";
-import MedicalStudentDashboard from "./Role/Physician/pages/MedicalStudentDashboard";
 import Cvcompare from "./Role/Physician/pages/Cvcompare";
-import PostDegree from "./Role/higherEducation/pages/PostDegree";
 import FAQ from "./Components/FAQ/FAQ";
 import PerformanceInsights from "./Role/higherEducation/pages/PerformanceInsights";
 import FloatingFeedbackButton from "./Components/Feedback/FloatingFeedbackButton";
 import FAQAdd from "./Role/Admin/pages/FAQAdd";
 import AdminFeedbacks from "./Role/Admin/pages/AdminFeedbacks";
 
-import Cvcompare  from "./Role/Physician/pages/Cvcompare";
 import { Toaster } from 'react-hot-toast';
 const App = () => {
   return (
@@ -71,42 +69,40 @@ const App = () => {
           <Route path="/forgot-password" element={<ForgotPassword />} />
         </Route>
 
-      {/* Without Footer Routes */}
-      <Route element={<><Outlet /></>}>
+        {/* Without Footer Routes */}
+        <Route element={<><Outlet /></>}>
+          {/* Medical Student Routes */}
+          <Route path="/medical_student">
+            <Route path="dashboard" element={<MedicalStudentDashboard />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="messages" element={<Messages />} />
+            <Route path="update-profile" element={<ProfilePage />} />
+            <Route path="message-box" element={<Messages />} />
+          </Route>
 
-        {/* Medical Student Routes */}
-        <Route path="/medical_student">
-          <Route path="dashboard" element={<MedicalStudentDashboard />} />
-          <Route path="profile" element={<ProfilePage />} />
-          <Route path="messages" element={<Messages />} />
-          <Route path="update-profile" element={<ProfilePage />} />
-          <Route path="message-box" element={<Messages />} />
-        </Route>
-
-        {/* Physician Routes */}
-        <Route path="/physician">
-          <Route path="Doctordashboard" element={<DoctorDashboard />} />
-          <Route path="dashboard" element={<DoctorDashboard />} />
-          <Route path="higher-education" element={<HigherEducationSearch />} />
-          <Route path="job-internship" element={<JobInternshipSearch />} />
-          <Route path="job-application/:jobId" element={<JobApplicationForm />} /> {/* Add :jobId parameter */}
-          <Route path="profile" element={<ProfilePage />} />
-          <Route path="job-application" element={<JobApplicationForm />} />
-          <Route path="job-internship/:jobId" element={<JobInternshipDetails />} />
-          <Route path="update-cv01" element={<UpdateCV01 />} />
-          <Route path="update-cv02" element={<UpdateCV02 />} />
-          <Route path="update-cv03" element={<UpdateCV03 />} />
-          <Route path="job-details/:jobId" element={<JobInternshipDetails />} />
-          <Route path="Cvcompare" element={<Cvcompare />} />
-          <Route path="degreeapplication" element={<DegreeApplication />} />
-          <Route path="degree-details/:id" element={<DegreeDetails />} />
-
-          <Route path="job-application-tracker" element={<JobApplicationTracker />} />
-          <Route path="medical-student-dashboard" element={<MedicalStudentDashboard />} />
-          <Route path="messages" element={<Messages />} />
-          <Route path="update-profile" element={<ProfilePage />} />
-          <Route path="message-box" element={<Messages />} />
-        </Route>
+          {/* Physician Routes */}
+          <Route path="/physician">
+            <Route path="Doctordashboard" element={<DoctorDashboard />} />
+            <Route path="dashboard" element={<DoctorDashboard />} />
+            <Route path="higher-education" element={<HigherEducationSearch />} />
+            <Route path="job-internship" element={<JobInternshipSearch />} />
+            <Route path="job-application/:jobId" element={<JobApplicationForm />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="job-application" element={<JobApplicationForm />} />
+            <Route path="job-internship/:jobId" element={<JobInternshipDetails />} />
+            <Route path="update-cv01" element={<UpdateCV01 />} />
+            <Route path="update-cv02" element={<UpdateCV02 />} />
+            <Route path="update-cv03" element={<UpdateCV03 />} />
+            <Route path="job-details/:jobId" element={<JobInternshipDetails />} />
+            <Route path="Cvcompare" element={<Cvcompare />} />
+            <Route path="degreeapplication" element={<DegreeApplication />} />
+            <Route path="degree-details/:id" element={<DegreeDetails />} />
+            <Route path="job-application-tracker" element={<JobApplicationTracker />} />
+            <Route path="medical-student-dashboard" element={<MedicalStudentDashboard />} />
+            <Route path="messages" element={<Messages />} />
+            <Route path="update-profile" element={<ProfilePage />} />
+            <Route path="message-box" element={<Messages />} />
+          </Route>
 
           {/* Higher Education Routes */}
           <Route path="/higher-education">
@@ -118,55 +114,42 @@ const App = () => {
             <Route path="degree-listing/feedbackslist" element={<Feedbacks />} />
             <Route path="dashboard" element={<Dashborad />} />
             <Route path="performance-insights" element={<PerformanceInsights />} />
-            {/* Add this route to support navigation from applicants table */}
             <Route path="degree-listing/view-applications/:id" element={<SeeApplication />} />
+            <Route path="deshboard" element={<Dashborad />} />
+            <Route path="update-profile" element={<ProfilePage />} />
+            <Route path="message-box" element={<Messages />} />
           </Route>
+
+          {/* Recruiter Routes */}
+          <Route path="/recruiter">
+            <Route path="dashboard" element={<RecruiterDashboard />} />
+            <Route path="jobPost" element={<JobPost />} />
+            <Route path="JobListing" element={<JobListing />} />
+            <Route path="ViewCandidates" element={<ViewCandidates />} />
+            <Route path="Messages" element={<Messages />} />
+            <Route path="Dashborad" element={<Dashborad />} />
+            <Route path="jobListing" element={<JobListing />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="update-profile" element={<ProfilePage />} />
+            <Route path="messages" element={<Messages />} />
+            <Route path="message-box" element={<Messages />} />
+          </Route>
+
+          {/* Admin Routes */}
           <Route path="/admin">
             <Route path="messages" element={<Messages />} />
-           
             <Route path="dashboard" element={<DashboradAdmin />} />
             <Route path="performance-insights" element={<PerformanceInsights />} />
             <Route path="faq-add" element={<FAQAdd />} />
             <Route path="feedbacks" element={<AdminFeedbacks />} />
-         
           </Route>
-            <Route path="deshboard" element={<Dashborad />} />
-          </Route>
-        {/* Higher Education Routes */}
-        <Route path="/higher-education">
-          <Route path="dashboard" element={<InstitutionDashboard />} />
-          <Route path="messages" element={<Messages />} />
-          <Route path="view-applications" element={<ViewApplications />} />
-          <Route path="degree-listing" element={<DegreeListing />} />
-          <Route path="deshboard" element={<Dashborad />} />
-          <Route path="update-profile" element={<ProfilePage />} />
-          <Route path="message-box" element={<Messages />} />
+
+          {/* Standalone Routes */}
+          <Route path="/postdegree" element={<PostDegree />} />
+          <Route path="/faq" element={<FAQ />} />
         </Route>
-
-        {/* Recruiter Routes */}
-        <Route path="/recruiter">
-          <Route path="dashboard" element={<RecruiterDashboard />} />
-          <Route path="jobPost" element={<JobPost />} />
-          <Route path="JobListing" element={<JobListing />} />
-          <Route path="ViewCandidates" element={<ViewCandidates />} />
-          <Route path="Messages" element={<Messages />} />
-          <Route path="Dashborad" element={<Dashborad />} />
-          <Route path="jobListing" element={<JobListing />} />
-          <Route path="profile" element={<ProfilePage />} />
-          <Route path="update-profile" element={<ProfilePage />} />
-          <Route path="messages" element={<Messages />} />
-          <Route path="message-box" element={<Messages />} />
-        </Route>
-
-  
-        
-        <Route path="/postdegree" element={<PostDegree />} />
-        <Route path="/faq" element={<FAQ />} />
- 
-
-      </Route>
-    </Routes>
-    <FloatingFeedbackButton />
+      </Routes>
+      <FloatingFeedbackButton />
     </FormProvider>
   );
 };

@@ -6,6 +6,7 @@ export interface IDegree extends Document {
   courseId: number;
   degreeName: string;
   institution: string;
+  institutionId: string;
   status: string;
   mode: string;
   applicationDeadline: Date;
@@ -49,6 +50,10 @@ const DegreeSchema: Schema = new Schema(
       type: String,
       required: [true, "Institution is required"],
       trim: true,
+    },
+    institutionId: {
+      type: String,
+      required: true,
     },
     status: {
       type: String,

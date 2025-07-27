@@ -1,6 +1,7 @@
-import React from "react";
+import * as React from "react";
 import styled from "styled-components";
 import { FaLinkedin, FaInstagram, FaFacebook, FaMapMarkerAlt, FaPhone, FaEnvelope } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 interface StyledLinkProps {
   href?: string;
@@ -178,7 +179,7 @@ const Footer = () => {
           <FooterTitle>Support</FooterTitle>
           <FooterLink href="#">Students</FooterLink>
           <FooterLink href="#">Contact Us</FooterLink>
-          <FooterLink href="#">FAQs</FooterLink>
+          <FooterLink as={Link} to="/faq">FAQs</FooterLink>
           <FooterLink href="#">Privacy Policy</FooterLink>
           <FooterLink href="#">Terms and Conditions</FooterLink>
         </FooterColumn>

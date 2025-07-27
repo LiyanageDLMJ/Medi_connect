@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import  { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import TopBar from "../components/TopBar";
@@ -43,25 +43,25 @@ const SeeApplication: React.FC = () => {
   if (error || !applicant) return <div>Error: {error || "Application not found"}</div>;
 
   // Helper for status color
-  function getStatusColor(status: string) {
-    switch (status) {
-      case "Approved":
-        return "bg-green-100 text-green-700";
-      case "Pending":
-        return "bg-yellow-100 text-yellow-700";
-      case "Rejected":
-        return "bg-red-100 text-red-700";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
+function getStatusColor(status: string) {
+  switch (status) {
+    case "Approved":
+      return "bg-green-100 text-green-700";
+    case "Pending":
+      return "bg-yellow-100 text-yellow-700";
+    case "Rejected":
+      return "bg-red-100 text-red-700";
+    default:
+      return "bg-gray-100 text-gray-700";
   }
+}
 
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
       <div className="flex-1 overflow-auto">
         <TopBar />
-        <div className="flex flex-col md:flex-row p-6 md:pl-72 gap-6">
+        <div className="flex flex-col md:flex-row p-6 gap-6">
           {/* Left Panel: Summary/Contact */}
           <div className="w-full md:w-1/3 bg-white rounded-xl shadow p-8 flex flex-col items-center border border-gray-100">
             <img
@@ -108,9 +108,9 @@ const SeeApplication: React.FC = () => {
                 {user?.linkedIn && (
                   <div className="flex items-center gap-2 text-blue-600">
                     <span className="font-medium">LinkedIn:</span> <a href={user.linkedIn} target="_blank" rel="noopener noreferrer" className="hover:underline">{user.linkedIn}</a>
-                  </div>
-                )}
-              </div>
+                </div>
+              )}
+            </div>
             </div>
           </div>
           {/* Right Panel: Detailed Profile */}
@@ -138,11 +138,11 @@ const SeeApplication: React.FC = () => {
                   {/* Personal Info Section */}
                   <h3 className="font-semibold mb-2 text-lg text-gray-700">Personal Info</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 mb-6 text-gray-700 text-sm">
-                    <div>
-                      <div className="text-xs text-gray-500">Full Name</div>
+                <div>
+                  <div className="text-xs text-gray-500">Full Name</div>
                       <div className="font-medium">{user?.name || applicant.name}</div>
-                    </div>
-                    <div>
+                </div>
+                <div>
                       <div className="text-xs text-gray-500">Gender</div>
                       <div className="font-medium">{user?.gender || ""}</div>
                     </div>

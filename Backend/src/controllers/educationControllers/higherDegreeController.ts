@@ -12,8 +12,10 @@ export const getAllHigherDegrees: AsyncRequestHandler = async (req, res) => {
       duration = '',
       mode = '',
       tuitionFee = '',
+      institutionId: queryInstitutionId
     } = req.query;
 
+    const institutionId = queryInstitutionId || req.headers['x-user-id'];
     const query: any = {};
 
     if (searchText) {
@@ -27,6 +29,9 @@ export const getAllHigherDegrees: AsyncRequestHandler = async (req, res) => {
     }
     if (mode) {
       query.mode = mode;
+    }
+    if (institutionId) {
+      query.institutionId = institutionId;
     }
 
     if (tuitionFee) {

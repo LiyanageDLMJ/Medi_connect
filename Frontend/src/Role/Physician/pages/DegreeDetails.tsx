@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import  { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import TopBar from "../components/TopBar";
 import { useNavigate, useParams, Link } from "react-router-dom";
@@ -112,7 +112,7 @@ const DegreeDetails: React.FC = () => {
                           }
                         }}
                       >
-                        <button className="bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700 transition w-auto">Apply</button>
+                      <button className="bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700 transition w-auto">Apply</button>
                       </Link>
                     </div>
                   </div>
@@ -131,9 +131,9 @@ const DegreeDetails: React.FC = () => {
                       {Array.isArray(degree.perks) && degree.perks.length > 0 ? (
                         degree.perks.map((perk: string, idx: number) => (
                           <div key={idx} className="flex items-center gap-3">
-                            <span className="bg-blue-100 text-blue-600 p-2 rounded-full">✅</span>
+                        <span className="bg-blue-100 text-blue-600 p-2 rounded-full">✅</span>
                             <span>{perk}</span>
-                          </div>
+                      </div>
                         ))
                       ) : (
                         <span className="text-gray-400">No perks listed.</span>

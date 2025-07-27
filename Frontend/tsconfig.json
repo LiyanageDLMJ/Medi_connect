@@ -2,17 +2,16 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
-    "jsx": "preserve",
-    "types": [],
+    "jsx": "react-jsx",            // ✅ Use the correct JSX transform
+    "types": ["react", "react-dom"],  // ✅ Add React types here
     "strict": true,
     "moduleResolution": "node",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
   },
-
-"include": [
+  "include": [
     "src/**/*",
-    "src/types/declarations.d.ts"   // Explicitly include the declarations file
+    "src/types/declarations.d.ts"
   ]
 }

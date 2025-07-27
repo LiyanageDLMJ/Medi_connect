@@ -85,8 +85,8 @@ const DegreeCard: React.FC<DegreeCardProps> = ({ degrees, totalDegrees }) => {
               <Link
                 to="/physician/degreeapplication"
                 state={{
-                  degree: {
-                    name: degree.degreeName,
+                  degree: { 
+                    name: degree.degreeName, 
                     institution: degree.institution,
                     courseId: degree.courseId,
                   }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import  { useState, useEffect } from "react";
 import { Menu, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import { FiFilter } from 'react-icons/fi';
@@ -155,7 +155,7 @@ const ViewApplications: React.FC = () => {
       <Sidebar />
       <div className="flex-1 overflow-auto">
         <TopBar />
-        <div className="flex flex-col min-h-[calc(100vh-80px)] p-4 md:pl-72 h-full">
+        <div className="flex flex-col min-h-[calc(100vh-80px)] p-4 h-full">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
             <h2 className="text-2xl font-semibold whitespace-nowrap">Total Applicants: {applications.length}</h2>
             <div className="flex flex-wrap gap-2 items-center w-full md:w-auto">
