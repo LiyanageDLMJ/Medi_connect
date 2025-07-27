@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import  { useEffect, useState } from "react";
 import { Bell, Search } from "lucide-react";
 import Sidebar from "../components/NavBar/Sidebar";
 import doctorImage from "../../../Doctor.png";
