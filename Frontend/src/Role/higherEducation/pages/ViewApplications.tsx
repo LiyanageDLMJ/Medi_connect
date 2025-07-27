@@ -24,7 +24,7 @@ interface Application {
 interface FilterOptions {
   statuses: string[];
   degrees: Array<{
-    id: string; // Change from number to string
+    id: string;
     name: string;
   }>;
 }
