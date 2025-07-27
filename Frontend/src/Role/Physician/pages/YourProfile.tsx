@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import  { useEffect, useState } from 'react';
 import NavBar from "../components/NavBar/Sidebar";
 import { Link } from 'react-router-dom';
 import { FaUser, FaEnvelope, FaIdBadge, FaBirthdayCake, FaInfoCircle, FaMapMarkerAlt, FaStethoscope, FaGraduationCap, FaUniversity, FaClock, FaEdit, FaCamera } from 'react-icons/fa';

@@ -153,7 +153,7 @@ const ViewApplications: React.FC = () => {
   return (
     <div className="flex h-screen">
       <Sidebar />
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto ">
         <TopBar />
         <div className="flex flex-col min-h-[calc(100vh-80px)] p-4 h-full">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
