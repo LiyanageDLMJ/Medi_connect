@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^6.4.1",
+    "@supabase/supabase-js": "^2.53.0",
     "backend": "file:",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^3.0.2",
@@ -22,6 +23,7 @@
     "fs-extra": "^11.3.0",
     "http": "^0.0.1-security",
     "jsonwebtoken": "^9.0.2",
+    "mkdirp": "^3.0.1",
     "mongoose": "^8.14.1",
     "mssql": "^11.0.1",
     "multer": "^2.0.0",

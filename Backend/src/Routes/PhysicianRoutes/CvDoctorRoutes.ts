@@ -1,7 +1,8 @@
 import express from 'express';
 import multer from 'multer';
 import path from 'path';
-import mkdirp from 'mkdirp';
+import { mkdirp } from 'mkdirp';
+
 
 const router = express.Router();
 
