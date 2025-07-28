@@ -72,7 +72,8 @@ const RecruiterHospitalDashboard: React.FC = () => {
         </div>
 
         {/* Hero Section */}
-        <div className="relative px-6 py-16 md:px-16 md:py-20 bg-white">
+        <div className="bg-gradient-to-l from-sky-200 to-sky-100">
+        <div className="relative px-6 py-16 md:px-16 md:py-20">
           <div className="max-w-6xl mx-auto">
             <div className="flex flex-col md:flex-row items-center md:items-center gap-12 md:gap-20">
               <div className="md:w-1/2 w-full mb-8 md:mb-0 z-10 flex flex-col items-start justify-center">
@@ -92,6 +93,7 @@ const RecruiterHospitalDashboard: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
         </div>
 
         {/* Welcome Section */}

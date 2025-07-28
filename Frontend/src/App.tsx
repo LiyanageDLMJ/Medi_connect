@@ -71,6 +71,12 @@ const App = () => {
             <Route path="messages" element={<MedicalStudentMessages />} />
             <Route path="update-profile" element={<ProfilePage />} />
             <Route path="message-box" element={<MedicalStudentMessages />} />
+            <Route path="update-cv01" element={<UpdateCV01 />} />
+            <Route path="cvCompare" element={<Cvcompare />} />
+            <Route path="job-internship" element={<JobInternshipSearch />} />
+            <Route path="job-application-tracker" element={<JobApplicationTracker />} />
+            <Route path="higher-education" element={<HigherEducationSearch />} />
+            <Route path="interview-invitations" element={<JobApplicationTracker />} />
           </Route>
 
         {/* Physician Routes */}
@@ -118,20 +124,13 @@ const App = () => {
             <Route path="message-box" element={<PhysicianMessages />} />
           </Route>
 
-            {/* Higher Education Routes */}
-            <Route path="/higher-education">
-              <Route path="messages" element={<HigherEducationMessages />} />
-              <Route path="view-applications" element={<ViewApplications />} />
-              <Route path="degree-listing" element={<DegreeListing />} />
-              <Route path="deshboard" element={<Dashborad />} />
-            </Route>
+
           {/* Higher Education Routes */}
           <Route path="/higher-education">
             <Route path="dashboard" element={<InstitutionDashboard />} />
             <Route path="messages" element={<HigherEducationMessages />} />
             <Route path="view-applications" element={<ViewApplications />} />
             <Route path="degree-listing" element={<DegreeListing />} />
-            <Route path="deshboard" element={<Dashborad />} />
             <Route path="update-profile" element={<ProfilePage />} />
             <Route path="message-box" element={<HigherEducationMessages />} />
           </Route>

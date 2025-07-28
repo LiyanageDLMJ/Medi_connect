@@ -20,33 +20,33 @@ const SidebarNav: React.FC = () => {
   const navigate = useNavigate();
 
   const navLinks = [
-    { label: "Dashboard", to: "/physician/MedicalStudentDashboard", icon: <FiHome size={20} /> },
+    { label: "Dashboard", to: "/medical_student/dashboard", icon: <FiHome size={20} /> },
     { label: "Your Profile", to: "/medical_student/profile", icon: <FiUser size={20} /> },
-    { label: "Update CV", to: "/physician/update-cv01", icon: <FiFileText size={20} /> },
-    { label: "CompareCV", to: "/physician/cvCompare", icon: <FiFileText size={20} /> },
+    { label: "Update CV", to: "/medical_student/update-cv01", icon: <FiFileText size={20} /> },
+    { label: "CompareCV", to: "/medical_student/cvCompare", icon: <FiFileText size={20} /> },
     {
       label: "Job & Internships",
-      to: "/physician/job-internship",
+      to: "/medical_student/job-internship",
       icon: <FiBriefcase size={20} />,
     },
      {
       label: "Track job Application",
-      to: "/physician/job-application-tracker",
+      to: "/medical_student/job-application-tracker",
       icon: <FiSearch size={20} />,
     },
     {
       label: "Higher Education",
-      to: "/physician/higher-education",
+      to: "/medical_student/higher-education",
       icon: <FiBook size={20} />,
     },
     {
       label: "Messages",
-      to: "/physician/messages",
+      to: "/medical_student/messages",
       icon: <FiMessageSquare size={20} />,
     },
     {
       label: "Interview Invitations",
-      to: "/physician/interview-invitations",
+      to: "/medical_student/interview-invitations",
       icon: <FiCalendar size={20} />,
     },
   ];
