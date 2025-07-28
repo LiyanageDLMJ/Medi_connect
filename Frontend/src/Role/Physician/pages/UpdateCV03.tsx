@@ -201,14 +201,9 @@ export default function UpdateCV03() {
           <div className="flex border-b mb-8">
             <button className="flex items-center gap-2 px-6 py-4 border-b-2 border-blue-500 text-blue-500">
               <User className="w-5 h-5" />
-              <span>Basic Details</span>
-            </button>
-            <button className="flex items-center gap-2 px-6 py-4 text-gray-600">
               <span>Update CV</span>
             </button>
-            <button className="flex items-center gap-2 px-6 py-4 text-gray-600">
-              <span>Profile Settings</span>
-            </button>
+            
           </div>
 
           <form
@@ -241,7 +236,7 @@ export default function UpdateCV03() {
                     htmlFor="JobTitle"
                     className="block text-sm font-medium"
                   >
-                    Job Type*
+                    Expected Job Type*
                   </label>
                   <input
                     id="JobTitle"

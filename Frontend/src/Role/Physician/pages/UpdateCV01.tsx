@@ -17,7 +17,7 @@ import UpdateCV02 from "./UpdateCV02";
 
 export default function UpdateCV01() {
   // We only keep the Insert CV tab now
-  const [activeTab] = useState<'cv'>('cv');
+  const [activeTab] = useState<"cv">("cv");
   const { formData, setFormData } = useFormContext();
   const navigate = useNavigate();
   const [phoneError, setPhoneError] = useState<string>("");
@@ -38,13 +38,14 @@ export default function UpdateCV01() {
         const data = await res.json();
 
         // Map backend fields to formData keys
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           yourName: data.name || prev.yourName,
           age: data.age ? String(data.age) : prev.age,
           currentLocation: data.location || prev.currentLocation,
           professionalTitle: data.profession || prev.professionalTitle,
           specialization: data.specialty || prev.specialization,
+          contactEmail: data.email || prev.contactEmail,
         }));
       } catch (err) {
         console.error(err);
@@ -69,7 +70,9 @@ export default function UpdateCV01() {
   };
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
 
@@ -78,7 +81,6 @@ export default function UpdateCV01() {
         setPhoneError(
           "Please enter a valid phone number (+94XXXXXXXXX or 0XXXXXXXXX)"
         );
-
       } else {
         setPhoneError("");
       }
@@ -145,178 +147,180 @@ export default function UpdateCV01() {
 
           {/* Single Tab Heading */}
           <div className="flex border-b mb-8">
-            <span className="flex items-center gap-2 px-6 py-4 border-b-2 border-blue-500 text-blue-500">Insert CV</span>
+            <span className="flex items-center gap-2 px-6 py-4 border-b-2 border-blue-500 text-blue-500">
+              Insert CV
+            </span>
           </div>
 
           {/* Profile tab removed; only CV section remains */}
 
-          {activeTab==='cv' && (
+          {activeTab === "cv" && (
             <form
-            onSubmit={handleNext}
-            className="bg-white p-8 rounded-lg shadow-sm"
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Left Column */}
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <label
-                    htmlFor="yourName"
-                    className="block text-sm font-medium"
-                  >
-                    Your Full Name*
-                  </label>
-                  <input
-                    id="yourName"
-                    name="yourName"
-                    type="text"
-                    value={formData.yourName}
-                    onChange={handleInputChange}
-                    placeholder="John Doe"
-                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
-                    required
-                  />
+              onSubmit={handleNext}
+              className="bg-white p-8 rounded-lg shadow-sm"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Left Column */}
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="yourName"
+                      className="block text-sm font-medium"
+                    >
+                      Your Full Name*
+                    </label>
+                    <input
+                      id="yourName"
+                      name="yourName"
+                      type="text"
+                      value={formData.yourName}
+                      onChange={handleInputChange}
+                      placeholder="John Doe"
+                      className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="currentLocation"
+                      className="block text-sm font-medium"
+                    >
+                      Current Location*
+                    </label>
+                    <input
+                      id="currentLocation"
+                      name="currentLocation"
+                      type="text"
+                      value={formData.currentLocation}
+                      onChange={handleInputChange}
+                      placeholder="City"
+                      className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="linkedinLink"
+                      className="block text-sm font-medium"
+                    >
+                      LinkedIn Link
+                    </label>
+                    <input
+                      id="linkedinLink"
+                      name="linkedinLink"
+                      type="text"
+                      value={formData.linkedinLink}
+                      onChange={handleInputChange}
+                      placeholder="https://www.linkedin.com/in/yourprofile"
+                      className={`w-full p-3 bg-gray-50 border border-gray-200 rounded-md ${
+                        linkedinError ? "border-red-500" : ""
+                      }`}
+                    />
+                    {linkedinError && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {linkedinError}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="contactPhone"
+                      className="block text-sm font-medium"
+                    >
+                      Contact (Phone)*
+                    </label>
+                    <input
+                      id="contactPhone"
+                      name="contactPhone"
+                      type="tel"
+                      value={formData.contactPhone}
+                      onChange={handleInputChange}
+                      className={`w-full p-3 bg-gray-50 border ${
+                        phoneError ? "border-red-500" : "border-gray-200"
+                      } rounded-md`}
+                      placeholder="+94771234567"
+                      required
+                    />
+                    {phoneError && (
+                      <p className="text-red-500 text-sm mt-1">{phoneError}</p>
+                    )}
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label
-                    htmlFor="currentLocation"
-                    className="block text-sm font-medium"
-                  >
-                    Current Location*
-                  </label>
-                  <input
-                    id="currentLocation"
-                    name="currentLocation"
-                    type="text"
-                    value={formData.currentLocation}
-                    onChange={handleInputChange}
-                    placeholder="City"
-                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
-                    required
-                  />
-                </div>
+                {/* Right Column */}
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="professionalTitle"
+                      className="block text-sm font-medium"
+                    >
+                      Professional Title*
+                    </label>
+                    <input
+                      id="professionalTitle"
+                      name="professionalTitle"
+                      type="text"
+                      value={formData.professionalTitle}
+                      onChange={handleInputChange}
+                      placeholder="cardiologist"
+                      className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
+                      required
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <label
-                    htmlFor="linkedinLink"
-                    className="block text-sm font-medium"
-                  >
-                    LinkedIn Link
-                  </label>
-                  <input
-                    id="linkedinLink"
-                    name="linkedinLink"
-                    type="text"
-                    value={formData.linkedinLink}
-                    onChange={handleInputChange}
-                    placeholder="https://www.linkedin.com/in/yourprofile"
-                    className={`w-full p-3 bg-gray-50 border border-gray-200 rounded-md ${
-                      linkedinError ? "border-red-500" : ""
-                    }`}
-                  />
-                  {linkedinError && (
-                    <p className="text-red-500 text-sm mt-1">{linkedinError}</p>
-                  )}
-                </div>
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="careerSummary"
+                      className="block text-sm font-medium"
+                    >
+                      Career Summary*
+                    </label>
+                    <textarea
+                      id="careerSummary"
+                      name="careerSummary"
+                      value={formData.careerSummary}
+                      onChange={handleInputChange}
+                      placeholder="A brief summary of your career"
+                      className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md h-40 resize-none"
+                      required
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <label
-                    htmlFor="contactPhone"
-                    className="block text-sm font-medium"
-                  >
-                    Contact (Phone)*
-                  </label>
-                  <input
-                    id="contactPhone"
-                    name="contactPhone"
-                    type="tel"
-                    value={formData.contactPhone}
-                    onChange={handleInputChange}
-                    className={`w-full p-3 bg-gray-50 border ${
-                      phoneError ? "border-red-500" : "border-gray-200"
-                    } rounded-md`}
-                    placeholder="+94771234567"
-                    required
-                  />
-                  {phoneError && (
-                    <p className="text-red-500 text-sm mt-1">{phoneError}</p>
-                  )}
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="contactEmail"
+                      className="block text-sm font-medium"
+                    >
+                      Contact (Email)*
+                    </label>
+                    <input
+                      id="contactEmail"
+                      name="contactEmail"
+                      type="email"
+                      value={formData.contactEmail}
+                      onChange={handleInputChange}
+                      placeholder="example@gmail.com"
+                      className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
+                      required
+                    />
+                  </div>
                 </div>
               </div>
 
-              {/* Right Column */}
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <label
-                    htmlFor="professionalTitle"
-                    className="block text-sm font-medium"
-                  >
-                    Professional Title*
-                  </label>
-                  <input
-                    id="professionalTitle"
-                    name="professionalTitle"
-                    type="text"
-                    value={formData.professionalTitle}
-                    onChange={handleInputChange}
-                    placeholder="cardiologist"
-                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label
-                    htmlFor="careerSummary"
-                    className="block text-sm font-medium"
-                  >
-                    Career Summary*
-                  </label>
-                  <textarea
-                    id="careerSummary"
-                    name="careerSummary"
-                    value={formData.careerSummary}
-                    onChange={handleInputChange}
-                    placeholder="A brief summary of your career"
-                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md h-40 resize-none"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label
-                    htmlFor="contactEmail"
-                    className="block text-sm font-medium"
-                  >
-                    Contact (Email)*
-                  </label>
-                  <input
-                    id="contactEmail"
-                    name="contactEmail"
-                    type="email"
-                    value={formData.contactEmail}
-                    onChange={handleInputChange}
-                    placeholder="example@gmail.com"
-                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
-                    required
-                  />
-                </div>
+              {/* Next Button */}
+              <div className="mt-8 flex justify-end">
+                <button
+                  type="submit"
+                  className="px-6 py-2 bg-blue-500 text-white rounded-md"
+                >
+                  Next
+                </button>
               </div>
-            </div>
-
-            {/* Next Button */}
-            <div className="mt-8 flex justify-end">
-              <button
-                type="submit"
-                className="px-6 py-2 bg-blue-500 text-white rounded-md"
-              >
-                Next
-              </button>
-            </div>
-          </form>
+            </form>
           )}
-
-          
         </main>
       </div>
     </div>

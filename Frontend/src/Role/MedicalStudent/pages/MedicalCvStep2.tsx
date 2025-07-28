@@ -10,6 +10,7 @@ const MedicalCvStep2: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string,string>>({});
   // Load saved data for pre-filling
   const savedData: Record<string, string> = JSON.parse(
     typeof window !== "undefined" && localStorage.getItem("medicalCvStep2") || "{}"
@@ -89,11 +90,26 @@ const MedicalCvStep2: React.FC = () => {
       if (key !== 'cvFile') step2Payload[key] = value;
     });
 
+    // Validation
+    const newFieldErrors: Record<string,string> = {};
+    if (!step2Payload.degree || (step2Payload.degree as string).trim()==="") newFieldErrors.degree = "Degree is required";
+    if (!step2Payload.university || (step2Payload.university as string).trim()==="") newFieldErrors.university = "University is required";
+    const gradYear = parseInt(step2Payload.graduationYear as string,10);
+    const currentYear = new Date().getFullYear();
+    if (!gradYear || gradYear < 1900 || gradYear > currentYear) newFieldErrors.graduationYear = "Enter a valid graduation year";
+    if (!step2Payload.specialization || (step2Payload.specialization as string).trim()==="") newFieldErrors.specialization = "Specialization is required";
+    const exp = parseInt(step2Payload.experienceYears as string,10);
+    if (isNaN(exp) || exp < 0 || exp > 100) newFieldErrors.experienceYears = "Enter valid experience years";
+
     if (!resumeFile) {
       setError("Please upload a PDF resume");
+    }
+
+    setFieldErrors(newFieldErrors);
+    if (Object.keys(newFieldErrors).length > 0 || !resumeFile) {
       return;
     }
-    
+
     // Combine with Step1 stored data
     const step1Data = JSON.parse(localStorage.getItem('medicalCvStep1') || '{}');
     const payload = { ...step1Data, ...step2Payload };
@@ -174,11 +190,25 @@ const MedicalCvStep2: React.FC = () => {
           <div className="w-full max-w-2xl">
             <h1 className="text-2xl font-bold mb-6">Medical CV – Step 2/2: Education & Experience</h1>
             <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-sm space-y-6" encType="multipart/form-data">
-      <h2 className="text-1.5xl font-bold ">Medical Degree</h2><input name="degree" placeholder="Medical Degree" defaultValue={savedData.degree || ""} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md" required />
-      <h2 className="text-1.5xl font-bold ">University</h2><input name="university" placeholder="University" defaultValue={savedData.university || ""} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md" required />
-        <h2 className="text-1.5xl font-bold ">Graduation Year</h2><input name="graduationYear" type="number" placeholder="Graduation Year" defaultValue={savedData.graduationYear || ""} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md" required />
-        <h2 className="text-1.5xl font-bold ">Specialization</h2><input name="specialization" placeholder="Specialization" defaultValue={savedData.specialization || ""} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md" required />
-        <h2 className="text-1.5xl font-bold ">Years of Experience</h2><input name="experienceYears" type="number" placeholder="Years of Experience" defaultValue={savedData.experienceYears || ""} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md" required />
+      <h2 className="text-1.5xl font-bold ">Medical Degree</h2>
+      <input name="degree" placeholder="Medical Degree" defaultValue={savedData.degree || ""} className={`w-full p-3 bg-gray-50 border ${fieldErrors.degree ? 'border-red-500' : 'border-gray-200'} rounded-md`} />
+      {fieldErrors.degree && <p className="text-red-500 text-xs mb-2">{fieldErrors.degree}</p>}
+
+      <h2 className="text-1.5xl font-bold ">University</h2>
+      <input name="university" placeholder="University" defaultValue={savedData.university || ""} className={`w-full p-3 bg-gray-50 border ${fieldErrors.university ? 'border-red-500' : 'border-gray-200'} rounded-md`} />
+      {fieldErrors.university && <p className="text-red-500 text-xs mb-2">{fieldErrors.university}</p>}
+
+      <h2 className="text-1.5xl font-bold ">Graduation Year</h2>
+      <input name="graduationYear" type="number" placeholder="Graduation Year" defaultValue={savedData.graduationYear || ""} className={`w-full p-3 bg-gray-50 border ${fieldErrors.graduationYear ? 'border-red-500' : 'border-gray-200'} rounded-md`} />
+      {fieldErrors.graduationYear && <p className="text-red-500 text-xs mb-2">{fieldErrors.graduationYear}</p>}
+
+      <h2 className="text-1.5xl font-bold ">Specialization</h2>
+      <input name="specialization" placeholder="Specialization" defaultValue={savedData.specialization || ""} className={`w-full p-3 bg-gray-50 border ${fieldErrors.specialization ? 'border-red-500' : 'border-gray-200'} rounded-md`} />
+      {fieldErrors.specialization && <p className="text-red-500 text-xs mb-2">{fieldErrors.specialization}</p>}
+
+      <h2 className="text-1.5xl font-bold ">Years of Experience</h2>
+      <input name="experienceYears" type="number" placeholder="Years of Experience" defaultValue={savedData.experienceYears || ""} className={`w-full p-3 bg-gray-50 border ${fieldErrors.experienceYears ? 'border-red-500' : 'border-gray-200'} rounded-md`} />
+      {fieldErrors.experienceYears && <p className="text-red-500 text-xs mb-2">{fieldErrors.experienceYears}</p>}
         <h2 className="text-1.5xl font-bold ">Upload CV (PDF)</h2>
         <input name="cvFile" type="file" accept="application/pdf" onChange={handleFileChange} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md" />
         <div className="flex justify-between gap-2">
