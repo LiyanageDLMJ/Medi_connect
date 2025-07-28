@@ -1,10 +1,11 @@
 import React from 'react';
-import { FiHome, FiUser, FiBookOpen, FiMessageSquare, FiBriefcase, FiLogOut } from 'react-icons/fi';
+import { FiHome, FiUser, FiBookOpen, FiMessageSquare, FiBriefcase, FiLogOut, FiFileText } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 
 const navLinks = [
   { label: 'Dashboard', to: '/medical_student/dashboard', icon: <FiHome size={20} /> },
   { label: 'Profile', to: '/medical_student/profile', icon: <FiUser size={20} /> },
+  { label: 'CV Insertion', to: '/medical-student/cv-step1', icon: <FiFileText size={20} /> },
   { label: 'Resources', to: '/medical_student/resources', icon: <FiBookOpen size={20} /> },
   { label: 'Internships', to: '/medical_student/internships', icon: <FiBriefcase size={20} /> },
   { label: 'Messages', to: '/medical_student/messages', icon: <FiMessageSquare size={20} /> },

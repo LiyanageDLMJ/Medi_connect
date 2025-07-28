@@ -39,6 +39,9 @@ import RecruiterDashboard from "./Role/Recuiter/pages/Dashboard";
 import { FormProvider } from "./context/FormContext";
 // import Cvcompare  from "./Role/Physician/pages/Cvcompare";
 import { Toaster } from 'react-hot-toast';
+import MedicalCvStep1 from "./Role/MedicalStudent/pages/MedicalCvStep1";
+import MedicalCvStep2 from "./Role/MedicalStudent/pages/MedicalCvStep2";
+// import MedicalCvStep3 from "./Role/MedicalStudent/pages/MedicalCvStep3";
 const App = () => {
   return (
     <FormProvider>
@@ -68,6 +71,7 @@ const App = () => {
           <Route path="messages" element={<Messages />} />
           <Route path="update-profile" element={<ProfilePage />} />
           <Route path="message-box" element={<Messages />} />
+          
         </Route>
 
         {/* Physician Routes */}
@@ -128,10 +132,11 @@ const App = () => {
           </Route>
 
           <Route path="/medical-student">
-            <Route
-              path="MedicalStudentDashboard"
-              element={<MedicalStudentDashboard />}
-            />
+            <Route path="MedicalStudentDashboard" element={<MedicalStudentDashboard />} />
+            {/* Medical CV Wizard */}
+            <Route path="cv-step1" element={<MedicalCvStep1 />} />
+            <Route path="cv-step2" element={<MedicalCvStep2 />} />
+            {/* <Route path="cv-step3" element={<MedicalCvStep3 />} /> */}
           </Route>
 
           <Route path="/postdegree" element={<PostDegree />} />

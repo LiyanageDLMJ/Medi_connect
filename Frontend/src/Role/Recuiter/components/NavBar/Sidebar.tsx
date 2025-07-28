@@ -9,6 +9,7 @@ import {
   FiUsers,
   FiMessageSquare,
   FiLogOut,
+  FiFileText,
 } from "react-icons/fi";
 
 const SidebarRecruiter = () => {
@@ -18,6 +19,7 @@ const SidebarRecruiter = () => {
   const navLinks = [
     { label: "Dashboard", to: "/recruiter/dashboard", icon: <FiHome size={20} /> },
     { label: "Your Profile", to: "/recruiter/profile", icon: <FiUser size={20} /> },
+    { label: "CompareCV", to: "/recruiter/cvCompare", icon: <FiFileText size={20} /> },
     { label: "Job & Internship Post", to: "/recruiter/JobPost", icon: <FiBriefcase size={20} /> },
     { label: "Job Listings", to: "/recruiter/JobListing", icon: <FiList size={20} /> },
     { label: "View Candidates", to: "/recruiter/ViewCandidates", icon: <FiUsers size={20} /> },

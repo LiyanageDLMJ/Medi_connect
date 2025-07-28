@@ -1,6 +1,6 @@
 "use client";
 import { useNavigate } from "react-router-dom";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Bell,
   ChevronDown,
@@ -16,11 +16,45 @@ import { useFormContext } from "../../../context/FormContext";
 import UpdateCV02 from "./UpdateCV02";
 
 export default function UpdateCV01() {
-  const [activeTab, setActiveTab] = useState<'basic' | 'cv' | 'profile'>('basic');
+  // We only keep the Insert CV tab now
+  const [activeTab] = useState<'cv'>('cv');
   const { formData, setFormData } = useFormContext();
   const navigate = useNavigate();
   const [phoneError, setPhoneError] = useState<string>("");
   const [linkedinError, setLinkedinError] = useState<string>("");
+
+  // Fetch user basic details once after component mounts
+  useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    if (!userId) return;
+
+    const fetchProfile = async () => {
+      try {
+        const API_BASE = window.location.origin.includes("localhost")
+          ? "http://localhost:3000"
+          : window.location.origin;
+        const res = await fetch(`${API_BASE}/profile/${userId}`);
+        if (!res.ok) throw new Error("Failed to fetch user profile");
+        const data = await res.json();
+
+        // Map backend fields to formData keys
+        setFormData(prev => ({
+          ...prev,
+          yourName: data.name || prev.yourName,
+          age: data.age ? String(data.age) : prev.age,
+          currentLocation: data.location || prev.currentLocation,
+          professionalTitle: data.profession || prev.professionalTitle,
+          specialization: data.specialty || prev.specialization,
+        }));
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchProfile();
+    // run only once
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const validatePhoneNumber = (phone: string) => {
     //phone number validation
@@ -109,53 +143,12 @@ export default function UpdateCV01() {
         <main className="max-w-6xl mx-auto p-6">
           <h1 className="text-2xl font-bold mb-6">Insert CV</h1>
 
-          {/* Tabs */}
+          {/* Single Tab Heading */}
           <div className="flex border-b mb-8">
-            {/* Tabs */}
-            <button
-              onClick={() => setActiveTab('basic')}
-              className={`flex items-center gap-2 px-6 py-4 border-b-2 ${activeTab==='basic' ? 'border-blue-500 text-blue-500' : 'border-transparent text-gray-600'}`}>
-              <User className="w-5 h-5" />
-              <span>Basic Details</span>
-            </button>
-            <button
-             onClick={() => setActiveTab('cv')}
-             className={`flex items-center gap-2 px-6 py-4 border-b-2 ${activeTab==='cv' ? 'border-blue-500 text-blue-500' : 'border-transparent text-gray-600'}`}>
-              <span>Insert CV</span>
-            </button>
-            <button
-             onClick={() => setActiveTab('profile')}
-             className={`flex items-center gap-2 px-6 py-4 border-b-2 ${activeTab==='profile' ? 'border-blue-500 text-blue-500' : 'border-transparent text-gray-600'}`}>
-              <span>Profile Settings</span>
-            </button>
+            <span className="flex items-center gap-2 px-6 py-4 border-b-2 border-blue-500 text-blue-500">Insert CV</span>
           </div>
 
-          {/* Content */}
-          {activeTab==='basic' && (
-            <div className="bg-white p-8 rounded-lg shadow-sm space-y-8">
-              {/* Registration Form */}
-              <DoctorForm formData={formData} handleChange={handleInputChange} />
-              {/* Age Field */}
-              <div className="space-y-2">
-                <label htmlFor="age" className="block text-sm font-medium">
-                  Age*
-                </label>
-                <input
-                  id="age"
-                  name="age"
-                  type="number"
-                  value={formData.age}
-                  onChange={handleInputChange}
-                  placeholder="30"
-                  className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
-                  required
-                />
-              </div>
-              <div className="mt-8 flex justify-end">
-                <button type="button" onClick={() => setActiveTab('cv')} className="px-6 py-2 bg-blue-500 text-white rounded-md">Next</button>
-              </div>
-            </div>
-          )}
+          {/* Profile tab removed; only CV section remains */}
 
           {activeTab==='cv' && (
             <form
@@ -323,12 +316,7 @@ export default function UpdateCV01() {
           </form>
           )}
 
-          {/* Add the profile tab content here if needed */}
-          {activeTab === 'profile' && (
-            <div className="bg-white p-8 rounded-lg shadow-sm">
-              <p>Profile settings content goes here...</p>
-            </div>
-          )}
+          
         </main>
       </div>
     </div>

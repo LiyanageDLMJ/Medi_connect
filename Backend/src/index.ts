@@ -10,18 +10,22 @@ import JobSearch from "./Routes/PhysicianRoutes/JobSearchRoutes";
 import jobApplicationRoutes from "./Routes/PhysicianRoutes/jobApplicationRoutes";
 import chatUploadRoutes from './Routes/ChatUploadRoutes';
 import profilePhotoRoutes from './Routes/ProfilePhotoRoutes';
+import profileRoutes from './Routes/ProfileRoutes';
 import DegreeApplicationRoutes from "./Routes/PhysicianRoutes/degreeApplicationRoutes";
 import viewDegreeApplicationRoutes from "./Routes/EducationRoutes/ViewDegreeApplicationRoutes";
 import degreeListingRoutes from './Routes/EducationRoutes/DegreeListingRoutes';
 import higherEducationRoutes from './Routes/EducationRoutes/higherEducationRoutes';
 import LoginRegisterRoutes from "./Routes/LoginRegisterRoutes";
 import jobApplicationContolByRecuiterRoutes from './Routes/RecuiterRoutes/jobApplicationcontolByRecuiterRoutes';
+import medicalCvRoutes from "./Routes/MedicalStudentRoutes/medicalCvRoutes";
+import medicalStudentCvRoutes from "./Routes/MedicalStudentRoutes/MedicalStudentCvRoutes";
 import fs from "fs";
 import path from "path";
 import userListRoutes from "./Routes/UserListRoutes";
 import { createServer } from "http";
 import { attachSocket } from "./socketServer";
 import dotenv from "dotenv";
+
 
 dotenv.config();
 
@@ -76,10 +80,13 @@ app.use("/physician", CvDocRouter);
 app.use("/JobPost", RecuiterJobPost);
 app.use("/JobSearch", JobSearch);
 app.use("/JobApplication", jobApplicationRoutes);
+app.use("/medicalCv", medicalCvRoutes);
+app.use("/medicalStudentCv", medicalStudentCvRoutes);
 app.use("/degrees", degreeListingRoutes);
 app.use("/higherDegrees", higherEducationRoutes);
 app.use('/degreeApplications', DegreeApplicationRoutes);
 app.use('/viewDegreeApplications', viewDegreeApplicationRoutes);
+app.use('/profile', profileRoutes);
 app.use('/jobApplicationControl', jobApplicationContolByRecuiterRoutes);
 
 // Health check endpoint
@@ -104,6 +111,9 @@ app.use('*', (req: Request, res: Response) => {
     message: `Route ${req.originalUrl} not found`
   });
 });
+
+// Serve PDFs statically
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Create HTTP server from existing Express app
 const httpServer = createServer(app);

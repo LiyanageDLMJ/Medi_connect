@@ -14,6 +14,7 @@ import {
   FaEye,
   FaFileAlt,
   FaCheck,
+  FaLinkedin,
 } from "react-icons/fa"
 import Sidebar from "../components/NavBar/Sidebar";
 import { useFormContext } from "../../../context/FormContext";
@@ -22,7 +23,8 @@ import axios from "axios";
 // Styled Components
 const Container = styled.div`
   min-height: 100vh;
-  background-color: #f9fafb;
+  /* Brighter light-blue background */
+  background-color:rgb(239, 243, 247);
   display: flex;
 `
 
@@ -85,13 +87,15 @@ const MaxWidthContainer = styled.div`
 const Title = styled.h1`
   font-size: 1.875rem;
   font-weight: bold;
-  color: #111827;
+  /* Deep blue primary */
+  color: #1d4ed8;
   margin-bottom: 2rem;
 `
 
 const Card = styled.div<{ variant?: string }>`
-  background-color: ${(props) => (props.variant === "success" ? "#f0fdf4" : "white")};
-  border: 1px solid ${(props) => (props.variant === "success" ? "#bbf7d0" : "#e5e7eb")};
+  background-color: ${(props) => (props.variant === "success" ? "#e0f2fe" : "white")};
+  /* Light blue border when not success */
+  border: 1px solid ${(props) => (props.variant === "success" ? "#93c5fd" : "#bfdbfe")};
   border-radius: 0.5rem;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
   margin-bottom: 1.5rem;
@@ -104,7 +108,8 @@ const CardHeader = styled.div`
 const CardTitle = styled.h3<{ color?: string }>`
   font-size: 1.125rem;
   font-weight: 600;
-  color: ${(props) => props.color || "#111827"};
+  /* Default to dark blue */
+  color: ${(props) => props.color || "#1e3a8a"};
   margin-bottom: 0.5rem;
   display: flex;
   align-items: center;
@@ -112,7 +117,7 @@ const CardTitle = styled.h3<{ color?: string }>`
 `
 
 const CardDescription = styled.p`
-  color: #6b7280;
+  color: #475569;
   font-size: 0.875rem;
 `
 
@@ -157,7 +162,8 @@ const Input = styled.input`
   width: 100%;
   padding: 0.5rem 0.75rem;
   padding-left: ${(props) => (props.type === "search" ? "2.5rem" : "0.75rem")};
-  border: 1px solid #d1d5db;
+  /* Soft blue border */
+  border: 1px solid #bfdbfe;
   border-radius: 0.375rem;
   font-size: 0.875rem;
   
@@ -180,7 +186,8 @@ const SearchIcon = styled(FaSearch)`
 const Select = styled.select`
   width: 100%;
   padding: 0.5rem 0.75rem;
-  border: 1px solid #d1d5db;
+  /* Match input border color */
+  border: 1px solid #bfdbfe;
   border-radius: 0.375rem;
   font-size: 0.875rem;
   background-color: white;
@@ -235,15 +242,15 @@ const Badge = styled.span<{ variant?: string; highlight?: boolean }>`
   border-radius: 0.375rem;
   border: ${(props) => (props.variant === "outline" ? "1px solid #d1d5db" : "none")};
   background-color: ${(props) =>
-    props.highlight ? "#dcfce7" : props.variant === "outline" ? "transparent" : "#f3f4f6"};
-  color: ${(props) => (props.highlight ? "#166534" : props.variant === "outline" ? "#374151" : "#374151")};
-  border-color: ${(props) => (props.highlight ? "#bbf7d0" : "#d1d5db")};
+    props.highlight ? "#dbeafe" : props.variant === "outline" ? "transparent" : "#f3f4f6"};
+  color: ${(props) => (props.highlight ? "#1e3a8a" : props.variant === "outline" ? "#374151" : "#374151")};
+  border-color: ${(props) => (props.highlight ? "#bfdbfe" : "#d1d5db")};
   cursor: ${(props) => (props.onClick ? "pointer" : "default")};
 `
 
 const CandidateCard = styled(Card)<{ selected?: boolean }>`
   transition: all 0.2s;
-  border: ${(props) => (props.selected ? "2px solid #2563eb" : "1px solid #e5e7eb")};
+  border: ${(props) => (props.selected ? "2px solid #2563eb" : "1px solid #bfdbfe")};
   background-color: ${(props) => (props.selected ? "#eff6ff" : "white")};
 
   &:hover {
@@ -352,7 +359,7 @@ const toDownloadUrl = (url: string): string => {
 
 const handlePreviewPDF = (candidate: any) => {
   const baseUrl: string | undefined =
-    candidate.resumeRawUrl || candidate.resumePdfUrl || candidate.resumeImageUrl || candidate.cvFile?.url;
+    candidate.resumeRawUrl ;
 
   if (!baseUrl) {
     console.error("No PDF URL found for preview");
@@ -369,7 +376,7 @@ const handlePreviewPDF = (candidate: any) => {
  */
 const handleDownloadPDF = async (candidate: any) => {
   const baseUrl: string | undefined =
-    candidate.resumeRawUrl || candidate.resumePdfUrl || candidate.cvFile?.url;
+    candidate.resumeRawUrl ;
 
   if (!baseUrl) {
     console.error("No PDF URL found for download");
@@ -436,6 +443,7 @@ export default function CVComparison() {
           resumeRawUrl: candidate.resumeRawUrl,
           resumePdfUrl: candidate.resumeRawUrl,
           resumeDownloadUrl: candidate.resumeRawUrl,
+          linkedinUrl: candidate.linkedinLink,
         }));
         setCandidatesSource(formattedCandidates);
 
@@ -628,6 +636,16 @@ export default function CVComparison() {
                           <FaAward color="#6b7280" />
                           <span>{candidate.experience} experience</span>
                         </InfoItem>
+                        <InfoItem>
+                          <FaLinkedin color="#6b7280" />
+                          {candidate.linkedinUrl ? (
+                             <a href={candidate.linkedinUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#0a66c2', textDecoration: 'underline' }}>
+                                LinkedIn Profile
+                              </a>
+                            ) : (
+                              <span>No LinkedIn</span>
+                            )}
+                        </InfoItem>
 
                         {/* CV File Section */}
                         <CVSection>
@@ -705,7 +723,7 @@ export default function CVComparison() {
                   hasCommonFeatures && (
                     <Card variant="success">
                       <CardHeader>
-                        <CardTitle color="#166534">
+                        <CardTitle color="#075985">
                           <FaCheck />
                           Common Features Found
                         </CardTitle>
@@ -784,12 +802,12 @@ export default function CVComparison() {
                               style={{
                                 fontSize: "0.875rem",
                                 color:
-                                  commonFeatures.graduationYear === candidate.graduationYear ? "#166534" : "#4b5563",
+                                  commonFeatures.graduationYear === candidate.graduationYear ? "#1e3a8a" : "#4b5563",
                                 fontWeight:
                                   commonFeatures.graduationYear === candidate.graduationYear ? "500" : "normal",
                                 backgroundColor:
                                   commonFeatures.graduationYear === candidate.graduationYear
-                                    ? "#f0fdf4"
+                                    ? "#dbeafe"
                                     : "transparent",
                                 padding:
                                   commonFeatures.graduationYear === candidate.graduationYear ? "0.25rem 0.5rem" : "0",

@@ -262,6 +262,14 @@ export default function UpdateCV02() {
                     <option value="Pediatrics">Pediatrics</option>
                     <option value="Oncology">Oncology</option>
                     <option value="Orthopedics">Orthopedics</option>
+                    <option value="Dermatologist">Dermatologist</option>
+                    <option value="Neurologist">Neurologist</option>
+                    <option value="Obstetrics and gynaecology">Obstetrics and gynaecology</option>
+                    <option value="Family medicine">Family medicine</option>
+                    <option value="Cardiologist">Cardiologist</option>
+                    <option value="Gastroenterologist">Gastroenterologist</option>
+                    <option value="Internal medicine">Internal medicine</option>
+                    <option value="Endocrinologist">Endocrinologist</option>
                   </select>
                 </div>
 
