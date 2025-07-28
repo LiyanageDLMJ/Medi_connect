@@ -749,7 +749,7 @@ export default function CVComparison() {
                               LinkedIn Profile
                             </a>
                           ) : (
-                            <span>No LinkedIn</span>
+                            <span>No LinkedIn Profile</span>
                           )}
                         </InfoItem>
 
