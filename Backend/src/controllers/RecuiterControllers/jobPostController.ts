@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+  import { Request, Response } from "express";
 import JobPost from "../../models/Job";
 
 
@@ -28,7 +28,7 @@ export const addJob = async (req: Request, res: Response) => {
   } catch (error: any) {
     res.status(500).json({ message: "Failed to post job", error: error.message });
   }
-};
+}; 
 
 // Update a job post
 export const updateJob = async (req: Request, res: Response) => {

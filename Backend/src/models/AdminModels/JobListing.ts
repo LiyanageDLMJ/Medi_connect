@@ -40,8 +40,12 @@ const JobSchema = new mongoose.Schema({
       },
       status: {
         type: String,
-        enum: ["OPEN", "INTERVIEW", "PENDING", "CLOSED"],
+        enum: ["OPEN", "INTERVIEW", "PENDING", "CLOSED", "REMOVED"],
         default: "OPEN",
+      },
+      recruiterId: {
+        type: String,
+        required: true,
       },
      
       postedDate: {

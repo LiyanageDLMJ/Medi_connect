@@ -1,51 +1,60 @@
 import React, { useEffect, useState } from "react";
 
+interface User {
+  email: string;
+  userType: string;
+  location: string;
+  specialty: string;
+}
+
 function UserCountDashboard() {
-  const [counts, setCounts] = useState({
-    total: 0,
-    doctorCount: 0,
-    studentCount: 0,
-    instituteCount: 0,
-    recruiterCount: 0,
-    CardiologistCount: 0,
-    PediatricianCount: 0,
-    GeneralPhysicianCount: 0,
-    PulmonologistCount: 0,
-    EndocrinologistCount: 0,
-  });
-
-
-
-  const [error, setError] = useState("");
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/admin/users/count")
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch user counts");
-        return res.json();
+    fetch("http://localhost:3000/api/admin/allUsers")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to fetch users");
+        }
+        return response.json();
       })
-      .then((data) => setCounts(data))
-      .catch((err) => setError(err.message));
+      .then((data) => {
+        setUsers(data.users || []);
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+      });
   }, []);
+
+  if (loading) {
+    return <div>Loading user data...</div>;
+  }
 
   return (
     <div>
-      <h2>User Summary</h2>
-      {error ? (
-        <p style={{ color: "red" }}>{error}</p>
+      <h2>User List</h2>
+      {users.length > 0 ? (
+        <div style={{ display: "grid", gap: "1rem" }}>
+          {users.map((user, index) => (
+            <div 
+              key={index}
+              style={{
+                padding: "1rem",
+                border: "1px solid #eee",
+                borderRadius: "4px"
+              }}
+            >
+              <p><strong>Email:</strong> {user.email}</p>
+              <p><strong>Type:</strong> {user.userType}</p>
+              <p><strong>Location:</strong> {user.location}</p>
+              <p><strong>Specialty:</strong> {user.specialty}</p>
+            </div>
+          ))}
+        </div>
       ) : (
-        <ul>
-          <li>Total Users: {counts.total}</li>
-          <li>Doctors: {counts.doctorCount}</li>
-          <li>Medical Students: {counts.studentCount}</li>
-          <li>Educational Institutes: {counts.instituteCount}</li>
-          <li>Recruiters: {counts.recruiterCount}</li>
-          <li>Cardiologist: {counts.CardiologistCount}</li>
-          <li>Pediatrician: {counts.PediatricianCount}</li>
-          <li>GeneralPhysician: {counts.GeneralPhysicianCount}</li>
-          <li>Pulmonologist: {counts.PulmonologistCount}</li>
-          <li>Endocrinologist: {counts.EndocrinologistCount}</li>
-        </ul>
+        <p>No users found</p>
       )}
     </div>
   );

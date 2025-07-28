@@ -10,8 +10,8 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["Doctor", "MedicalStudent", "Recruiters", "EducationalInstitute"],
       required: true,
-    },
-    location: {
+    }, 
+    location: { 
       type: String,
     },
     specialty: {

@@ -4,7 +4,6 @@ const instituteSchema = new mongoose.Schema(
   {
     email: {
       type: String,
-      required: true,
       unique: true,
     },
     establishedYear: {
@@ -26,6 +25,39 @@ const instituteSchema = new mongoose.Schema(
     description: {
       type: String,
       required: true,
+    },
+    status: {
+      type: String,
+      enum: ['ACTIVE', 'REMOVED'],
+      default: 'ACTIVE',
+    },
+    photoUrl: {
+      type: String,
+      default: '',
+    },
+    bio: {
+      type: String,
+      default: '',
+    },
+    higherEducation: {
+      type: String,
+      default: '',
+    },
+    instituteName: {
+      type: String,
+      default: '',
+    },
+    instituteType: {
+      type: String,
+      default: '',
+    },
+    accreditation: {
+      type: String,
+      default: '',
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
     },
   },
   {

@@ -1,6 +1,18 @@
 import mongoose from "mongoose";
 
 const JobApplicationSchema = new mongoose.Schema({
+  _id: {
+    type: mongoose.Schema.Types.ObjectId,
+    default: () => new mongoose.Types.ObjectId(),
+  },
+  jobId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+  },
   name: {
     type: String,
     required: true,
@@ -28,7 +40,7 @@ const JobApplicationSchema = new mongoose.Schema({
   },
 });
 
-const db = mongoose.connection.useDb("Jobs");
-const JobApplication = db.model("JobApplication", JobApplicationSchema, "JobApplicantData");
+const db = mongoose.connection.useDb("MediConnect");
+const JobApplication = db.model("JobApplication", JobApplicationSchema, "jobapplications");
 
 export default JobApplication;

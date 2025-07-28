@@ -1,512 +1,426 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import ChangePasswordPopup from './ChangePasswordPopup';
+import { 
+  validateEmail, 
+  validateName, 
+  validateMobileNumber, 
+  validateCountry, 
+  validateCity, 
+  validateAddress,
+  type ValidationResult 
+} from '../../../../utils/validation';
 
-function ProfileForm() {
-  return (
-    <>
-    
-    <form>
-          <div className="space-y-12">
-            <div className="border-b border-gray-900/10 pb-12">
-              <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-                <div className="col-span-full">
-                  <label
-                    htmlFor="photo"
-                    className="block text-sm/6 font-medium text-gray-900"
-                  >
-                    Photo
-                  </label>
-                  <div className="mt-2 flex items-center gap-x-3">
-                    <svg
-                      className="size-12 text-gray-300"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                      aria-hidden="true"
-                      data-slot="icon"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M18.685 19.097A9.723 9.723 0 0 0 21.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 0 0 3.065 7.097A9.716 9.716 0 0 0 12 21.75a9.716 9.716 0 0 0 6.685-2.653Zm-12.54-1.285A7.486 7.486 0 0 1 12 15a7.486 7.486 0 0 1 5.855 2.812A8.224 8.224 0 0 1 12 20.25a8.224 8.224 0 0 1-5.855-2.438ZM15.75 9a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    <button
-                      type="button"
-                      className="rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
-                    >
-                      Change
-                    </button>
-                  </div>
-                </div>
-
-                <div className="col-span-full">
-                  <label
-                    htmlFor="cover-photo"
-                    className="block text-sm/6 font-medium text-gray-900"
-                  >
-                    Upload Here 
-                  </label>
-                  <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10">
-                    <div className="text-center">
-                      <svg
-                        className="mx-auto size-12 text-gray-300"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                        aria-hidden="true"
-                        data-slot="icon"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M1.5 6a2.25 2.25 0 0 1 2.25-2.25h16.5A2.25 2.25 0 0 1 22.5 6v12a2.25 2.25 0 0 1-2.25 2.25H3.75A2.25 2.25 0 0 1 1.5 18V6ZM3 16.06V18c0 .414.336.75.75.75h16.5A.75.75 0 0 0 21 18v-1.94l-2.69-2.689a1.5 1.5 0 0 0-2.12 0l-.88.879.97.97a.75.75 0 1 1-1.06 1.06l-5.16-5.159a1.5 1.5 0 0 0-2.12 0L3 16.061Zm10.125-7.81a1.125 1.125 0 1 1 2.25 0 1.125 1.125 0 0 1-2.25 0Z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      <div className="mt-4 flex text-sm/6 text-gray-600">
-                        <label
-                          htmlFor="file-upload"
-                          className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 focus-within:outline-hidden hover:text-indigo-500"
-                        >
-                          <span>Upload a file</span>
-                          <input
-                            id="file-upload"
-                            name="file-upload"
-                            type="file"
-                            className="sr-only"
-                          />
-                        </label>
-                        <p className="pl-1">or drag and drop</p>
-                      </div>
-                      <p className="text-xs/5 text-gray-600">
-                        PNG, JPG, GIF up to 10MB
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="border-b border-gray-900/10 pb-12">
-              <h2 className="text-base/7 font-semibold text-gray-900">
-                Personal Information
-              </h2>
-              <p className="mt-1 text-sm/6 text-gray-600">
-                Use a permanent address where you can receive mail.
-              </p>
-
-              <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-                <div className="sm:col-span-2">
-                  <label
-                    htmlFor="first-name"
-                    className="block text-sm/6 font-medium text-gray-900"
-                  >
-                    First name
-                  </label>
-                  <div className="mt-2">
-                    <input
-                      type="text"
-                      name="first-name"
-                      id="first-name"
-                      autoComplete="given-name"
-                      className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                    />
-                  </div>
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label
-                    htmlFor="last-name"
-                    className="block text-sm/6 font-medium text-gray-900"
-                  >
-                    Last name
-                  </label>
-                  <div className="mt-2">
-                    <input
-                      type="text"
-                      name="last-name"
-                      id="last-name"
-                      autoComplete="family-name"
-                      className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                    />
-                  </div>
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label
-                    htmlFor="email"
-                    className="block text-sm/6 font-medium text-gray-900"
-                  >
-                    Email address
-                  </label>
-                  <div className="mt-2">
-                    <input
-                      id="email"
-                      name="email"
-                      type="email"
-                      autoComplete="email"
-                      className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                    />
-                  </div>
-                </div>
-                <div className="sm:col-span-3">
-                  <label
-                    htmlFor="username"
-                    className="block text-sm/6 font-medium text-gray-900"
-                  >
-                    Username
-                  </label>
-                  <div className="mt-2">
-                    <div className="flex items-center rounded-md bg-white pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-indigo-600">
-                      <div className="shrink-0 text-base text-gray-500 select-none sm:text-sm/6">
-                        workcation.com/
-                      </div>
-                      <input
-                        type="text"
-                        name="username"
-                        id="username"
-                        className="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none sm:text-sm/6"
-                        placeholder="janesmith"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="sm:col-span-3">
-                  <label
-                    htmlFor="username"
-                    className="block text-sm/6 font-medium text-gray-900"
-                  >
-                    Password 
-                  </label>
-                  <div className="mt-2">
-                    <div className="flex items-center rounded-md bg-white pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-indigo-600">
-                      
-                      <input
-                        type="text"
-                        name="username"
-                        id="username"
-                        className="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none sm:text-sm/6"
-                        placeholder="janesmith"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="border-b border-gray-900/10 pb-12">
-            <h2 className="text-base/7 font-semibold text-gray-900">
-                Residence Information
-              </h2>
-              <p className="mt-1 text-sm/6 text-gray-600">
-                Use a permanent address where you can receive mail.
-              </p>
-              <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-                
-                <div className="sm:col-span-3 ">
-                  <label
-                    htmlFor="country"
-                    className="block text-sm/6 font-medium text-gray-900"
-                  >
-                    Country
-                  </label>
-                  <div className="mt-2 grid grid-cols-1">
-                    <select
-                      id="country"
-                      name="country"
-                      autoComplete="country-name"
-                      className="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1.5 pr-8 pl-3 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                    >
-                      <option>United States</option>
-                      <option>Canada</option>
-                      <option>Mexico</option>
-                    </select>
-                    <svg
-                      className="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"
-                      viewBox="0 0 16 16"
-                      fill="currentColor"
-                      aria-hidden="true"
-                      data-slot="icon"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                </div>
-
-
-                <div className="sm:col-span-3">
-                  <label
-                    htmlFor="region"
-                    className="block text-sm/6 font-medium text-gray-900"
-                  >
-                    Mobile Number
-                  </label>
-                  <div className="mt-2">
-                    <input
-                      type="text"
-                      name="region"
-                      id="region"
-                      autoComplete="address-level1"
-                      className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                    />
-                  </div>
-                </div>
-
-
-                <div className="col-span-full">
-                  <label
-                    htmlFor="street-address"
-                    className="block text-sm/6 font-medium text-gray-900"
-                  >
-                    Street address
-                  </label>
-                  <div className="mt-2">
-                    <input
-                      type="text"
-                      name="street-address"
-                      id="street-address"
-                      autoComplete="street-address"
-                      className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                    />
-                  </div>
-                </div>
-
-                <div className="sm:col-span-2 sm:col-start-1">
-                  <label
-                    htmlFor="city"
-                    className="block text-sm/6 font-medium text-gray-900"
-                  >
-                    City
-                  </label>
-                  <div className="mt-2">
-                    <input
-                      type="text"
-                      name="city"
-                      id="city"
-                      autoComplete="address-level2"
-                      className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                    />
-                  </div>
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label
-                    htmlFor="region"
-                    className="block text-sm/6 font-medium text-gray-900"
-                  >
-                    State / Province
-                  </label>
-                  <div className="mt-2">
-                    <input
-                      type="text"
-                      name="region"
-                      id="region"
-                      autoComplete="address-level1"
-                      className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                    />
-                  </div>
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label
-                    htmlFor="postal-code"
-                    className="block text-sm/6 font-medium text-gray-900"
-                  >
-                    ZIP / Postal code
-                  </label>
-                  <div className="mt-2">
-                    <input
-                      type="text"
-                      name="postal-code"
-                      id="postal-code"
-                      autoComplete="postal-code"
-                      className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="border-b border-gray-900/10 pb-12">
-              <h2 className="text-base/7 font-semibold text-gray-900">
-                Notifications
-              </h2>
-              <p className="mt-1 text-sm/6 text-gray-600">
-                We'll always let you know about important changes, but you pick
-                what else you want to hear about.
-              </p>
-
-              <div className="mt-10 space-y-10">
-                <fieldset>
-                  <legend className="text-sm/6 font-semibold text-gray-900">
-                    By email
-                  </legend>
-                  <div className="mt-6 space-y-6">
-                    <div className="flex gap-3">
-                      <div className="flex h-6 shrink-0 items-center">
-                        <div className="group grid size-4 grid-cols-1">
-                          <input
-                            id="comments"
-                            aria-describedby="comments-description"
-                            name="comments"
-                            type="checkbox"
-                            checked
-                            className="col-start-1 row-start-1 appearance-none rounded-sm border border-gray-300 bg-white checked:border-indigo-600 checked:bg-indigo-600 indeterminate:border-indigo-600 indeterminate:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:checked:bg-gray-100 forced-colors:appearance-auto"
-                          />
-                          <svg
-                            className="pointer-events-none col-start-1 row-start-1 size-3.5 self-center justify-self-center stroke-white group-has-disabled:stroke-gray-950/25"
-                            viewBox="0 0 14 14"
-                            fill="none"
-                          >
-                            <path
-                              className="opacity-0 group-has-checked:opacity-100"
-                              d="M3 8L6 11L11 3.5"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                            <path
-                              className="opacity-0 group-has-indeterminate:opacity-100"
-                              d="M3 7H11"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        </div>
-                      </div>
-                      <div className="text-sm/6">
-                        <label
-                          htmlFor="comments"
-                          className="font-medium text-gray-900"
-                        >
-                          New Registrations
-                        </label>
-                        <p id="comments-description" className="text-gray-500">
-                          Get notified when someone newly registerd. 
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex gap-3">
-                      <div className="flex h-6 shrink-0 items-center">
-                        <div className="group grid size-4 grid-cols-1">
-                          <input
-                            id="candidates"
-                            aria-describedby="candidates-description"
-                            name="candidates"
-                            type="checkbox"
-                            className="col-start-1 row-start-1 appearance-none rounded-sm border border-gray-300 bg-white checked:border-indigo-600 checked:bg-indigo-600 indeterminate:border-indigo-600 indeterminate:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:checked:bg-gray-100 forced-colors:appearance-auto"
-                          />
-                          <svg
-                            className="pointer-events-none col-start-1 row-start-1 size-3.5 self-center justify-self-center stroke-white group-has-disabled:stroke-gray-950/25"
-                            viewBox="0 0 14 14"
-                            fill="none"
-                          >
-                            <path
-                              className="opacity-0 group-has-checked:opacity-100"
-                              d="M3 8L6 11L11 3.5"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                            <path
-                              className="opacity-0 group-has-indeterminate:opacity-100"
-                              d="M3 7H11"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        </div>
-                      </div>
-                      <div className="text-sm/6">
-                        <label
-                          htmlFor="candidates"
-                          className="font-medium text-gray-900"
-                        >
-                          Candidates
-                        </label>
-                        <p
-                          id="candidates-description"
-                          className="text-gray-500"
-                        >
-                          Get notified when a candidate applies for a job.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex gap-3">
-                      <div className="flex h-6 shrink-0 items-center">
-                        <div className="group grid size-4 grid-cols-1">
-                          <input
-                            id="offers"
-                            aria-describedby="offers-description"
-                            name="offers"
-                            type="checkbox"
-                            className="col-start-1 row-start-1 appearance-none rounded-sm border border-gray-300 bg-white checked:border-indigo-600 checked:bg-indigo-600 indeterminate:border-indigo-600 indeterminate:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:checked:bg-gray-100 forced-colors:appearance-auto"
-                          />
-                          <svg
-                            className="pointer-events-none col-start-1 row-start-1 size-3.5 self-center justify-self-center stroke-white group-has-disabled:stroke-gray-950/25"
-                            viewBox="0 0 14 14"
-                            fill="none"
-                          >
-                            <path
-                              className="opacity-0 group-has-checked:opacity-100"
-                              d="M3 8L6 11L11 3.5"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                            <path
-                              className="opacity-0 group-has-indeterminate:opacity-100"
-                              d="M3 7H11"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        </div>
-                      </div>
-                      <div className="text-sm/6">
-                        <label
-                          htmlFor="offers"
-                          className="font-medium text-gray-900"
-                        >
-                          Offers
-                        </label>
-                        <p id="offers-description" className="text-gray-500">
-                          Get notified when a candidate accepts or rejects an
-                          offer.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </fieldset>
-
-                
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-6 flex items-center justify-end gap-x-6">
-            <button
-              type="button"
-              className="text-sm/6 font-semibold text-gray-900"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            >
-              Save
-            </button>
-          </div>
-        </form>
-
-    </>
-  )
+interface AdminProfile {
+  firstName: string;
+  lastName: string;
+  email: string;
+  username?: string;
+  mobileNumber: string;
+  country: string;
+  city: string;
+  streetAddress: string;
+  // Add other fields as needed
 }
 
-export default ProfileForm
+interface ValidationErrors {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  mobileNumber?: string;
+  country?: string;
+  city?: string;
+  streetAddress?: string;
+}
+
+function ProfileForm() {
+  const [profile, setProfile] = useState<AdminProfile | null>(null);
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [errors, setErrors] = useState<ValidationErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
+
+  // Get email from localStorage
+  const userStr = localStorage.getItem('user');
+  const user = userStr ? JSON.parse(userStr) : null;
+  const email = user?.email;
+
+  useEffect(() => {
+    if (!email) {
+      setError('No admin email found in localStorage.');
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    axios.get(`http://localhost:3000/api/admin/admins/${email}`)
+      .then(res => {
+        setProfile(res.data);
+        setError(null);
+      })
+      .catch(() => setError('Failed to load profile.'))
+      .finally(() => setLoading(false));
+  }, [email]);
+
+  const validateField = (name: string, value: string): string | undefined => {
+    switch (name) {
+      case "firstName":
+        const firstNameValidation = validateName(value, "First name");
+        return firstNameValidation.isValid ? undefined : firstNameValidation.error;
+      
+      case "lastName":
+        const lastNameValidation = validateName(value, "Last name");
+        return lastNameValidation.isValid ? undefined : lastNameValidation.error;
+      
+      case "email":
+        const emailValidation = validateEmail(value);
+        return emailValidation.isValid ? undefined : emailValidation.error;
+      
+      case "mobileNumber":
+        const mobileValidation = validateMobileNumber(value);
+        return mobileValidation.isValid ? undefined : mobileValidation.error;
+      
+      case "country":
+        const countryValidation = validateCountry(value);
+        return countryValidation.isValid ? undefined : countryValidation.error;
+      
+      case "city":
+        const cityValidation = validateCity(value);
+        return cityValidation.isValid ? undefined : cityValidation.error;
+      
+      case "streetAddress":
+        const addressValidation = validateAddress(value, "Street address");
+        return addressValidation.isValid ? undefined : addressValidation.error;
+      
+      default:
+        return undefined;
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    if (!profile) return;
+    const { name, value } = e.target;
+    setProfile({ ...profile, [name]: value });
+
+    // Validate field on change if it has been touched
+    if (touched[name]) {
+      const error = validateField(name, value);
+      setErrors(prev => ({
+        ...prev,
+        [name]: error
+      }));
+    }
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setTouched(prev => ({ ...prev, [name]: true }));
+    
+    const error = validateField(name, value);
+    setErrors(prev => ({
+      ...prev,
+      [name]: error
+    }));
+  };
+
+  const validateForm = (): boolean => {
+    if (!profile) return false;
+    
+    const newErrors: ValidationErrors = {};
+    
+    Object.keys(profile).forEach(key => {
+      if (key !== 'email' && key !== 'username') { // Skip email validation as it's disabled
+        const value = profile[key as keyof AdminProfile];
+        if (typeof value === 'string') {
+          const error = validateField(key, value);
+          if (error) {
+            newErrors[key as keyof ValidationErrors] = error;
+          }
+        }
+      }
+    });
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!profile) return;
+
+    // Mark all fields as touched
+    const allTouched = Object.keys(profile).reduce((acc, key) => {
+      acc[key] = true;
+      return acc;
+    }, {} as { [key: string]: boolean });
+    setTouched(allTouched);
+
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSuccess(false);
+    setError(null);
+
+    try {
+      // Only include password if changed
+      const updateData: any = { ...profile };
+      if (password) updateData.password = password;
+      
+      await axios.put(`http://localhost:3000/api/admin/admins/${email}`, updateData);
+      setSuccess(true);
+      setPassword('');
+      setErrors({});
+      setTouched({});
+    } catch (err: any) {
+      console.error(err);
+      
+      if (err.response?.data?.errors) {
+        // Handle backend validation errors
+        const backendErrors = err.response.data.errors;
+        if (Array.isArray(backendErrors)) {
+          setError(`Validation failed:\n${backendErrors.join('\n')}`);
+        } else {
+          setError(err.response.data.message || 'Failed to update profile.');
+        }
+      } else {
+        setError(err.message || 'Failed to update profile.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Password change handler
+  const handleChangePassword = async (currentPassword: string, newPassword: string) => {
+    // Call backend endpoint for password change
+    try {
+      await axios.post(`http://localhost:3000/api/admin/admins/${email}/change-password`, {
+        currentPassword,
+        newPassword,
+      });
+    } catch (err: any) {
+      // Throw error to popup
+      throw new Error(err.response?.data?.message || 'Failed to change password.');
+    }
+  };
+
+  const getInputClassName = (fieldName: string) => {
+    const baseClasses = "block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6";
+    const errorClasses = "outline-red-500 focus:outline-red-500";
+    const successClasses = "outline-green-500 focus:outline-green-500";
+    
+    if (errors[fieldName as keyof ValidationErrors]) {
+      return `${baseClasses} ${errorClasses}`;
+    } else if (touched[fieldName] && profile && profile[fieldName as keyof AdminProfile]) {
+      return `${baseClasses} ${successClasses}`;
+    }
+    return baseClasses;
+  };
+
+  if (loading) return <div className="p-4 text-blue-600">Loading...</div>;
+  if (error) return <div className="p-4 text-red-600">{error}</div>;
+  if (!profile) return null;
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div className="space-y-12">
+        <div className="border-b border-gray-900/10 pb-12">
+          <h2 className="text-base/7 font-semibold text-gray-900">Personal Information</h2>
+          <p className="mt-1 text-sm/6 text-gray-600">Use a permanent address where you can receive mail.</p>
+          <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+            <div className="sm:col-span-2">
+              <label htmlFor="firstName" className="block text-sm/6 font-medium text-gray-900">First name</label>
+              <div className="mt-2">
+                <input 
+                  type="text" 
+                  name="firstName" 
+                  id="firstName" 
+                  value={profile.firstName} 
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  className={getInputClassName("firstName")}
+                />
+                {errors.firstName && (
+                  <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
+                )}
+              </div>
+            </div>
+            <div className="sm:col-span-2">
+              <label htmlFor="lastName" className="block text-sm/6 font-medium text-gray-900">Last name</label>
+              <div className="mt-2">
+                <input 
+                  type="text" 
+                  name="lastName" 
+                  id="lastName" 
+                  value={profile.lastName} 
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  className={getInputClassName("lastName")}
+                />
+                {errors.lastName && (
+                  <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
+                )}
+              </div>
+            </div>
+            <div className="sm:col-span-2">
+              <label htmlFor="email" className="block text-sm/6 font-medium text-gray-900">Email address</label>
+              <div className="mt-2">
+                <input 
+                  id="email" 
+                  name="email" 
+                  type="email" 
+                  value={profile.email} 
+                  disabled 
+                  className="block w-full rounded-md bg-gray-100 px-3 py-1.5 text-base text-gray-500 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" 
+                />
+                <p className="mt-1 text-xs text-gray-500">Email cannot be changed</p>
+              </div>
+            </div>
+          
+            <div className="sm:col-span-3">
+              <label htmlFor="password" className="block text-sm/6 font-medium text-gray-900">Password</label>
+              <div className="mt-2 flex items-center gap-4">
+                <input
+                  type="password"
+                  name="password"
+                  id="password"
+                  value={profile ? '********' : ''}
+                  disabled
+                  className="block w-full rounded-md bg-gray-100 px-3 py-1.5 text-base text-gray-500 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                />
+                <button 
+                  type="button" 
+                  className="px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" 
+                  onClick={() => setShowChangePassword(true)}
+                >
+                  Change
+                </button>
+              </div>
+            </div>
+            <div className="sm:col-span-3">
+              <label htmlFor="mobileNumber" className="block text-sm/6 font-medium text-gray-900">Mobile Number</label>
+              <div className="mt-2">
+                <input 
+                  type="text" 
+                  name="mobileNumber" 
+                  id="mobileNumber" 
+                  value={profile.mobileNumber} 
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  className={getInputClassName("mobileNumber")}
+                  placeholder="e.g., (555) 123-4567"
+                />
+                {errors.mobileNumber && (
+                  <p className="mt-1 text-sm text-red-600">{errors.mobileNumber}</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="border-b border-gray-900/10 pb-12">
+          <h2 className="text-base/7 font-semibold text-gray-900">Residence Information</h2>
+          <p className="mt-1 text-sm/6 text-gray-600">Use a permanent address where you can receive mail.</p>
+          <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+            <div className="sm:col-span-3 ">
+              <label htmlFor="country" className="block text-sm/6 font-medium text-gray-900">Country</label>
+              <div className="mt-2 grid grid-cols-1">
+                <select 
+                  id="country" 
+                  name="country" 
+                  value={profile.country} 
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  className={getInputClassName("country")}
+                >
+                  <option value="">Select a country</option>
+                  <option value="United States">United States</option>
+                  <option value="Canada">Canada</option>
+                  <option value="Mexico">Mexico</option>
+                  <option value="United Kingdom">United Kingdom</option>
+                  <option value="Germany">Germany</option>
+                  <option value="France">France</option>
+                  <option value="Australia">Australia</option>
+                  <option value="Japan">Japan</option>
+                  <option value="China">China</option>
+                  <option value="India">India</option>
+                  <option value="Brazil">Brazil</option>
+                  <option value="South Africa">South Africa</option>
+                  <option value="Other">Other</option>
+                </select>
+                {errors.country && (
+                  <p className="mt-1 text-sm text-red-600">{errors.country}</p>
+                )}
+              </div>
+            </div>
+            <div className="sm:col-span-3">
+              <label htmlFor="city" className="block text-sm/6 font-medium text-gray-900">City</label>
+              <div className="mt-2">
+                <input 
+                  type="text" 
+                  name="city" 
+                  id="city" 
+                  value={profile.city} 
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  className={getInputClassName("city")}
+                />
+                {errors.city && (
+                  <p className="mt-1 text-sm text-red-600">{errors.city}</p>
+                )}
+              </div>
+            </div>
+            <div className="col-span-full">
+              <label htmlFor="streetAddress" className="block text-sm/6 font-medium text-gray-900">Street address</label>
+              <div className="mt-2">
+                <input 
+                  type="text" 
+                  name="streetAddress" 
+                  id="streetAddress" 
+                  value={profile.streetAddress} 
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  className={getInputClassName("streetAddress")}
+                />
+                {errors.streetAddress && (
+                  <p className="mt-1 text-sm text-red-600">{errors.streetAddress}</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="mt-6 flex items-center justify-end gap-x-6">
+        <button 
+          type="submit" 
+          disabled={isSubmitting}
+          className={`rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ${
+            isSubmitting 
+              ? 'bg-gray-400 cursor-not-allowed' 
+              : 'bg-indigo-600 hover:bg-indigo-500'
+          }`}
+        >
+          {isSubmitting ? "Saving..." : "Save"}
+        </button>
+        {success && <span className="text-green-600 ml-4">Profile updated successfully!</span>}
+        {error && <span className="text-red-600 ml-4">{error}</span>}
+      </div>
+      {showChangePassword && (
+        <ChangePasswordPopup
+          onClose={() => setShowChangePassword(false)}
+          // onChangePassword={handleChangePassword}
+        />
+      )}
+    </form>
+  );
+}
+
+export default ProfileForm;

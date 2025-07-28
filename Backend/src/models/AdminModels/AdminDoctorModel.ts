@@ -1,25 +1,21 @@
-// src/models/User.ts
 import mongoose from "mongoose";
 
+// Define the schema
 const userSchema = new mongoose.Schema(
   {
     email: {
       type: String,
       required: true,
-      unique: true, 
     },
     password: {
       type: String,
-      required: true,
     },
     userType: {
       type: String,
-      enum: ["Doctor", "MedicalStudent", "Recruiters", "EducationalInstitute"],
-      required: true,
     },
     profession: {
       type: String,
-      required: true,
+      default: "Removed",
     },
     specialty: {
       type: String,
@@ -31,19 +27,22 @@ const userSchema = new mongoose.Schema(
     higherEducation: {
       type: String,
     },
+    status: {
+      type: String,
+      enum: ["ACTIVE", "REMOVED"],
+      default: "ACTIVE",
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
-    timestamps: true,  
+    timestamps: true,
   }
 );
 
-
-
-const db = mongoose.connection.useDb('MediConnect');
+const db = mongoose.connection.useDb("MediConnect");
 const User = db.model("User", userSchema, "users");
 
 export default User;
-
-
-
-    

@@ -7,6 +7,7 @@ type Job = {
   title: string;
   department: string;
   jobType: string;
+  recruiterId: string
   hospitalName: string;
   location: string;
   description: string;
@@ -14,10 +15,11 @@ type Job = {
   salaryRange?: string;
   status: string;
   postedDate: string;
+  applicationDeadline: string;
   urgent: boolean;
 };
 
-function JobsTable() {
+function JobsTable({ selectedCompanyName, setSelectedCompanyName }: { selectedCompanyName?: string, setSelectedCompanyName?: (name: string) => void }) {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [error, setError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -25,20 +27,86 @@ function JobsTable() {
   const [searchInput, setSearchInput] = useState('');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [jobType, setJobType] = useState('');
+  const [department, setDepartment] = useState('');
+  const [hospitalName, setHospitalName] = useState('');
+  const [location, setLocation] = useState('');
+  const [status, setStatus] = useState('');
+  const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
+  const [searchApplied, setSearchApplied] = useState(false);
+  const [deleteMessage, setDeleteMessage] = useState('');
+  // Get unique values for dropdowns
+  const uniqueDepartments = Array.from(new Set(jobs.map(j => j.department))).filter(Boolean);
+  const uniqueHospitals = Array.from(new Set(jobs.map(j => j.hospitalName))).filter(Boolean);
+  const uniqueLocations = Array.from(new Set(jobs.map(j => j.location))).filter(Boolean);
+  const uniqueJobTypes = Array.from(new Set(jobs.map(j => j.jobType))).filter(Boolean);
+  const uniqueStatuses = Array.from(new Set(jobs.map(j => j.status))).filter(Boolean).filter(status => status !== "REMOVED");
 
   const jobsPerPage = 10;
 
   useEffect(() => {
     fetch('http://localhost:3000/api/admin/jobs')
       .then((res) => res.json())
-      .then((data) => setJobs(data))
+      .then((data) => {
+        // Filter out jobs with status "REMOVED"
+        const activeJobs = data.filter((job: Job) => job.status !== "REMOVED");
+        setJobs(activeJobs);
+      })
       .catch(() => setError('Something went wrong'));
   }, []);
 
+  useEffect(() => {
+    if (selectedCompanyName && selectedCompanyName !== hospitalName) {
+      setHospitalName(selectedCompanyName);
+      setSearchApplied(true);
+      let filtered = jobs.filter((job) => job.hospitalName === selectedCompanyName && job.status !== "REMOVED");
+      setFilteredJobs(filtered);
+      setCurrentPage(1);
+    }
+    // Optionally, clear the filter if selectedCompanyName is empty
+    // else if (selectedCompanyName === "") {
+    //   setHospitalName("");
+    //   setFilteredJobs([]);
+    //   setSearchApplied(false);
+    // }
+  }, [selectedCompanyName, jobs]);
+
   // Handle Search Button Click
   const handleSearch = () => {
-    setSearch(searchInput.trim());
-    setCurrentPage(1); // Reset to first page on new search
+    setSearchApplied(true);
+    let filtered = jobs.filter((job) => {
+      // First, exclude removed jobs
+      if (job.status === "REMOVED") {
+        return false;
+      }
+      
+      const term = searchInput.trim().toLowerCase();
+      const matchesSearch =
+        !term ||
+        job.title.toLowerCase().includes(term) ||
+        job.hospitalName.toLowerCase().includes(term) ||
+        job.department.toLowerCase().includes(term);
+      const matchesJobType = !jobType || job.jobType === jobType;
+      const matchesDepartment = !department || job.department === department;
+      const matchesHospital = !hospitalName || job.hospitalName === hospitalName;
+      const matchesLocation = !location || job.location === location;
+      const matchesStatus = !status || job.status === status;
+      return matchesSearch && matchesJobType && matchesDepartment && matchesHospital && matchesLocation && matchesStatus;
+    });
+    setFilteredJobs(filtered);
+    setCurrentPage(1);
+  };
+
+  const handleCancel = () => {
+    setSearchInput('');
+    setJobType('');
+    setDepartment('');
+    setHospitalName('');
+    setLocation('');
+    setStatus('');
+    setFilteredJobs([]);
+    setSearchApplied(false);
+    setCurrentPage(1);
   };
 
   // Handle Sort Button Click
@@ -57,22 +125,51 @@ function JobsTable() {
     setSelectedJob(null);
   };
 
-  // Filter jobs by search term
-  const filteredJobs = jobs.filter((job) => {
-    if (!search) return true;
-    const term = search.toLowerCase();
-    return (
-      job.title.toLowerCase().includes(term) ||
-      job.department.toLowerCase().includes(term) ||
-      job.hospitalName.toLowerCase().includes(term)
-    );
-  });
+  // Function to handle job deletion
+  const handleDeleteJob = async (jobId: string) => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/admin/jobs/${jobId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-  // Sort jobs by postedDate
-  const sortedJobs = [...filteredJobs].sort((a, b) => {
+      if (response.ok) {
+        // Remove the job from the local state
+        setJobs(jobs.filter(job => job._id !== jobId));
+        setFilteredJobs(filteredJobs.filter(job => job._id !== jobId));
+        
+        // Show success message
+        setDeleteMessage('Job has been successfully removed!');
+        
+        // Clear the message after 3 seconds
+        setTimeout(() => {
+          setDeleteMessage('');
+        }, 10000);
+      } else {
+        console.error('Failed to delete job');
+        setDeleteMessage('Failed to remove job. Please try again.');
+        setTimeout(() => {
+          setDeleteMessage('');
+        }, 10000);
+      }
+    } catch (error) {
+      console.error('Error deleting job:', error);
+      setDeleteMessage('Error removing job. Please try again.');
+      setTimeout(() => {
+        setDeleteMessage('');
+      }, 3000);
+    }
+  };
+
+  // Filter jobs by search term
+  const jobsList = searchApplied ? filteredJobs : jobs;
+  const filteredJobsBySearch = jobsList.filter((job) => true); // placeholder, now jobsList is already filtered
+  const sortedJobs = [...filteredJobsBySearch].sort((a, b) => {
     const dateA = new Date(a.postedDate).getTime();
     const dateB = new Date(b.postedDate).getTime();
-    return sortDirection === 'asc' ? dateB - dateA :  dateA - dateB;
+    return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
   });
 
   const totalPages = Math.ceil(sortedJobs.length / jobsPerPage);
@@ -87,75 +184,141 @@ function JobsTable() {
   return (
     <>
       {error && <p style={{ color: 'red' }}>{error}</p>}
+      
+      {/* Success/Error Message */}
+      {deleteMessage && (
+        <div className={`mb-4 p-4 rounded-lg ${
+          deleteMessage.includes('successfully') 
+            ? 'bg-green-100 border border-green-400 text-green-700' 
+            : 'bg-red-100 border border-red-400 text-red-700'
+        }`}>
+          <div className="flex items-center">
+            {deleteMessage.includes('successfully') ? (
+              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            )}
+            <span className="font-medium">{deleteMessage}</span>
+          </div>
+        </div>
+      )}
 
       <div className="p-6 bg-white rounded-lg shadow-sm">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-          {/* Search Input */}
-          <div className="relative w-96">
-            <div className='absolute inset-y-0 left-0 pl-3 flex w-96 items-center'>
+        {/* Advanced Search Section */}
+        <div className="mx-auto mb-10 p-6 bg-blue-50 rounded-xl shadow-lg border border-blue-100">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+            {/* Search Bar */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
               <input
                 type="text"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                className="block w-full pl-5 pr-3 mr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="Search About Jobs"
+                placeholder="Search by title, hospital, or department"
+                className="block w-full pl-4 pr-3 py-2 border rounded-lg bg-white border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
-              <button
-                className="inline-flex items-center cursor-pointer px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
-                onClick={handleSearch}
+            </div>
+            {/* Job Type */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Job Type</label>
+              <select
+                className="block w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
+                value={jobType}
+                onChange={(e) => setJobType(e.target.value)}
               >
-                <svg
-                  className="-ml-1 mr-2 h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                Search
-              </button>
+                <option value="">All types</option>
+                {uniqueJobTypes.map(type => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+            </div>
+            {/* Department */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
+              <select
+                className="block w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
+                value={department}
+                onChange={(e) => setDepartment(e.target.value)}
+              >
+                <option value="">All departments</option>
+                {uniqueDepartments.map((dep) => (
+                  <option key={dep} value={dep}>{dep}</option>
+                ))}
+              </select>
+            </div>
+            {/* Hospital Name */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Hospital Name</label>
+              <select
+                className="block w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
+                value={hospitalName}
+                onChange={(e) => setHospitalName(e.target.value)}
+              >
+                <option value="">All hospitals</option>
+                {uniqueHospitals.map((hosp) => (
+                  <option key={hosp} value={hosp}>{hosp}</option>
+                ))}
+              </select>
+            </div>
+            {/* Location */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+              <select
+                className="block w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+              >
+                <option value="">All locations</option>
+                {uniqueLocations.map((loc) => (
+                  <option key={loc} value={loc}>{loc}</option>
+                ))}
+              </select>
+            </div>
+            {/* Status */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <select
+                className="block w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+              >
+                <option value="">All statuses</option>
+                {uniqueStatuses.map(stat => (
+                  <option key={stat} value={stat}>{stat}</option>
+                ))}
+              </select>
             </div>
           </div>
-
-          {/* Right-side controls */}
-          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-            {/* Sort Button */}
+          <div className="flex justify-end space-x-3 pt-4 border-t border-blue-200">
+            <button className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors" onClick={handleCancel}>
+              Cancel
+            </button>
             <button
-              className="inline-flex cursor-pointer items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors flex items-center"
               onClick={handleSort}
             >
               <svg
-                className="-ml-1 mr-2 h-5 w-5 text-gray-500"
+                className="w-4 h-4 mr-2 text-gray-500"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                aria-hidden="true"
               >
-                <path d="M3 3a1 1 0 000 2h11a1 1 0 100-2H3zM3 7a1 1 0 000 2h5a1 1 0 000-2H3zM3 11a1 1 0 100 2h4a1 1 0 100-2H3zM15 8a1 1 0 10-2 0v5.586l-1.293-1.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L15 13.586V8z" />
+                {sortDirection === 'asc' ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                )}
               </svg>
-               Sort {sortDirection === 'asc' ? 'Descending' : ' Ascending'}
+              Sort {sortDirection === 'asc' ? 'Ascending' : 'Descending'}
             </button>
-            {/* Export Button (unchanged) */}
-            <button className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-              <svg
-                className="-ml-1 mr-2 h-5 w-5 text-gray-500"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              Export
+            <button className="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm transition-colors" onClick={handleSearch}>
+              Apply Search
             </button>
           </div>
         </div>
@@ -267,7 +430,8 @@ function JobsTable() {
       {selectedJob && (
         <JobViewPopup 
           job={selectedJob} 
-          onClose={handleCloseJobView} 
+          onClose={handleCloseJobView}
+          onDelete={handleDeleteJob}
         />
       )}
     </>
