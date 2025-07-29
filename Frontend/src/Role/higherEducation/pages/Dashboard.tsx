@@ -34,11 +34,11 @@ const InstitutionDashboard: React.FC = () => {
     };
     fetchProfile();
   }, []);
-
+  
   return (
     <div>
       <Sidebar />
-
+      
       <div className="flex-1 overflow-auto md:pl-64">
         <div className="flex items-center justify-between p-4 bg-white">
           <div className="flex items-center gap-4">
@@ -83,11 +83,11 @@ const InstitutionDashboard: React.FC = () => {
               <div className="flex flex-col md:flex-row items-center">
                 <div className="md:w-1/2 mb-8 md:mb-0 z-10">
                   <h1 className="text-4xl md:text-5xl font-bold text-slate-700 mb-8">
-                    Educational Institutions
-                  </h1>
+            Educational Institutions
+          </h1>
                   <div className="bg-sky-200 rounded-xl p-8 md:p-10 max-w-2xl max-h-2xl">
                     <h2 className="text-xl md:text-2xl font-semibold text-slate-800 leading-relaxed">
-                      Connect with aspiring medical students and showcase your advanced programs worldwide.
+            Connect with aspiring medical students and showcase your advanced programs worldwide.
                     </h2>
                   </div>
                 </div>
@@ -108,13 +108,13 @@ const InstitutionDashboard: React.FC = () => {
           <div className="max-w-6xl mx-auto">
             <h2 className="text-2xl md:text-3xl font-bold text-indigo-900 mb-6">
               Welcome to MediConnect: Empowering Educational Excellence with Smart Digital Solutions
-            </h2>
+          </h2>
             <p className="text-slate-700 text-lg mb-12 max-w-4xl">
-              At MediConnect, we specialize in bridging the gap between medical professionals, students, recruiters, and
-              institutions through an innovative digital platform. Whether you're an educational institution looking to
-              attract top medical students, a recruiter sourcing talent, or a student seeking opportunities, MediConnect
-              is your go-to hub for smart academic management and global networking.
-            </p>
+            At MediConnect, we specialize in bridging the gap between medical professionals, students, recruiters, and
+            institutions through an innovative digital platform. Whether you're an educational institution looking to
+            attract top medical students, a recruiter sourcing talent, or a student seeking opportunities, MediConnect
+            is your go-to hub for smart academic management and global networking.
+          </p>
           </div>
         </div>
 
@@ -161,15 +161,15 @@ const InstitutionDashboard: React.FC = () => {
                   <div className="flex items-start gap-2">
                     <span className="text-indigo-600">▶</span>
                     <p className="text-slate-600">
-                      Post and manage your degree programs with detailed information and requirements.
+              Post and manage your degree programs with detailed information and requirements.
                     </p>
                   </div>
                   <div className="flex items-start gap-2">
                     <span className="text-indigo-600">▶</span>
                     <p className="text-slate-600">
-                      Reach a global audience of medical students and professionals.
-                    </p>
-                  </div>
+              Reach a global audience of medical students and professionals.
+            </p>
+          </div>
                 </div>
                 <div className="mt-auto flex justify-center items-center">
                   <BookOpen className="h-20 w-20 text-indigo-600" />
@@ -181,15 +181,15 @@ const InstitutionDashboard: React.FC = () => {
                   <div className="flex items-start gap-2">
                     <span className="text-indigo-600">▶</span>
                     <p className="text-slate-600">
-                      Review and manage student applications efficiently with our streamlined tracking system.
+              Review and manage student applications efficiently with our streamlined tracking system.
                     </p>
                   </div>
                   <div className="flex items-start gap-2">
                     <span className="text-indigo-600">▶</span>
                     <p className="text-slate-600">
-                      Access comprehensive student profiles and academic records.
-                    </p>
-                  </div>
+              Access comprehensive student profiles and academic records.
+            </p>
+          </div>
                 </div>
                 <div className="mt-auto flex justify-center items-center">
                   <Users className="h-20 w-20 text-indigo-600" />
@@ -201,16 +201,16 @@ const InstitutionDashboard: React.FC = () => {
                   <div className="flex items-start gap-2">
                     <span className="text-indigo-600">▶</span>
                     <p className="text-slate-600">
-                      Communicate directly with prospective students through our secure messaging system.
+              Communicate directly with prospective students through our secure messaging system.
                     </p>
                   </div>
                   <div className="flex items-start gap-2">
                     <span className="text-indigo-600">▶</span>
                     <p className="text-slate-600">
-                      Stay informed with instant notifications on new applications and inquiries.
-                    </p>
-                  </div>
-                </div>
+              Stay informed with instant notifications on new applications and inquiries.
+            </p>
+          </div>
+        </div>
                 <div className="mt-auto flex justify-center items-center">
                   <MessageSquare className="h-20 w-20 text-indigo-600" />
                 </div>

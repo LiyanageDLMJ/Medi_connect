@@ -28,20 +28,20 @@ const SidebarWrapper: React.FC<SidebarWrapperProps> = ({ children }) => {
     return <Sidebar />;
   };
 
-  return (
-    <div className="flex min-h-screen">
-      {getSidebar()}
-      {children ? (
+  // If children are provided, render as wrapper
+  if (children) {
+    return (
+      <div>
+        {getSidebar()}
         <div className="flex-1 overflow-auto md:pl-64">
           {children}
         </div>
-      ) : (
-        <div className="flex-1 overflow-auto md:pl-64">
-          {/* Default content area */}
-        </div>
-      )}
-    </div>
-  );
+      </div>
+    );
+  }
+
+  // If no children, just render the sidebar (for self-closing usage)
+  return getSidebar();
 };
 
 export default SidebarWrapper;
