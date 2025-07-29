@@ -50,9 +50,11 @@ const MedicalStudentDashboard: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <div className="relative">
-              <Bell className="h-5 w-5 text-gray-600" />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+            <div className="relative group cursor-pointer">
+              <div className="p-2 rounded-full hover:bg-gray-100 transition-all duration-200">
+                <Bell className="h-6 w-6 text-gray-600 group-hover:text-indigo-600 transition-colors duration-200" />
+              </div>
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-semibold rounded-full h-5 w-5 flex items-center justify-center shadow-lg">
                 2
               </span>
             </div>

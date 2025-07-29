@@ -10,7 +10,7 @@ import {
   Search,
   User,
 } from "lucide-react";
-import Sidebar from "../components/NavBar/Sidebar";
+import SidebarWrapper from "../../../Components/SidebarWrapper";
 import { useFormContext } from "../../../context/FormContext";
 import UpdateCV02 from "./UpdateCV02";
 
@@ -18,6 +18,9 @@ export default function UpdateCV01() {
   const { formData, setFormData } = useFormContext();
   const navigate = useNavigate();
   const [phoneError, setPhoneError] = useState<string>("");
+
+  // Get user role from localStorage
+  const userType = localStorage.getItem('userType');
 
   const validatePhoneNumber = (phone: string) => {
     //phone number validation
@@ -45,12 +48,16 @@ export default function UpdateCV01() {
   const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("hiiiiiii");
-    navigate("/physician/update-cv02");
+    if (userType === 'MedicalStudent') {
+      navigate("/medical_student/update-cv02");
+    } else {
+      navigate("/physician/update-cv02");
+    }
   };
 
   return (
     <div>
-      <Sidebar />
+      <SidebarWrapper />
 
       <div className="flex-1 overflow-auto md:pl-64">
         {/* Header */}

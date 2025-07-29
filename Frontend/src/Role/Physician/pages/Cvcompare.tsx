@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Button, Input } from "@mui/material";
-import Sidebar from "../components/NavBar/Sidebar";
 import {
   Bell,
   ChevronDown,
@@ -13,6 +12,7 @@ import {
   User,
 } from "lucide-react";
 import axios from "axios";
+import SidebarWrapper from "../../../Components/SidebarWrapper";
 
 type ComparisonData = {
   totalExperience: string;
@@ -111,7 +111,7 @@ export default function CVComparison() {
 
   return (
     <div>
-      <Sidebar />
+      <SidebarWrapper />
 
       <div className="flex-1 overflow-auto md:pl-64">
         {/* Header */}
