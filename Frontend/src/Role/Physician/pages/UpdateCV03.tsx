@@ -1,7 +1,6 @@
 "use client";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import React, { useState } from "react";
 import { useFormContext } from "../../../context/FormContext";
 import { supabase } from "../../../utils/supabase";
 
@@ -16,14 +15,14 @@ import {
   Check,
 } from "lucide-react";
 import SidebarWrapper from "../../../Components/SidebarWrapper";
-import { useFormContext } from "../../../context/FormContext";
+
 import axios from "axios";
 
 export default function UpdateCV03() {
   const { formData, setFormData } = useFormContext();
   const navigate = useNavigate();
   const [resumeFile, setResumeFile] = useState<File | null>(null);
-  const [error, setError] = useState<string | null>(null);
+
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [createdDoctorId, setCreatedDoctorId] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -128,13 +127,17 @@ export default function UpdateCV03() {
 
       console.log("File uploaded successfully, URL:", supabaseUrl);
 
-      // Prepare payload with Supabase URL
+      // Get userId from localStorage
+      const userId = localStorage.getItem("userId");
+
+      // Prepare payload with Supabase URL and userId
       const payload = {
         ...formData,
         resumeRawUrl: supabaseUrl, // This should be the Supabase URL
         jobTitle: formData.jobTitle,
         hospitalInstitution: formData.hospitalInstitution,
         employmentPeriod: formData.employmentPeriod,
+        userId: userId // Add userId to the payload
       };
 
       console.log("Sending payload to backend:", payload);

@@ -48,8 +48,8 @@ exports.getDoctorCv = async (req: Request, res: Response) => {
 export const addDoctorCv = async (req: Request, res: Response) => {
     try {
         console.log("Received CV data:", req.body);
-        
-        const { resumeRawUrl, certificationInput: certInput, ...bodyData } = req.body;
+  
+        const { resumeRawUrl, certificationInput: certInput, userId, ...bodyData } = req.body;
 
         // Validate required fields
         const requiredFields = [
@@ -105,7 +105,8 @@ export const addDoctorCv = async (req: Request, res: Response) => {
         const doctorData = {
             ...bodyData,
             resumeRawUrl, // This should be the Supabase URL
-            certificationInput
+            certificationInput,
+            userId // Add userId to the CV data
         };
 
         console.log("Saving doctor data to MongoDB:", doctorData);
@@ -157,6 +158,77 @@ exports.ReplaceCv = async (req: Request, res: Response) => {
         console.error("Error replacing Doctor CV:", error);
         res.status(500).json({
             message: "Doctor CV not updated",
+            error: error instanceof Error ? error.message : "Unknown error"
+        });
+    }
+};
+
+// Get CV data by userId
+exports.getCvByUserId = async (req: Request, res: Response) => {
+    try {
+        const userId = req.params.userId;
+        
+        if (!userId) {
+            return res.status(400).json({ message: 'User ID is required' });
+        }
+
+        console.log("Searching for CV with userId:", userId);
+
+        // First try to find CV by userId
+        let cvData = await CvDoctorUpdate.findOne({ 
+            userId: userId 
+        }).sort({ createdAt: -1 });
+
+        // If not found by userId, try to find by user's email (fallback for existing records)
+        if (!cvData) {
+            console.log("CV not found by userId, trying to find by email...");
+            
+            // Get user's email from the user collection
+            const User = require('../../models/UserModel').default;
+            const user = await User.findById(userId);
+            
+            if (user && user.email) {
+                console.log("Searching for CV with email:", user.email);
+                cvData = await CvDoctorUpdate.findOne({ 
+                    contactEmail: user.email 
+                }).sort({ createdAt: -1 });
+            }
+            
+            // If still not found, try to find by user's name (another fallback)
+            if (!cvData && user && user.name) {
+                console.log("CV not found by email, trying to find by name:", user.name);
+                cvData = await CvDoctorUpdate.findOne({ 
+                    yourName: user.name 
+                }).sort({ createdAt: -1 });
+            }
+        }
+
+        if (!cvData) {
+            console.log("No CV found for user");
+            return res.status(404).json({ 
+                message: 'No CV found for this user',
+                hasCv: false 
+            });
+        }
+
+        console.log("CV found:", cvData.yourName, "with resume URL:", cvData.resumeRawUrl);
+
+        res.status(200).json({
+            message: 'CV data retrieved successfully',
+            hasCv: true,
+            cvData: {
+                resumeRawUrl: cvData.resumeRawUrl,
+                yourName: cvData.yourName,
+                contactEmail: cvData.contactEmail,
+                contactPhone: cvData.contactPhone,
+                experience: cvData.experience
+            }
+        });
+
+    } catch (error) {
+        console.error("Error getting CV by userId:", error);
+        res.status(500).json({
+            message: "Failed to get CV data",
             error: error instanceof Error ? error.message : "Unknown error"
         });
     }

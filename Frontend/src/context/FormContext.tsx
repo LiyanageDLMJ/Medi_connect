@@ -21,14 +21,10 @@ interface FormData {
   employmentPeriod: string;
   hospitalInstitution: string;
   resumePdfUrl: string;
+  resumeRawUrl: string; // Add this field for Supabase URL
 }
 
-interface FormContextType {
-  formData: FormData;
-  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
-}
-
-const defaultFormData: FormData = {
+const initialFormData: FormData = {
   yourName: "",
   professionalTitle: "",
   currentLocation: "",
@@ -39,22 +35,28 @@ const defaultFormData: FormData = {
   medicalDegree: "",
   university: "",
   specialization: "",
-  experience: '',
+  experience: "",
   certificationInput: [],
-  additionalCertifications: "", 
+  additionalCertifications: "",
   graduationDate: "",
-  medicalLicenseNumber: '',
+  medicalLicenseNumber: "",
   medicalLicenseIssuer: "",
   jobTitle: "",
   employmentPeriod: "",
   hospitalInstitution: "",
   resumePdfUrl: "",
+  resumeRawUrl: "",
 };
+
+interface FormContextType {
+  formData: FormData;
+  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
+}
 
 const FormContext = createContext<FormContextType | undefined>(undefined);
 
 export const FormProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [formData, setFormData] = useState<FormData>(defaultFormData);
+  const [formData, setFormData] = useState<FormData>(initialFormData);
 
   return (
     <FormContext.Provider value={{ formData, setFormData }}>
@@ -65,7 +67,7 @@ export const FormProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 export const useFormContext = () => {
   const context = useContext(FormContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error("useFormContext must be used within a FormProvider");
   }
   return context;
