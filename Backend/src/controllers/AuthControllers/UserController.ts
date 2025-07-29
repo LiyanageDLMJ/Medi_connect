@@ -6,11 +6,8 @@ import Doctor from '../../models/DoctorModel'; // Doctor model
 import EducationalInstitute from '../../models/EducationalInstituteModel'; // Educational Institute model
 import Recruiter from '../../models/RecruiterModel'; // Recruiter model
 import MedicalStudent from '../../models/MedicalStudentModel'; // Medical Student model
-import nodemailer from 'nodemailer';
 import crypto from 'crypto';
 import { Document } from 'mongoose';
-
-// Map userType to corresponding models and discriminator keys
 const userModels: { [key: string]: any } = {
   Doctor: Doctor,
   MedicalStudent: MedicalStudent,
@@ -214,6 +211,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
     const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${resetToken}&email=${encodeURIComponent(user.email)}`;
 
     // Setup nodemailer transporter (Gmail SMTP for demo)
+    const nodemailer = require('nodemailer');
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {

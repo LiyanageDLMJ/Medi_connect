@@ -43,7 +43,14 @@ const JobInternshipDetails = () => {
     window.history.back()
   }
 
-  // No edit or delete functions needed
+  const formatDate = (dateString: string) => {
+    const options: Intl.DateTimeFormatOptions = {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }
+    return new Date(dateString).toLocaleDateString(undefined, options)
+  }
 
   if (loading) {
     return (
@@ -111,17 +118,6 @@ const JobInternshipDetails = () => {
     )
   }
 
-  const formatDate = (dateString: string) => {
-    const options: Intl.DateTimeFormatOptions = {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    }
-    return new Date(dateString).toLocaleDateString(undefined, options)
-  }
-
-  // No role checking needed
-
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
@@ -133,8 +129,6 @@ const JobInternshipDetails = () => {
           <ArrowLeft className="h-4 w-4" />
           Back to Jobs
         </button>
-
-        {/* No update messages needed */}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
@@ -152,7 +146,9 @@ const JobInternshipDetails = () => {
                   <div className="flex flex-wrap gap-2">
                     <span
                       className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                        job.status === "Open" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
+                        job.status === "Open"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-800"
                       }`}
                     >
                       {job.status}
@@ -164,7 +160,6 @@ const JobInternshipDetails = () => {
                       </span>
                     )}
                   </div>
-                
                 </div>
               </div>
               <hr className="border-gray-200" />
@@ -192,7 +187,6 @@ const JobInternshipDetails = () => {
                     <p className="text-gray-600">{job.location}</p>
                   </div>
                 </div>
-
                 <div className="flex items-start gap-3">
                   <Briefcase className="h-5 w-5 text-gray-500 mt-0.5" />
                   <div>
@@ -200,7 +194,6 @@ const JobInternshipDetails = () => {
                     <p className="text-gray-600">{job.jobType}</p>
                   </div>
                 </div>
-
                 <div className="flex items-start gap-3">
                   <DollarSign className="h-5 w-5 text-gray-500 mt-0.5" />
                   <div>
@@ -208,7 +201,6 @@ const JobInternshipDetails = () => {
                     <p className="text-gray-600">{job.salaryRange}</p>
                   </div>
                 </div>
-
                 <div className="flex items-start gap-3">
                   <Calendar className="h-5 w-5 text-gray-500 mt-0.5" />
                   <div>
@@ -219,8 +211,10 @@ const JobInternshipDetails = () => {
                 <div className="flex items-start gap-3">
                   <Calendar className="h-5 w-5 text-gray-500 mt-0.5" />
                   <div>
-                    <h4 className="font-medium" style={{ color: 'red', fontWeight: 'bold' }}>Deadline</h4>
-                    <p className="text-gray-600" style={{ color: 'red', fontWeight: 'bold' }}>{job.applicationDeadline ? formatDate(job.applicationDeadline) : 'N/A'}</p>
+                    <h4 className="font-medium text-red-600">Deadline</h4>
+                    <p className="text-red-600 font-semibold">
+                      {job.applicationDeadline ? formatDate(job.applicationDeadline) : 'N/A'}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -231,7 +225,7 @@ const JobInternshipDetails = () => {
                 <div className="p-4 border-b">
                   <h2 className="text-xl font-semibold">Hospital Information</h2>
                 </div>
-                <div className="p-4">
+                <div className="p-4 space-y-4">
                   <div className="flex items-center gap-3">
                     <div className="h-12 w-12 bg-gray-100 rounded-full flex items-center justify-center">
                       <Building2 className="h-6 w-6 text-gray-500" />
@@ -241,11 +235,17 @@ const JobInternshipDetails = () => {
                       <p className="text-gray-600 text-sm">{job.location}</p>
                     </div>
                   </div>
+
+                  {/* ✅ Apply Button Here */}
+                  <button
+                     onClick={() => navigate(`/physician/job-application/${job.jobId}`)}
+                    className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition"
+                  >
+                    Apply for this Job
+                  </button>
                 </div>
               </div>
             )}
-
-            {/* Actions section completely removed */}
           </div>
         </div>
       </div>

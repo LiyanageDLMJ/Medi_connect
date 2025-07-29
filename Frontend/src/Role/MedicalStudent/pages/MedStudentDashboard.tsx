@@ -127,126 +127,159 @@ const MedicalStudentDashboard: React.FC = () => {
         </div>
 
         {/* Why Choose Section */}
-        <div className="px-6 py-8 md:px-16">
+        <div className="px-6 py-8 md:px-16 bg-gray-50">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-bold text-indigo-900 mb-10">
+            <h2 className="text-2xl md:text-3xl font-bold text-indigo-900 mb-10 text-center">
               Why Choose MediConnect?
             </h2>
             <div className="grid md:grid-cols-3 gap-8">
-              <div className="bg-white p-6 rounded-lg shadow-sm">
-                <h3 className="text-lg font-semibold mb-4">
-                  1. Purpose-Built for Healthcare Careers
-                </h3>
-                <p className="text-slate-600">
-                  MediConnect is designed exclusively for the healthcare sector,
-                  aligning with the industry's evolving needs. Our tools and
-                  features are crafted to support medical professionals at every
-                  stage of their career.
-                </p>
+              {/* Purpose-Built Box */}
+              <div className="bg-blue-50 rounded-xl shadow-lg p-8 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+                <div className="flex flex-col h-full">
+                  <div className="flex justify-center mb-6">
+                    <div className="bg-indigo-100 p-4 rounded-full">
+                      <svg className="h-12 w-12 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-semibold mb-6 text-center text-indigo-900">
+                    Purpose-Built for Healthcare Careers
+                  </h3>
+                  <p className="text-slate-600 leading-relaxed text-center flex-grow">
+                    MediConnect is designed exclusively for the healthcare sector, aligning with the industry's evolving needs. Our tools and features are crafted to support medical professionals at every stage of their career.
+                  </p>
+                </div>
               </div>
-              <div className="bg-white p-6 rounded-lg shadow-sm">
-                <h3 className="text-lg font-semibold mb-4">
-                  2. Intelligent Tools for Career Growth
-                </h3>
-                <p className="text-slate-600">
-                  Leverage advanced features such as CV comparison, automated
-                  feedback, and personalized recommendations to enhance your
-                  career prospects and visibility.
-                </p>
+
+              {/* Intelligent Tools Box */}
+              <div className="bg-blue-50 rounded-xl shadow-lg p-8 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+                <div className="flex flex-col h-full">
+                  <div className="flex justify-center mb-6">
+                    <div className="bg-indigo-100 p-4 rounded-full">
+                      <svg className="h-12 w-12 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-semibold mb-6 text-center text-indigo-900">
+                    Intelligent Tools for Career Growth
+                  </h3>
+                  <p className="text-slate-600 leading-relaxed text-center flex-grow">
+                    Leverage advanced features such as CV comparison, automated feedback, and personalized recommendations to enhance your career prospects and visibility.
+                  </p>
+                </div>
               </div>
-              <div className="bg-white p-6 rounded-lg shadow-sm">
-                <h3 className="text-lg font-semibold mb-4">
-                  3. Streamlined Recruitment & Communication
-                </h3>
-                <p className="text-slate-600">
-                  From direct messaging between users to real-time notifications
-                  and tailored dashboards, we ensure smooth collaboration and
-                  efficient hiring or program admissions.
-                </p>
+
+              {/* Streamlined Communication Box */}
+              <div className="bg-blue-50 rounded-xl shadow-lg p-8 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+                <div className="flex flex-col h-full">
+                  <div className="flex justify-center mb-6">
+                    <div className="bg-indigo-100 p-4 rounded-full">
+                      <svg className="h-12 w-12 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-semibold mb-6 text-center text-indigo-900">
+                    Streamlined Recruitment & Communication
+                  </h3>
+                  <p className="text-slate-600 leading-relaxed text-center flex-grow">
+                    From direct messaging between users to real-time notifications and tailored dashboards, we ensure smooth collaboration and efficient hiring or program admissions.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* What We Offer Section */}
-        <div className="px-6 py-12 md:px-16">
+        <div className="px-6 py-12 md:px-16 bg-gray-50">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-bold text-indigo-900 mb-10">
+            <h2 className="text-2xl md:text-3xl font-bold text-indigo-900 mb-10 text-center">
               What We Offer
             </h2>
             <div className="grid md:grid-cols-3 gap-8">
-              <div className="flex flex-col">
-                <h3 className="text-lg font-semibold mb-4">
-                  1. Comprehensive Search Tools
-                </h3>
-                <div className="flex flex-col gap-3 mb-4">
-                  <div className="flex items-start gap-2">
-                    <span className="text-indigo-600">▶</span>
-                    <p className="text-slate-600">
-                      Explore jobs, internships, and academic programs
-                      worldwide.
-                    </p>
+              {/* Search Tools Box */}
+              <div className="bg-blue-50 rounded-xl shadow-lg p-8 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+                <div className="flex flex-col h-full">
+                  <div className="flex justify-center mb-6">
+                    <div className="bg-indigo-100 p-4 rounded-full">
+                      <FaSearch className="h-12 w-12 text-indigo-600" />
+                    </div>
                   </div>
-                  <div className="flex items-start gap-2">
-                    <span className="text-indigo-600">▶</span>
-                    <p className="text-slate-600">
-                      Get personalized recommendations based on your
-                      qualifications, experience, and interests.
-                    </p>
-                  </div>
-                </div>
-                <div className="mt-auto flex justify-center items-center">
-                  <FaSearch className="h-20 w-20 text-indigo-600" />
-                </div>
-              </div>
-              <div className="flex flex-col">
-                <h3 className="text-lg font-semibold mb-4">
-                  2. CV Enhancement & Feedback
-                </h3>
-                <div className="flex flex-col gap-3 mb-4">
-                  <div className="flex items-start gap-2">
-                    <span className="text-indigo-600">▶</span>
-                    <p className="text-slate-600">
-                      Upload and manage your CVs.
-                    </p>
-                  </div>
-                
-                  <div className="flex items-start gap-2">
-                    <span className="text-indigo-600">▶</span>
-                    <p className="text-slate-600">
-                      Compare your profile with top candidates.
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="mt-auto flex justify-center items-center">
-                  <FaFileAlt className="h-20 w-20 text-indigo-600" />
-                </div>
-                
-              </div>
-              <div className="flex flex-col">
-                <h3 className="text-lg font-semibold mb-4">
-                  3. Streamlined Recruitment & Communication
-                </h3>
-                <div className="flex flex-col gap-3 mb-4">
-                  <div className="flex items-start gap-2">
-                    <span className="text-indigo-600">▶</span>
-                    <p className="text-slate-600">
-                      Stay informed with instant updates on applications,
-                      messages, and deadlines.
-                    </p>
-                  </div>
-                  <div>
-                    <div className="flex items-start gap-2">
-                      <span className="text-indigo-600">▶</span>
-                      <p className="text-slate-600">
-                        Use our secure direct messaging system to connect with
-                        recruiters or institutions.
+                  <h3 className="text-xl font-semibold mb-6 text-center text-indigo-900">
+                    Comprehensive Search Tools
+                  </h3>
+                  <div className="flex flex-col gap-4 mb-6 flex-grow">
+                    <div className="flex items-start gap-3">
+                      <span className="text-indigo-600 text-lg mt-1">▶</span>
+                      <p className="text-slate-600 leading-relaxed">
+                        Explore jobs, internships, and academic programs worldwide.
+                      </p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <span className="text-indigo-600 text-lg mt-1">▶</span>
+                      <p className="text-slate-600 leading-relaxed">
+                        Get personalized recommendations based on your qualifications, experience, and interests.
                       </p>
                     </div>
                   </div>
-                  <div className="mt-auto flex justify-center items-center ">
-                    <FaComments className="h-20 w-20 text-indigo-600" />
+                </div>
+              </div>
+
+              {/* CV Enhancement Box */}
+              <div className="bg-blue-50 rounded-xl shadow-lg p-8 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+                <div className="flex flex-col h-full">
+                  <div className="flex justify-center mb-6">
+                    <div className="bg-indigo-100 p-4 rounded-full">
+                      <FaFileAlt className="h-12 w-12 text-indigo-600" />
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-semibold mb-6 text-center text-indigo-900">
+                    CV Enhancement & Feedback
+                  </h3>
+                  <div className="flex flex-col gap-4 mb-6 flex-grow">
+                    <div className="flex items-start gap-3">
+                      <span className="text-indigo-600 text-lg mt-1">▶</span>
+                      <p className="text-slate-600 leading-relaxed">
+                        Upload and manage your CVs with ease.
+                      </p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <span className="text-indigo-600 text-lg mt-1">▶</span>
+                      <p className="text-slate-600 leading-relaxed">
+                        Compare your profile with top candidates and get insights.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Communication Box */}
+              <div className="bg-blue-50 rounded-xl shadow-lg p-8 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+                <div className="flex flex-col h-full">
+                  <div className="flex justify-center mb-6">
+                    <div className="bg-indigo-100 p-4 rounded-full">
+                      <FaComments className="h-12 w-12 text-indigo-600" />
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-semibold mb-6 text-center text-indigo-900">
+                    Streamlined Recruitment & Communication
+                  </h3>
+                  <div className="flex flex-col gap-4 mb-6 flex-grow">
+                    <div className="flex items-start gap-3">
+                      <span className="text-indigo-600 text-lg mt-1">▶</span>
+                      <p className="text-slate-600 leading-relaxed">
+                        Stay informed with instant updates on applications, messages, and deadlines.
+                      </p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <span className="text-indigo-600 text-lg mt-1">▶</span>
+                      <p className="text-slate-600 leading-relaxed">
+                        Use our secure direct messaging system to connect with recruiters or institutions.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
