@@ -130,12 +130,11 @@ const App = () => {
               <Route path="view-applications/:id" element={<SeeApplication />} />
               <Route path="degree-listing" element={<DegreeListing />} />
               <Route path="degree-listing/institute-degree-details/:id" element={<InstituteDegreeDetails />} />
-              <Route path="/postdegree" element={<PostDegree />} />
-
               <Route path="degree-listing/feedbackslist" element={<Feedbacks />} />
               <Route path="Dashboard" element={<Dashboard />} />
               <Route path="performance-insights" element={<PerformanceInsights />} />
               <Route path="degree-listing/view-applications/:id" element={<SeeApplication />} />
+              <Route path="postdegree" element={<PostDegree />} />
               {/* <Route path="deshboard" element={<Dashborad />} /> */}
               <Route path="update-profile" element={<ProfilePage />} />
               <Route path="message-box" element={<Messages />} />

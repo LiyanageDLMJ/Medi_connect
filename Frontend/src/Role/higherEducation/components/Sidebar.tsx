@@ -37,10 +37,10 @@ const Sidebar = () => {
     },
   ];
 
-  const lowerLinks = [
-    { to: "/settings", label: "Settings", icon: <FiSettings size={20} /> },
-    // { to: "/logout", label: "LogOut", icon: <FiLogOut size={20} /> },
-  ];
+  // const lowerLinks = [
+  //   { to: "/settings", label: "", icon: <FiSettings size={20} /> },
+  //   // { to: "/logout", label: "LogOut", icon: <FiLogOut size={20} /> },
+  // ];
 
   return (
     <>
@@ -88,7 +88,7 @@ const Sidebar = () => {
           {/* Divider */}
           <div className="my-6 border-t border-gray-200 mx-2" />
 
-          {lowerLinks.map(({ to, label, icon }) => (
+          {/* {lowerLinks.map(({ to, label, icon }) => (
             <NavLink
               key={to}
               to={to}
@@ -101,7 +101,7 @@ const Sidebar = () => {
               <span className="mr-3">{icon}</span>
               <span>{label}</span>
             </NavLink>
-          ))}
+          ))} */}
         </nav>
         {/* Logout Button - absolutely positioned at the bottom */}
         <button

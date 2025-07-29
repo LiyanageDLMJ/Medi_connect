@@ -17,7 +17,7 @@ interface Feedback {
   sourceDetails?: string;
   institutionId?: string;
   degreeId?: string;
-  status: 'pending' | 'reviewed' | 'resolved';
+  status: 'new' | 'in_progress' | 'resolved' | 'closed';
   adminResponse?: string;
   createdAt: string;
   updatedAt: string;
@@ -64,7 +64,6 @@ const AdminFeedbacks: React.FC = () => {
   
   // Filter state
   const [sourceFilter, setSourceFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
   const [userTypeFilter, setUserTypeFilter] = useState("all");
   const [userFilter, setUserFilter] = useState("");
   const [minRating, setMinRating] = useState(0);
@@ -91,7 +90,6 @@ const AdminFeedbacks: React.FC = () => {
       if (sourceFilter !== 'all') {
         params.append('source', sourceFilter);
       }
-      if (statusFilter !== 'all') params.append('status', statusFilter);
       if (userTypeFilter !== 'all') params.append('userType', userTypeFilter);
       params.append('page', currentPage.toString());
       params.append('limit', feedbacksPerPage.toString());
@@ -113,54 +111,6 @@ const AdminFeedbacks: React.FC = () => {
       setError(error instanceof Error ? error.message : 'Failed to fetch feedbacks');
     } finally {
       setLoading(false);
-    }
-  };
-
-  // Fetch feedbacks when component mounts or filters change
-  useEffect(() => {
-    fetchFeedbacks();
-  }, [currentPage, sourceFilter, statusFilter, userTypeFilter]);
-
-  // Reset to first page when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [sourceFilter, statusFilter, userTypeFilter]);
-
-  // Filter feedbacks based on text and rating
-  const filteredFeedbacks = feedbacks.filter(fb =>
-    (userFilter === "" || 
-     (fb.userName && fb.userName.toLowerCase().includes(userFilter.toLowerCase())) ||
-     fb.feedback.toLowerCase().includes(userFilter.toLowerCase()) ||
-     fb.heading.toLowerCase().includes(userFilter.toLowerCase())) &&
-    (minRating === 0 || fb.rating >= minRating)
-  );
-
-  // Format date
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-
-  // Get source display name
-  const getSourceDisplayName = (source: string) => {
-    switch (source) {
-      case 'degree_application': return 'From Students';
-      case 'course_posting': return 'From Institutions';
-      case 'general': return 'General';
-      default: return source;
-    }
-  };
-
-  // Get status display name
-  const getStatusDisplayName = (status: string) => {
-    switch (status) {
-      case 'pending': return 'Pending';
-      case 'reviewed': return 'Reviewed';
-      case 'resolved': return 'Resolved';
-      default: return status;
     }
   };
 
@@ -191,6 +141,44 @@ const AdminFeedbacks: React.FC = () => {
     } catch (error) {
       console.error('Error updating feedback status:', error);
       alert('Failed to update feedback status');
+    }
+  };
+
+  // Fetch feedbacks when component mounts or filters change
+  useEffect(() => {
+    fetchFeedbacks();
+  }, [currentPage, sourceFilter, userTypeFilter]);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [sourceFilter, userTypeFilter]);
+
+  // Filter feedbacks based on text and rating
+  const filteredFeedbacks = feedbacks.filter(fb =>
+    (userFilter === "" || 
+     (fb.userName && fb.userName.toLowerCase().includes(userFilter.toLowerCase())) ||
+     fb.feedback.toLowerCase().includes(userFilter.toLowerCase()) ||
+     fb.heading.toLowerCase().includes(userFilter.toLowerCase())) &&
+    (minRating === 0 || fb.rating >= minRating)
+  );
+
+  // Format date
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  // Get source display name
+  const getSourceDisplayName = (source: string) => {
+    switch (source) {
+      case 'degree_application': return 'From Course Apply';
+      case 'course_posting': return 'From Degree Post';
+      case 'general': return 'General';
+      default: return source;
     }
   };
 
@@ -231,7 +219,7 @@ const AdminFeedbacks: React.FC = () => {
           <h1 className="text-4xl font-bold mb-2 pt-4 pl-10">Admin Feedbacks</h1>
           
           {/* Statistics Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 px-10 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 px-10 mb-6">
             <div className="bg-white p-4 rounded-lg shadow border">
               <h3 className="text-lg font-semibold text-gray-700">Total Feedbacks</h3>
               <p className="text-3xl font-bold text-blue-600">{statistics.totalFeedbacks}</p>
@@ -241,16 +229,12 @@ const AdminFeedbacks: React.FC = () => {
               <p className="text-3xl font-bold text-green-600">{statistics.avgRating.toFixed(1)}</p>
             </div>
             <div className="bg-white p-4 rounded-lg shadow border">
-              <h3 className="text-lg font-semibold text-gray-700">Pending</h3>
-              <p className="text-3xl font-bold text-yellow-600">{statistics.pendingCount}</p>
+              <h3 className="text-lg font-semibold text-gray-700">From Course Apply</h3>
+              <p className="text-3xl font-bold text-purple-600">{feedbacks.filter(f => f.source === 'degree_application').length}</p>
             </div>
             <div className="bg-white p-4 rounded-lg shadow border">
-              <h3 className="text-lg font-semibold text-gray-700">Reviewed</h3>
-              <p className="text-3xl font-bold text-blue-600">{statistics.reviewedCount}</p>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow border">
-              <h3 className="text-lg font-semibold text-gray-700">Resolved</h3>
-              <p className="text-3xl font-bold text-green-600">{statistics.resolvedCount}</p>
+              <h3 className="text-lg font-semibold text-gray-700">From Degree Post</h3>
+              <p className="text-3xl font-bold text-orange-600">{feedbacks.filter(f => f.source === 'course_posting').length}</p>
             </div>
           </div>
 
@@ -269,19 +253,9 @@ const AdminFeedbacks: React.FC = () => {
               className="border rounded p-2 min-w-[160px]"
             >
               <option value="all">All Feedback</option>
-              <option value="degree_application">From Students</option>
-              <option value="course_posting">From Institutions</option>
+              <option value="degree_application">From Course Apply</option>
+              <option value="course_posting">From Degree Post</option>
               <option value="general">General</option>
-            </select>
-            <select
-              value={statusFilter}
-              onChange={e => setStatusFilter(e.target.value)}
-              className="border rounded p-2 min-w-[160px]"
-            >
-              <option value="all">All Status</option>
-              <option value="pending">Pending</option>
-              <option value="reviewed">Reviewed</option>
-              <option value="resolved">Resolved</option>
             </select>
             <select
               value={userTypeFilter}
@@ -331,19 +305,12 @@ const AdminFeedbacks: React.FC = () => {
                           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.38-2.454c-.784.57-1.838-.196-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.05 9.394c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.967z" />
                         </svg>
                       ))}
-                      <span className="ml-2 text-base font-medium text-gray-700 truncate">{fb.heading}</span>
                     </div>
+                    <div className="text-base font-medium text-gray-700 truncate mb-1">{fb.heading}</div>
                     <div className="text-gray-700 text-sm break-words mb-2">{fb.feedback}</div>
                     <div className="flex gap-2 text-xs mb-2">
                       <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded">
                         {getSourceDisplayName(fb.source)}
-                      </span>
-                      <span className={`px-2 py-1 rounded ${
-                        fb.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                        fb.status === 'reviewed' ? 'bg-blue-100 text-blue-700' :
-                        'bg-green-100 text-green-700'
-                      }`}>
-                        {getStatusDisplayName(fb.status)}
                       </span>
                       {fb.userType && (
                         <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded">
@@ -361,29 +328,6 @@ const AdminFeedbacks: React.FC = () => {
                         <strong>Admin Response:</strong> {fb.adminResponse}
                       </div>
                     )}
-                    {/* Admin Actions */}
-                    <div className="flex gap-2">
-                      <select
-                        value={fb.status}
-                        onChange={(e) => updateFeedbackStatus(fb._id, e.target.value)}
-                        className="text-xs border rounded px-2 py-1"
-                      >
-                        <option value="pending">Pending</option>
-                        <option value="reviewed">Reviewed</option>
-                        <option value="resolved">Resolved</option>
-                      </select>
-                      <button
-                        onClick={() => {
-                          const response = prompt('Enter admin response (optional):');
-                          if (response !== null) {
-                            updateFeedbackStatus(fb._id, fb.status, response);
-                          }
-                        }}
-                        className="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
-                      >
-                        Add Response
-                      </button>
-                    </div>
                   </div>
                 </div>
               ))
