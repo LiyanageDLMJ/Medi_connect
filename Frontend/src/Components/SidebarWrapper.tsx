@@ -32,14 +32,10 @@ const SidebarWrapper: React.FC<SidebarWrapperProps> = ({ children }) => {
     <div className="flex min-h-screen">
       {getSidebar()}
       {children ? (
-        <div className="flex-1 overflow-auto md:pl-64">
+        <div className="flex-1 overflow-auto px-4">
           {children}
         </div>
-      ) : (
-        <div className="flex-1 overflow-auto md:pl-64">
-          {/* Default content area */}
-        </div>
-      )}
+      ) : null}
     </div>
   );
 };

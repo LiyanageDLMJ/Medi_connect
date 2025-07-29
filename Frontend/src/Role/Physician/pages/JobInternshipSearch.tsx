@@ -116,12 +116,14 @@ const JobInternshipSearch = () => {
     <div>
       <SidebarWrapper>
         <div className="flex-1 overflow-auto md:pl-64">
-          {userType === 'Doctor' ? (
-            <SearchDoctor filters={filters} onFilterChange={handleFilterChange} onClear={handleClearFilters} />
-          ) : (
-            <SearchMedicalStudent filters={filters} onFilterChange={handleFilterChange} onClear={handleClearFilters} />
-          )}
-          <Jobs jobs={filteredJobs} totalJobs={jobs.length} />
+          <div className="w-full">
+            {userType === 'Doctor' ? (
+              <SearchDoctor filters={filters} onFilterChange={handleFilterChange} onClear={handleClearFilters} />
+            ) : (
+              <SearchMedicalStudent filters={filters} onFilterChange={handleFilterChange} onClear={handleClearFilters} />
+            )}
+            <Jobs jobs={filteredJobs} totalJobs={jobs.length} />
+          </div>
         </div>
       </SidebarWrapper>
     </div>

@@ -360,22 +360,20 @@ export default function JobApplicationTracker() {
   // Loading state
   if (loading) {
     return (
-      <div className="flex-1 overflow-auto md:pl-64">
-        <SidebarWrapper />
+      <SidebarWrapper>
         <div className="container mx-auto p-6">
           <div className="flex justify-center items-center h-64">
             <div className="text-lg">Loading applications...</div>
           </div>
         </div>
-      </div>
+      </SidebarWrapper>
     );
   }
 
   // Error state
   if (error) {
     return (
-      <div className="flex-1 overflow-auto md:pl-64">
-        <SidebarWrapper />
+      <SidebarWrapper>
         <div className="container mx-auto p-6">
           <div className="text-center text-red-500">
             <p>Error: {error}</p>
@@ -384,37 +382,38 @@ export default function JobApplicationTracker() {
             </Button>
           </div>
         </div>
-      </div>
+      </SidebarWrapper>
     );
   }
 
   return (
-    <div className="flex-1 overflow-auto md:pl-64">
+    <div className="flex">
       <SidebarWrapper />
-      {/* Doctor name at top right */}
-      <div className="flex justify-end items-center p-4">
-        <img
-          src={userProfile.photoUrl || "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/340px-Default_pfp.svg.png"}
-          className="w-10 h-10 rounded-full mr-2"
-          alt={userProfile.name}
-        />
-        <span className="font-semibold text-gray-700">
-          {userProfile.name ? `Dr. ${userProfile.name}` : ""}
-        </span>
-      </div>
-      <div className="container mx-auto p-6 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-bold">Medical Job Application Tracker</h1>
-            <p className="text-gray-500">Track and manage your medical career applications</p>
+      <div className="flex-1 overflow-auto md:pl-64">
+        <div className="min-h-screen bg-white">
+          {/* Doctor name at top right */}
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 p-4">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Medical Job Application Tracker</h1>
+              <p className="text-gray-600 mt-1">Track and manage your medical career applications</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <Button className="flex items-center gap-2">
+                <Plus className="w-4 h-4" />
+                Add Application
+              </Button>
+              <img
+                src={userProfile.photoUrl || "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/340px-Default_pfp.svg.png"}
+                className="w-10 h-10 rounded-full"
+                alt={userProfile.name}
+              />
+              <span className="font-semibold text-gray-700">
+                {userProfile.name ? `Dr. ${userProfile.name}` : ""}
+              </span>
+            </div>
           </div>
-          <Button className="flex items-center gap-2">
-            <Plus className="w-4 h-4" />
-            Add Application
-          </Button>
-        </div>
-
+        <div className="container mx-auto p-6 space-y-6">
+        {/* Header */}
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
@@ -459,7 +458,7 @@ export default function JobApplicationTracker() {
         <Card>
           <CardHeader>
             <CardTitle>Applications</CardTitle>
-            <CardDescription>Manage and track your medical job applications</CardDescription>
+            <CardDescription>Track your medical job applications</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col sm:flex-row gap-4 mb-6">
@@ -544,6 +543,8 @@ export default function JobApplicationTracker() {
             </div>
           </CardContent>
         </Card>
+      </div>
+        </div>
       </div>
     </div>
   )

@@ -325,7 +325,7 @@ const ViewCandidates = () => {
                             <div className="text-xs text-gray-500">{application.phone}</div>
                           </td>
                           <td className="w-[12%] px-3 py-4">
-                            <div className="text-xs text-gray-900 truncate" title={application.jobId?.title || 'N/A'}>
+                            <div className="text-sm font-medium text-gray-900 truncate" title={application.jobId?.title || 'N/A'}>
                               {application.jobId?.title || 'N/A'}
                             </div>
                           </td>
