@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Sidebar from "../components/Sidebar";
 import { Menu, Search, Bell, ChevronDown } from "lucide-react";
+import { useFormContext } from "../../../context/FormContext"; // adjust path as needed
 
 const MedicalCvStep1: React.FC = () => {
   const navigate = useNavigate();
@@ -12,6 +13,29 @@ const MedicalCvStep1: React.FC = () => {
   );
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const { formData, setFormData } = useFormContext();
+
+  useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    if (!userId) return;
+
+    fetch(`http://localhost:3000/profile/${userId}`)
+      .then(res => res.json())
+      .then(data => {
+        setFormData(prev => ({
+          ...prev,
+          // Map these fields according to your profile and form structure
+          fullName: data.name || prev.fullName,
+          email: data.email || prev.email,
+          phone: data.phone || prev.phone,
+          location: data.currentInstitute || prev.location,
+          // Add more fields as needed
+        }));
+      })
+      .catch(err => {
+        console.error("Failed to fetch profile:", err);
+      });
+  }, [setFormData]);
 
   const validate = (data: Record<string, FormDataEntryValue>) => {
     const newErrors: Record<string, string> = {};
@@ -42,7 +66,7 @@ const MedicalCvStep1: React.FC = () => {
     if (Object.keys(validationErrors).length > 0) return; // block navigation
 
     localStorage.setItem("medicalCvStep1", JSON.stringify(dataEntries));
-    navigate("../cv-step2");
+    navigate("../cv-step02");
   };
 
   return (
@@ -104,7 +128,8 @@ const MedicalCvStep1: React.FC = () => {
                     id="fullName"
                     name="fullName"
                     placeholder="Full Name"
-                    defaultValue={savedData.fullName || ""}
+                    value={formData.fullName || ""}
+                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                     className={`w-full p-3 bg-gray-50 border ${
                       errors.fullName ? "border-red-500" : "border-gray-200"
                     } rounded-md`}
@@ -124,7 +149,8 @@ const MedicalCvStep1: React.FC = () => {
                     name="email"
                     type="email"
                     placeholder="Email"
-                    defaultValue={savedData.email || ""}
+                    value={formData.email || ""}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     className={`w-full p-3 bg-gray-50 border ${
                       errors.email ? "border-red-500" : "border-gray-200"
                     } rounded-md`}
@@ -141,7 +167,8 @@ const MedicalCvStep1: React.FC = () => {
                     id="phone"
                     name="phone"
                     placeholder="Phone"
-                    defaultValue={savedData.phone || ""}
+                    value={formData.phone || ""}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     className={`w-full p-3 bg-gray-50 border ${
                       errors.phone ? "border-red-500" : "border-gray-200"
                     } rounded-md`}
@@ -161,7 +188,8 @@ const MedicalCvStep1: React.FC = () => {
                     id="location"
                     name="location"
                     placeholder="Current Location"
-                    defaultValue={savedData.location || ""}
+                    value={formData.location || ""}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                     className={`w-full p-3 bg-gray-50 border ${
                       errors.location ? "border-red-500" : "border-gray-200"
                     } rounded-md`}

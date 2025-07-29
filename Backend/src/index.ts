@@ -21,6 +21,7 @@ import userListRoutes from "./Routes/UserListRoutes";
 import { createServer } from "http";
 import { attachSocket } from "./socketServer";
 import recruiterCandidateRoutes from "./Routes/RecuiterRoutes/CandidateRoutes";
+import medicalCvRoutes from "./Routes/MedicalStudentRoutes/medicalCvRoutes";
 connectDB();
 
 connectDB(); 
@@ -78,6 +79,7 @@ app.use('/viewDegreeApplications', viewDegreeApplicationRoutes);
 app.use('/jobApplicationControl', jobApplicationContolByRecuiterRoutes);
 app.use('/api/recruiter/candidates', recruiterCandidateRoutes);
 app.use('/image', express.static(path.join(__dirname, "../image")));
+app.use('/medicalStudentCv', medicalCvRoutes);
 
 // Start the server
 app.use("/auth", LoginRegisterRoutes);

@@ -22,7 +22,7 @@ const SidebarNav: React.FC = () => {
   const navLinks = [
     { label: "Dashboard", to: "/medical_student/dashboard", icon: <FiHome size={20} /> },
     { label: "Your Profile", to: "/medical_student/profile", icon: <FiUser size={20} /> },
-    { label: 'CV Insertion', to: '/medical-student/cv-step1', icon: <FiFileText size={20} /> },
+    { label: 'CV Insertion', to: '/medical_student/cv-step01', icon: <FiFileText size={20} /> },
     {
       label: "Job & Internships",
       to: "/medical_student/job-internship",

@@ -22,6 +22,10 @@ interface FormData {
   hospitalInstitution: string;
   resumePdfUrl: string;
   resumeRawUrl: string; // Add this field for Supabase URL
+  fullName: string;
+  email: string;
+  phone: string;
+  location: string;
 }
 
 const initialFormData: FormData = {
@@ -46,6 +50,10 @@ const initialFormData: FormData = {
   hospitalInstitution: "",
   resumePdfUrl: "",
   resumeRawUrl: "",
+  fullName: "",
+  email: "",
+  phone: "",
+  location: "",
 };
 
 interface FormContextType {
