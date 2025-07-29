@@ -193,115 +193,109 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
-      {/* Translucent backdrop - allows background to show through */}
-      <div className="fixed inset-0 bg-black bg-opacity-20 backdrop-blur-sm" onClick={onClose} />
-      
-      {/* Notification dropdown with translucent background */}
-      <div
-        ref={dropdownRef}
-        className="relative w-96 max-h-96 bg-white/95 backdrop-blur-md rounded-lg shadow-2xl border border-gray-200/50 mt-16 mr-4 overflow-hidden"
-        style={{
-          backdropFilter: 'blur(12px)',
-          backgroundColor: 'rgba(255, 255, 255, 0.95)'
-        }}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200/50 bg-white/80 backdrop-blur-sm">
-          <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
-          <div className="flex items-center gap-2">
-            {unreadCount > 0 && (
-              <button
-                onClick={markAllAsRead}
-                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-              >
-                Mark all read
-              </button>
-            )}
+    <div
+      ref={dropdownRef}
+      className="w-96 max-h-96 bg-white/90 backdrop-blur-lg rounded-lg shadow-2xl border border-gray-200/30 overflow-hidden"
+      style={{
+        backdropFilter: 'blur(16px)',
+        backgroundColor: 'rgba(255, 255, 255, 0.9)'
+      }}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b border-gray-200/30 bg-white/80 backdrop-blur-sm">
+        <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
+        <div className="flex items-center gap-2">
+          {unreadCount > 0 && (
             <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
+              onClick={markAllAsRead}
+              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
             >
-              <FiX size={20} />
+              Mark all read
             </button>
-          </div>
+          )}
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            <FiX size={20} />
+          </button>
         </div>
+      </div>
 
-        {/* Notifications List */}
-        <div className="max-h-80 overflow-y-auto bg-transparent">
-          {loading ? (
-            <div className="flex items-center justify-center p-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            </div>
-          ) : notifications.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-8 text-gray-500">
-              <FiBell size={48} className="mb-2" />
-              <p className="text-center">No notifications yet</p>
-              <p className="text-sm text-center">We'll notify you when something important happens</p>
-            </div>
-          ) : (
-            notifications.map((notification) => (
-              <div
-                key={notification._id}
-                className={`p-4 border-b border-gray-100/50 hover:bg-gray-50/50 transition-colors ${
-                  !notification.read ? 'bg-blue-50/70' : 'bg-transparent'
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  <div className="text-2xl">
-                    {getNotificationIcon(notification.type)}
+      {/* Notifications List */}
+      <div className="max-h-80 overflow-y-auto bg-transparent">
+        {loading ? (
+          <div className="flex items-center justify-center p-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          </div>
+        ) : notifications.length === 0 ? (
+          <div className="flex flex-col items-center justify-center p-8 text-gray-500">
+            <FiBell size={48} className="mb-2" />
+            <p className="text-center">No notifications yet</p>
+            <p className="text-sm text-center">We'll notify you when something important happens</p>
+          </div>
+        ) : (
+          notifications.map((notification) => (
+            <div
+              key={notification._id}
+              className={`p-4 border-b border-gray-100/30 hover:bg-gray-50/50 transition-colors ${
+                !notification.read ? 'bg-blue-50/70' : 'bg-transparent'
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                <div className="text-2xl">
+                  {getNotificationIcon(notification.type)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between">
+                    <h4 className={`text-sm font-medium ${
+                      !notification.read ? 'text-gray-900' : 'text-gray-700'
+                    }`}>
+                      {notification.title}
+                    </h4>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => markAsRead(notification._id)}
+                        className="text-gray-400 hover:text-green-600 p-1"
+                        title="Mark as read"
+                      >
+                        <FiCheck size={14} />
+                      </button>
+                      <button
+                        onClick={() => deleteNotification(notification._id)}
+                        className="text-gray-400 hover:text-red-600 p-1"
+                        title="Delete"
+                      >
+                        <FiTrash2 size={14} />
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between">
-                      <h4 className={`text-sm font-medium ${
-                        !notification.read ? 'text-gray-900' : 'text-gray-700'
-                      }`}>
-                        {notification.title}
-                      </h4>
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => markAsRead(notification._id)}
-                          className="text-gray-400 hover:text-green-600 p-1"
-                          title="Mark as read"
-                        >
-                          <FiCheck size={14} />
-                        </button>
-                        <button
-                          onClick={() => deleteNotification(notification._id)}
-                          className="text-gray-400 hover:text-red-600 p-1"
-                          title="Delete"
-                        >
-                          <FiTrash2 size={14} />
-                        </button>
-                      </div>
-                    </div>
-                    <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                      {notification.message}
-                    </p>
-                    <div className="flex items-center gap-2 mt-2 text-xs text-gray-400">
-                      <FiClock size={12} />
-                      <span>{formatTimeAgo(notification.createdAt)}</span>
-                      {!notification.read && (
-                        <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                      )}
-                    </div>
+                  <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                    {notification.message}
+                  </p>
+                  <div className="flex items-center gap-2 mt-2 text-xs text-gray-400">
+                    <FiClock size={12} />
+                    <span>{formatTimeAgo(notification.createdAt)}</span>
+                    {!notification.read && (
+                      <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                    )}
                   </div>
                 </div>
               </div>
-            ))
-          )}
-        </div>
-
-        {/* Footer */}
-        {notifications.length > 0 && (
-          <div className="p-3 border-t border-gray-200/50 bg-white/80 backdrop-blur-sm">
-            <div className="flex items-center justify-between text-sm text-gray-600">
-              <span>{unreadCount} unread</span>
-              <span>{notifications.length} total</span>
             </div>
-          </div>
+          ))
         )}
       </div>
+
+      {/* Footer */}
+      {notifications.length > 0 && (
+        <div className="p-3 border-t border-gray-200/30 bg-white/80 backdrop-blur-sm">
+          <div className="flex items-center justify-between text-sm text-gray-600">
+            <span>{unreadCount} unread</span>
+            <span>{notifications.length} total</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
