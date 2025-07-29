@@ -22,8 +22,8 @@ const profilePhotoStorage = multer.diskStorage({
 const profilePhotoUpload = multer({
   storage: profilePhotoStorage,
   fileFilter: (req, file, cb: multer.FileFilterCallback) => {
-    // Accept only image files
-    if (file.mimetype.startsWith('image/')) {
+    // Accept only image files, including webp
+    if (file.mimetype.startsWith('image/') || file.mimetype === 'image/webp') {
       cb(null, true);
     } else {
       cb(new Error("Only image files are allowed") as any);

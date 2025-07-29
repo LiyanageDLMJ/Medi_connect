@@ -22,10 +22,12 @@ interface FormData {
   specialty?: string;
   location?: string;
   higherEducation?: string;
+  otherSpecialty?: string; // Added for 'Other' specialty
   // Medical Student fields
   currentInstitute?: string;
   yearOfStudy?: string;
   fieldOfStudy?: string;
+  otherFieldOfStudy?: string; // Added for 'Other' field of study
   // Recruiter fields
   companyName?: string;
   companyType?: string;
@@ -70,8 +72,20 @@ const Register = () => {
     try {
       const API_BASE = window.location.origin.includes('localhost') ? 'http://localhost:3000' : window.location.origin;
 
-      // If idPhoto present, convert to base64 string so we can still send JSON
+      // Prepare payload, handling 'Other' fields
       let payload: any = { ...formData };
+      // Doctor: handle specialty
+      if (formData.userType === 'doctor' && formData.specialty === 'Other (please specify)') {
+        payload.specialty = formData.otherSpecialty || '';
+        delete payload.otherSpecialty;
+      }
+      // Medical Student: handle fieldOfStudy
+      if (formData.userType === 'medical_student' && formData.fieldOfStudy === 'Other (please specify)') {
+        payload.fieldOfStudy = formData.otherFieldOfStudy || '';
+        delete payload.otherFieldOfStudy;
+      }
+
+      // If idPhoto present, convert to base64 string so we can still send JSON
       if (formData.idPhoto) {
         const file = formData.idPhoto as File;
         const base64 = await new Promise<string>((resolve, reject) => {

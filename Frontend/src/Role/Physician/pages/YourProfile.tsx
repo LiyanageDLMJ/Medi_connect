@@ -14,6 +14,7 @@ interface Profile {
   specialty?: string;
   location?: string;
   school?: string;
+  otherSpecialty?: string;
   [key: string]: any;
 }
 
@@ -183,7 +184,7 @@ const YourProfile = () => {
               )}
               
               {profile.specialty && (
-                <ProfileField icon={<FaGraduationCap />} label="Specialty" value={profile.specialty} />
+                <ProfileField icon={<FaGraduationCap />} label="Specialty" value={profile.specialty === 'Other (please specify)' ? (profile.otherSpecialty || '-') : profile.specialty} />
               )}
               
               {profile.school && (

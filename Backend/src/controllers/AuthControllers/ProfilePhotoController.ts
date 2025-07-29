@@ -30,13 +30,12 @@ export const uploadProfilePhoto = async (req: Request, res: Response) => {
       });
     }
 
-    // Upload to Cloudinary
+    // Upload to Cloudinary (most permissive)
     const result = await cloudinary.uploader.upload(req.file.path, {
       folder: 'profile-photos',
-      transformation: [
-        { width: 400, height: 400, crop: 'fill', gravity: 'face' },
-        { quality: 'auto', fetch_format: 'auto' }
-      ]
+      resource_type: 'image',
+      // allowed_formats: ['jpg', 'jpeg', 'png', 'webp'], // removed for permissiveness
+      // transformation: [ ... ] // removed for permissiveness
     });
 
     // Delete the temporary file from server

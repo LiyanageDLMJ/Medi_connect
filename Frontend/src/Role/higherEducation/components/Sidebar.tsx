@@ -36,11 +36,6 @@ const Sidebar = () => {
     },
   ];
 
-  const lowerLinks = [
-    { to: "/settings", label: "Settings", icon: <FiSettings size={20} /> },
-    { to: "/logout", label: "LogOut", icon: <FiLogOut size={20} /> },
-  ];
-
   return (
     <>
       <button
@@ -87,20 +82,6 @@ const Sidebar = () => {
           {/* Divider */}
           <div className="my-6 border-t border-gray-200 mx-2" />
 
-          {lowerLinks.map(({ to, label, icon }) => (
-            <NavLink
-              key={to}
-              to={to}
-              className={({ isActive }) =>
-                isActive
-                  ? "flex items-center px-4 py-2 text-white bg-[#184389] rounded-[12px] shadow-md transition-all"
-                  : "flex items-center px-4 py-2 text-black  hover:bg-[#184389] hover:text-white hover:rounded-[12px] hover:shadow-md transition-all"
-              }
-            >
-              <span className="mr-3">{icon}</span>
-              <span>{label}</span>
-            </NavLink>
-          ))}
         </nav>
         {/* Logout Button - absolutely positioned at the bottom */}
         <button
