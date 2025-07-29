@@ -20,6 +20,7 @@ import LoginRegisterRoutes from "./Routes/LoginRegisterRoutes";
 import userListRoutes from "./Routes/UserListRoutes";
 import { createServer } from "http";
 import { attachSocket } from "./socketServer";
+import recruiterCandidateRoutes from "./Routes/RecuiterRoutes/CandidateRoutes";
 connectDB();
 
 connectDB(); 
@@ -75,6 +76,7 @@ app.use("/higherDegrees", higherEducationRoutes);
 app.use('/degreeApplications', DegreeApplicationRoutes);
 app.use('/viewDegreeApplications', viewDegreeApplicationRoutes);
 app.use('/jobApplicationControl', jobApplicationContolByRecuiterRoutes);
+app.use('/api/recruiter/candidates', recruiterCandidateRoutes);
 app.use('/image', express.static(path.join(__dirname, "../image")));
 
 // Start the server

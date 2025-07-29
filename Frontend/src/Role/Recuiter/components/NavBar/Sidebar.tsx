@@ -9,6 +9,7 @@ import {
   FiUsers,
   FiMessageSquare,
   FiLogOut,
+  FiFileText,
 } from "react-icons/fi";
 
 const SidebarRecruiter = () => {
@@ -16,12 +17,41 @@ const SidebarRecruiter = () => {
   const navigate = useNavigate();
 
   const navLinks = [
-    { label: "Dashboard", to: "/recruiter/dashboard", icon: <FiHome size={20} /> },
-    { label: "Your Profile", to: "/recruiter/profile", icon: <FiUser size={20} /> },
-    { label: "Job & Internship Post", to: "/recruiter/JobPost", icon: <FiBriefcase size={20} /> },
-    { label: "Job Listings", to: "/recruiter/JobListing", icon: <FiList size={20} /> },
-    { label: "View Candidates", to: "/recruiter/ViewCandidates", icon: <FiUsers size={20} /> },
-    { label: "Messages", to: "/recruiter/messages", icon: <FiMessageSquare size={20} /> },
+    {
+      label: "Dashboard",
+      to: "/recruiter/dashboard",
+      icon: <FiHome size={20} />,
+    },
+    {
+      label: "Your Profile",
+      to: "/recruiter/profile",
+      icon: <FiUser size={20} />,
+    },
+    {
+      label: "CompareCV",
+      to: "/recruiter/cvCompare",
+      icon: <FiFileText size={20} />,
+    },
+    {
+      label: "Job & Internship Post",
+      to: "/recruiter/JobPost",
+      icon: <FiBriefcase size={20} />,
+    },
+    {
+      label: "Job Listings",
+      to: "/recruiter/JobListing",
+      icon: <FiList size={20} />,
+    },
+    {
+      label: "View Candidates",
+      to: "/recruiter/ViewCandidates",
+      icon: <FiUsers size={20} />,
+    },
+    {
+      label: "Messages",
+      to: "/recruiter/messages",
+      icon: <FiMessageSquare size={20} />,
+    },
   ];
 
   return (
@@ -69,7 +99,7 @@ const SidebarRecruiter = () => {
           <button
             onClick={() => {
               localStorage.clear();
-              navigate('/login');
+              navigate("/login");
             }}
             className="flex items-center gap-3 px-4 py-2 text-black hover:bg-red-100 hover:text-red-600 rounded-[12px] transition-all w-[calc(100%-32px)] mx-4"
           >
