@@ -102,27 +102,6 @@ const App = () => {
           <Route path="med-student-dashboard" element={<MedStudentDashboard />} />
           
         </Route>
-          {/* Physician Routes */}
-          <Route path="/physician">
-            <Route path="Doctordashboard" element={<DoctorDashboard />} />
-            <Route path="higher-education" element={<HigherEducationSearch />} />
-            <Route path="job-internship" element={<JobInternshipSearch />} />
-            <Route path="job-application/:jobId" element={<JobApplicationForm />} /> {/* Add :jobId parameter */}
-            <Route path="profile" element={<ProfilePage />} />
-            <Route path="job-application" element={<JobApplicationForm />} />
-            <Route path="job-internship/:jobId" element={<JobInternshipDetails />} />
-            <Route path="update-cv01" element={<UpdateCV01 />} />
-            <Route path="update-cv02" element={<UpdateCV02 />} />
-            <Route path="update-cv03" element={<UpdateCV03 />} />
-            <Route path="job-details/:jobId" element={<JobInternshipDetails />} />
-            <Route path="Cvcompare" element={<Cvcompare />} />
-            <Route path="degreeapplication" element={<DegreeApplication />} />
-            <Route path="job-application-tracker" element={<JobApplicationTracker />} />
-            <Route path="medical-student-dashboard" element={<MedicalStudentDashboard />} />
-            <Route path="messages" element={<PhysicianMessages />} />
-            <Route path="update-profile" element={<ProfilePage />} />
-            <Route path="message-box" element={<PhysicianMessages />} />
-          </Route>
 
 
           {/* Higher Education Routes */}

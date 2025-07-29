@@ -1,7 +1,8 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
-import Sidebar from "../components/NavBar/Sidebar"
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import SidebarWrapper from "../../../Components/SidebarWrapper";
 
 import {
   CalendarDays,
@@ -360,7 +361,7 @@ export default function JobApplicationTracker() {
   if (loading) {
     return (
       <div className="flex-1 overflow-auto md:pl-64">
-        <Sidebar />
+        <SidebarWrapper />
         <div className="container mx-auto p-6">
           <div className="flex justify-center items-center h-64">
             <div className="text-lg">Loading applications...</div>
@@ -374,7 +375,7 @@ export default function JobApplicationTracker() {
   if (error) {
     return (
       <div className="flex-1 overflow-auto md:pl-64">
-        <Sidebar />
+        <SidebarWrapper />
         <div className="container mx-auto p-6">
           <div className="text-center text-red-500">
             <p>Error: {error}</p>
@@ -389,7 +390,7 @@ export default function JobApplicationTracker() {
 
   return (
     <div className="flex-1 overflow-auto md:pl-64">
-      <Sidebar />
+      <SidebarWrapper />
       {/* Doctor name at top right */}
       <div className="flex justify-end items-center p-4">
         <img

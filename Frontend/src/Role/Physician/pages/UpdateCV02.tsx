@@ -1,26 +1,29 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Bell,
   ChevronDown,
   ChevronLeft,
+  ChevronRight,
   Menu,
   Search,
   User,
-  X,
 } from "lucide-react";
-import Sidebar from "../components/NavBar/Sidebar";
-import { useNavigate } from "react-router-dom";
+import SidebarWrapper from "../../../Components/SidebarWrapper";
+import { useFormContext } from "../../../context/FormContext";
+import UpdateCV03 from "./UpdateCV03";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { format } from "date-fns";
-import { useFormContext } from "../../../context/FormContext";
-import { useState } from "react";
 
 export default function UpdateCV02() {
   const { formData, setFormData } = useFormContext();
   const navigate = useNavigate();
+
+  // Get user role from localStorage
+  const userType = localStorage.getItem('userType');
 
   const [errors, setErrors] = useState({
     medicalLicenseNumber: "",
@@ -90,29 +93,6 @@ export default function UpdateCV02() {
 
   const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Validate medicalLicenseNumber
-    if (
-      !formData.medicalLicenseNumber ||
-      !/^\d+$/.test(String(formData.medicalLicenseNumber))
-    ) {
-      setErrors((prev) => ({
-        ...prev,
-        medicalLicenseNumber: "Please enter a valid number",
-      }));
-      return;
-    }
-
-    // Validate experience
-    if (!formData.experience || !/^\d+$/.test(String(formData.experience))) {
-      setErrors((prev) => ({
-        ...prev,
-        experience: "Please enter a valid number",
-      }));
-      return;
-    }
-
-    // Convert to numbers only when submitting
     const numericFormData = {
       ...formData,
       medicalLicenseNumber: Number(formData.medicalLicenseNumber),
@@ -120,16 +100,24 @@ export default function UpdateCV02() {
     };
 
     setFormData(numericFormData);
-    navigate("/physician/update-cv03");
+    if (userType === 'MedicalStudent') {
+      navigate("/medical_student/update-cv03");
+    } else {
+      navigate("/physician/update-cv03");
+    }
   };
 
   const handleBack = () => {
-    navigate("/physician/update-cv01");
+    if (userType === 'MedicalStudent') {
+      navigate("/medical_student/update-cv01");
+    } else {
+      navigate("/physician/update-cv01");
+    }
   };
 
   return (
     <div>
-      <Sidebar />
+      <SidebarWrapper />
 
       <div className="flex-1 overflow-auto md:pl-64">
         {/* Header */}

@@ -1,16 +1,17 @@
 "use client";
-import { useNavigate } from "react-router-dom";
 import React, { useState } from "react";
-import { useFormContext } from "../../../context/FormContext";
+import { useNavigate } from "react-router-dom";
 import {
   Bell,
   ChevronDown,
   ChevronLeft,
+  ChevronRight,
   Menu,
   Search,
   User,
 } from "lucide-react";
-import Sidebar from "../components/NavBar/Sidebar";
+import SidebarWrapper from "../../../Components/SidebarWrapper";
+import { useFormContext } from "../../../context/FormContext";
 import axios from "axios";
 
 export default function UpdateCV03() {
@@ -18,6 +19,9 @@ export default function UpdateCV03() {
   const navigate = useNavigate();
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null); // Added for user feedback
+
+  // Get user role from localStorage
+  const userType = localStorage.getItem('userType');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -83,7 +87,7 @@ export default function UpdateCV03() {
 
   return (
     <div>
-      <Sidebar />
+      <SidebarWrapper />
       <div className="flex-1 overflow-auto md:pl-64">
         <header className="flex items-center justify-between p-4 bg-white border-b">
           <div className="flex items-center gap-4">
@@ -230,7 +234,13 @@ export default function UpdateCV03() {
             <div className="mt-8 flex justify-between">
               <button
                 type="button"
-                onClick={() => navigate("/physician/update-cv02")}
+                onClick={() => {
+                  if (userType === 'MedicalStudent') {
+                    navigate("/medical_student/update-cv02");
+                  } else {
+                    navigate("/physician/update-cv02");
+                  }
+                }}
                 className="flex items-center justify-center w-10 h-10 rounded-md border"
               >
                 <ChevronLeft className="h-5 w-5" />

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FiMenu,
   FiHome,
@@ -11,90 +11,108 @@ import {
   FiLogOut,
   FiFileText,
 } from "react-icons/fi";
+import { initiateSocket, getSocket } from "../../../Components/MessageBox/socket";
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
 
-  const upperLinks = [
-    { to: "/higher-education/dashboard", label: "Dashboard", icon: <FiHome size={20} /> },
-    { to: "/higher-education/update-profile", label: "Your Profile", icon: <FiUser size={20} /> },
-    { to: "/higher-education/messages", label: "Messages", icon: <FiMessageSquare size={20} /> },
+  const navLinks = [
+    { label: "Dashboard", to: "/higher-education/dashboard", icon: <FiHome size={20} /> },
+    { label: "Your Profile", to: "/higher-education/update-profile", icon: <FiUser size={20} /> },
+    { label: "Messages", to: "/higher-education/messages", icon: <FiMessageSquare size={20} /> },
     {
-      to: "/higher-education/degree-listing",
       label: "Degree Listings",
+      to: "/higher-education/degree-listing",
       icon: <FiBook size={20} />,
     },
     {
-      to: "/higher-education/view-applications",
       label: "View Applications",
-      icon: <FiBook size={20} />,
+      to: "/higher-education/view-applications",
+      icon: <FiFileText size={20} />,
     },
   ];
 
+  // --- Notification Badge Logic ---
+  const [unread, setUnread] = useState(false);
+  
+  useEffect(() => {
+    const userId = localStorage.getItem('userId') || '1';
+    initiateSocket(userId);
+    const socket = getSocket();
+    if (!socket) return;
+    socket.on('receive_message', () => {
+      setUnread(true);
+    });
+    return () => {
+      socket?.off('receive_message');
+    };
+  }, []);
+
   return (
     <>
+      {/* Toggle Button */}
       <button
-        className="sidebar-toggle md:hidden p-4 fixed top-0 left-0 z-50 text-gray-600"
+        className="md:hidden p-4 fixed top-0 left-0 z-50 text-gray-600"
         onClick={() => setIsOpen(!isOpen)}
       >
         <FiMenu size={24} />
       </button>
 
+      {/* Sidebar */}
       <div
-        className={`sidebar-container fixed inset-y-0 left-0 w-64 h-screen bg-white shadow-lg transform transition-transform md:transform-none ${
+        className={`fixed inset-y-0 left-0 w-64 h-screen bg-white shadow-lg transform transition-transform md:transform-none ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         } md:translate-x-0 z-40`}
-        style={{ minHeight: '100vh', position: 'relative' }}
+        style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}
       >
-        <div className="sidebar-header flex items-center justify-between p-7">
+        <div className="flex items-center justify-between p-7">
           <span className="text-xl font-bold">
             <span className="text-blue-600">Medi</span>Connect
           </span>
-          <button
-            className="md:hidden text-gray-600"
-            onClick={() => setIsOpen(false)}
-          >
+          <button className="md:hidden" onClick={() => setIsOpen(false)}>
             <FiMenu size={24} />
           </button>
         </div>
-
-        <nav className="sidebar-nav flex-1 px-2 space-y-1">
-          {upperLinks.map(({ to, label, icon }) => (
-            <NavLink
-              key={to}
-              to={to}
-              className={({ isActive }) =>
-                isActive
-                  ? "flex items-center px-4 py-2 text-white bg-[#184389] rounded-[12px] shadow-md transition-all"
-                  : "flex items-center px-4 py-2 text-black hover:bg-[#184389] hover:text-white hover:rounded-[12px] hover:shadow-md transition-all"
-              }
-            >
-              <span className="mr-3">{icon}</span>
-              <span>{label}</span>
-            </NavLink>
-          ))}
-
-          {/* Divider */}
-          <div className="my-6 border-t border-gray-200 mx-2" />
-
-        </nav>
-        {/* Logout Button - absolutely positioned at the bottom */}
-        <button
-          onClick={() => {
-            localStorage.clear();
-            window.location.href = '/login';
-          }}
-          className="flex items-center gap-3 px-4 py-2 text-black hover:bg-red-100 hover:text-red-600 rounded-[12px] transition-all"
-          style={{ position: 'absolute', bottom: 24, left: 16, right: 16, width: 'calc(100% - 32px)' }}
-        >
-          <FiLogOut size={20} />
-          <span>Logout</span>
-        </button>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <nav className="flex flex-col px-4 space-y-2" style={{ flex: 1 }}>
+            {navLinks.map(({ to, label, icon }) => (
+              <button
+                key={to}
+                onClick={() => {
+                  navigate(to);
+                  setIsOpen(false);
+                  if (label === 'Messages') setUnread(false);
+                }}
+                className="flex items-center gap-3 px-4 py-2 text-black hover:bg-[#184389] hover:text-white rounded-[12px] transition-all relative"
+              >
+                {icon}
+                <span>{label}</span>
+                {label === 'Messages' && unread && (
+                  <span style={{position:'absolute',right:18,top:12,background:'#e53e3e',borderRadius:'50%',width:12,height:12,display:'inline-block'}}></span>
+                )}
+              </button>
+            ))}
+          </nav>
+          {/* Logout Button - flush with bottom */}
+          <button
+            onClick={() => {
+              localStorage.clear();
+              navigate('/login');
+            }}
+            className="flex items-center gap-3 px-4 py-2 text-black hover:bg-red-100 hover:text-red-600 rounded-[12px] transition-all mb-6 mx-4"
+            style={{ width: 'calc(100% - 2rem)' }}
+          >
+            <FiLogOut size={20} />
+            <span>Logout</span>
+          </button>
+        </div>
       </div>
 
+      {/* Overlay */}
       {isOpen && (
         <div
-          className="sidebar-overlay fixed inset-0 bg-black bg-opacity-50 md:hidden z-30"
+          className="fixed inset-0 bg-black bg-opacity-50 md:hidden z-30"
           onClick={() => setIsOpen(false)}
         />
       )}
