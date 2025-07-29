@@ -20,13 +20,20 @@ const SeeApplication: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`http://localhost:3000/viewDegreeApplications/view/${id}`);
+        // Get JWT token from localStorage
+        const token = localStorage.getItem('token');
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        const response = await fetch(`http://localhost:3000/viewDegreeApplications/view/${id}`, { headers });
         if (!response.ok) throw new Error("Failed to fetch application");
         const data = await response.json();
         setApplicant(data);
         // Try to fetch user info by email (or userId if available)
         if (data.email) {
-          const userRes = await fetch(`http://localhost:3000/by-email/${encodeURIComponent(data.email)}`);
+          const userRes = await fetch(`http://localhost:3000/by-email/${encodeURIComponent(data.email)}`, { headers });
           if (userRes.ok) {
             const userData = await userRes.json();
             setUser(userData);
@@ -49,9 +56,16 @@ const SeeApplication: React.FC = () => {
     }
 
     try {
+      // Get JWT token from localStorage
+      const token = localStorage.getItem('token');
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`http://localhost:3000/viewDegreeApplications/delete/${id}`, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
+        headers,
       });
 
       if (!response.ok) {

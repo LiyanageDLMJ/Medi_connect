@@ -64,10 +64,12 @@ const Feedbacks: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      const userId = localStorage.getItem('userId');
-      const headers: any = {};
-      if (userId) {
-        headers['x-user-id'] = userId;
+      // Get JWT token from localStorage
+      const token = localStorage.getItem('token');
+      const headers: any = { 'Content-Type': 'application/json' };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
       }
 
       // Build query parameters

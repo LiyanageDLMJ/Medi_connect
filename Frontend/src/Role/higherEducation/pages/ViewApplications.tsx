@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Menu, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
-import { FiFilter, FiEye, FiDownload } from 'react-icons/fi';
+import { FiFilter } from 'react-icons/fi';
 import Sidebar from "../components/Sidebar";
 import TopBar from "../components/TopBar";
 import { BsThreeDotsVertical } from 'react-icons/bs';
@@ -20,7 +20,6 @@ interface Application {
   applicantType?: string; // Add applicantType field
   status: string;
   appliedDate: string;
-  cv?: string; // Add CV URL field
 }
 
 interface FilterOptions {
@@ -65,20 +64,41 @@ const ViewApplications: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterOptions>({
     statuses: [],
-    degrees: [] as { id: string; name: string }[]
+    degrees: [] as Array<{ id: string; name: string }>
   });
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>(initialFilters);
   const [applicantsPerPage, setApplicantsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
-  const [showCvPreview, setShowCvPreview] = useState(false);
-  const [selectedCvUrl, setSelectedCvUrl] = useState<string>("");
-  const [selectedApplicantName, setSelectedApplicantName] = useState<string>("");
+
+  // Function to check if token is valid
+  const isTokenValid = (token: string) => {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const currentTime = Date.now() / 1000;
+      return payload.exp > currentTime;
+    } catch (error) {
+      return false;
+    }
+  };
 
   useEffect(() => {
+    // Check if user is authenticated before fetching data
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
+    
+    // Check if token exists and is valid
+    if (!token || !isTokenValid(token)) {
+      // Clear invalid token
+      localStorage.removeItem('token');
+      // Redirect to login if not authenticated
+      navigate('/login');
+      return;
+    }
+    
     fetchApplications();
-  }, [activeFilters, applicantsPerPage, currentPage]);
+  }, [activeFilters, applicantsPerPage, currentPage, navigate]);
 
   const fetchApplications = async () => {
     setLoading(true);
@@ -91,28 +111,61 @@ const ViewApplications: React.FC = () => {
       if (activeFilters.search) queryParams.append('search', activeFilters.search);
       if (activeFilters.applicantType) queryParams.append('applicantType', activeFilters.applicantType);
 
-      // Get user ID from localStorage
+      // Get JWT token from localStorage
+      const token = localStorage.getItem('token');
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      
+      console.log('=== FRONTEND DEBUG: Token Check ===');
+      console.log('Token exists:', !!token);
+      console.log('Token length:', token?.length);
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+        console.log('Authorization header set:', headers['Authorization'] ? 'Yes' : 'No');
+      } else {
+        console.log('No token found in localStorage');
+      }
+      
+      // Fallback: Add user ID in headers in case JWT token is expired
       const userId = localStorage.getItem('userId');
-      const headers: any = { 'Content-Type': 'application/json' };
       if (userId) {
         headers['x-user-id'] = userId;
+        console.log('x-user-id header set:', userId);
+      } else {
+        console.log('No userId found in localStorage');
       }
+
+      console.log('Final headers:', headers);
 
       const response = await fetch(
         `http://localhost:3000/viewDegreeApplications/view?${queryParams.toString()}&page=${currentPage}&limit=${applicantsPerPage}`,
         { headers }
       );
       
-      if (!response.ok) throw new Error("Failed to fetch applications");
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.log('Error response:', errorText);
+        throw new Error(`Failed to fetch applications: ${response.status} ${errorText}`);
+      }
       
       const data = await response.json();
+      console.log('=== FRONTEND DEBUG: API Response ===');
+      console.log('Full API response:', data);
+      console.log('Applications count:', data.applications?.length || 0);
+      console.log('Degrees count:', data.filters?.degrees?.length || 0);
+      console.log('Degrees data:', data.filters?.degrees || []);
+      
       setApplications(data.applications);
       if (data.filters) setFilters({
         ...data.filters,
-        degrees: data.filters.degrees.map((deg: any) => ({ ...deg, id: String(deg.id) }))
+        degrees: data.filters.degrees.map((deg: { id: string | number; name: string }) => ({ ...deg, id: String(deg.id) }))
       });
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "An unknown error occurred";
+      console.error('Fetch error:', err);
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -151,10 +204,10 @@ const ViewApplications: React.FC = () => {
     );
     // Call backend to update status
     try {
-      const userId = localStorage.getItem('userId');
-      const headers: any = { "Content-Type": "application/json" };
-      if (userId) {
-        headers['x-user-id'] = userId;
+      const token = localStorage.getItem('token');
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
       }
       
       await fetch(`http://localhost:3000/viewDegreeApplications/updateStatus/${applicationId}`, {
@@ -174,9 +227,15 @@ const ViewApplications: React.FC = () => {
     }
 
     try {
+      const token = localStorage.getItem('token');
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`http://localhost:3000/viewDegreeApplications/delete/${applicationId}`, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
+        headers,
       });
 
       if (!response.ok) {
@@ -191,45 +250,31 @@ const ViewApplications: React.FC = () => {
     }
   };
 
-  const handleCvPreview = (cvUrl: string, applicantName: string) => {
-    // If it's a Cloudinary URL that might have access issues, use our backend endpoint
-    if (cvUrl.includes('cloudinary.com')) {
-      const encodedUrl = encodeURIComponent(cvUrl);
-      const backendUrl = `http://localhost:3000/degreeApplications/cv/${encodedUrl}`;
-      setSelectedCvUrl(backendUrl);
-    } else {
-      setSelectedCvUrl(cvUrl);
-    }
-    setSelectedApplicantName(applicantName);
-    setShowCvPreview(true);
-  };
-
-  const handleDownloadCv = (cvUrl: string, applicantName: string) => {
-    // If it's a Cloudinary URL that might have access issues, use our backend endpoint
-    if (cvUrl.includes('cloudinary.com')) {
-      const encodedUrl = encodeURIComponent(cvUrl);
-      const backendUrl = `http://localhost:3000/degreeApplications/cv/${encodedUrl}`;
-      const link = document.createElement('a');
-      link.href = backendUrl;
-      link.download = `${applicantName.replace(/\s+/g, '_')}_CV.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } else {
-      const link = document.createElement('a');
-      link.href = cvUrl;
-      link.download = `${applicantName.replace(/\s+/g, '_')}_CV.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  };
-
   // Calculate paginated applications
   const indexOfLastApplicant = currentPage * applicantsPerPage;
   const indexOfFirstApplicant = indexOfLastApplicant - applicantsPerPage;
-  const currentApplications = applications.slice(indexOfFirstApplicant, indexOfLastApplicant);
-  const totalPages = Math.ceil(applications.length / applicantsPerPage);
+  
+  // Filter applications based on active filters
+  const filteredApplications = applications.filter(application => {
+    // Search filter (only by name since email is not in the interface)
+    const matchesSearch = !activeFilters.search || 
+      application.name.toLowerCase().includes(activeFilters.search.toLowerCase());
+    
+    // Degree filter
+    const matchesDegree = !activeFilters.degreeId || application.degreeId === activeFilters.degreeId;
+    
+    // Applicant type filter
+    const matchesType = !activeFilters.applicantType || application.applicantType === activeFilters.applicantType;
+    
+    // Date filter
+    const matchesDate = !activeFilters.fromDate || 
+      new Date(application.appliedDate) >= new Date(activeFilters.fromDate);
+    
+    return matchesSearch && matchesDegree && matchesType && matchesDate;
+  });
+  
+  const currentApplications = filteredApplications.slice(indexOfFirstApplicant, indexOfLastApplicant);
+  const totalPages = Math.ceil(filteredApplications.length / applicantsPerPage);
 
   return (
     <div className="flex h-screen">
@@ -238,7 +283,7 @@ const ViewApplications: React.FC = () => {
         <TopBar />
         <div className="flex flex-col min-h-[calc(100vh-80px)] p-4 md:ml-64 h-full">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
-            <h2 className="text-2xl font-semibold whitespace-nowrap">Total Applicants: {applications.length}</h2>
+            <h2 className="text-2xl font-semibold whitespace-nowrap">Total Applicants: {filteredApplications.length}</h2>
             <div className="flex flex-wrap gap-2 items-center w-full md:w-auto">
               {/* Search by Applicant */}
               <input
@@ -278,7 +323,7 @@ const ViewApplications: React.FC = () => {
                   className="w-full p-2 border border-gray-300 rounded"
                 >
                   <option value="">All Degrees</option>
-                  {(filters.degrees as { id: string; name: string }[]).map(degree => (
+                  {filters.degrees.map((degree: { id: string; name: string }) => (
                     <option key={degree.id} value={degree.id}>
                       {degree.name}
                     </option>
@@ -358,9 +403,6 @@ const ViewApplications: React.FC = () => {
                             Applied Date
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            CV
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Action
                           </th>
                         </tr>
@@ -400,18 +442,6 @@ const ViewApplications: React.FC = () => {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               {application.appliedDate}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              {application.cv ? (
-                                <button
-                                  onClick={() => handleCvPreview(application.cv!, application.name)}
-                                  className="text-blue-600 hover:underline text-sm"
-                                >
-                                  View CV
-                                </button>
-                              ) : (
-                                "N/A"
-                              )}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center gap-2">
                               <button
@@ -533,44 +563,6 @@ const ViewApplications: React.FC = () => {
         </div>
       </div>
 
-      {/* CV Preview Modal */}
-      {showCvPreview && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl h-5/6 mx-4 relative">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 border-b">
-              <h3 className="text-lg font-semibold text-gray-900">
-                CV Preview - {selectedApplicantName}
-              </h3>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => handleDownloadCv(selectedCvUrl, selectedApplicantName)}
-                  className="flex items-center gap-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-200"
-                >
-                  <FiDownload size={16} />
-                  Download
-                </button>
-                <button
-                  onClick={() => setShowCvPreview(false)}
-                  className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
-                >
-                  &times;
-                </button>
-              </div>
-            </div>
-            
-            {/* Modal Content */}
-            <div className="flex-1 p-4">
-              <iframe
-                src={selectedCvUrl}
-                className="w-full h-full border-0 rounded"
-                title={`CV Preview - ${selectedApplicantName}`}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Feedback Modal */}
       <FeedbackModal
         open={showFeedbackModal}
@@ -579,6 +571,8 @@ const ViewApplications: React.FC = () => {
         placeholder="Tell us about your experience with the application review process..."
         source="general"
         sourceDetails="General feedback from institution"
+        institutionId={localStorage.getItem('userId') || undefined}
+        redirectTo="/higher-education/view-applications"
       />
     </div>
   );

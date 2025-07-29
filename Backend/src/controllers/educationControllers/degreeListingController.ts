@@ -282,9 +282,12 @@ export const getAllDegrees: AsyncRequestHandler = async (req, res, next) => {
       };
     }
 
-    // Filter by institution if instituteOnly is true or if we have an institutionId
-    if (instituteOnly === 'true' && institutionId) {
+    // Filter by institution if we have an institutionId from JWT
+    if (institutionId) {
       query.institutionId = institutionId;
+      console.log('Filtering by institution ID:', institutionId);
+    } else {
+      console.log('No institution ID available, showing all degrees');
     }
 
     console.log('Final query:', JSON.stringify(query, null, 2));

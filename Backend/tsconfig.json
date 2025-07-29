@@ -10,8 +10,10 @@
     "forceConsistentCasingInFileNames": true, // Enforce consistent file name casing
     "module": "commonjs", // Use CommonJS module system
     "target": "ES6", // Target ECMAScript 6
-    "lib": ["ES6", "DOM"], // Include ES6 and DOM libraries
-    "allowSyntheticDefaultImports": true // Allow default imports for modules without default exports
+    "lib": ["ES6"], // Include ES6 libraries only
+    "allowSyntheticDefaultImports": true, // Allow default imports for modules without default exports
+    "noImplicitAny": false, // Allow implicit any types
+    "moduleResolution": "node" // Use Node.js module resolution
   },
   "include": ["src/**/*"], // Include all files in the src directory
   "exclude": ["node_modules", "dist"] // Exclude node_modules and dist directories

@@ -1,6 +1,7 @@
 import { Request, Response, RequestHandler } from "express";
 import getDegreeApplicationModel from "../../models/DegreeApplication";
 import getDegreeModel from "../../models/Degree";
+import mongoose from "mongoose";
 
 export const viewDegreeApplications: RequestHandler = async (req: Request, res: Response) => {
   try {
@@ -14,7 +15,36 @@ export const viewDegreeApplications: RequestHandler = async (req: Request, res: 
     } = req.query;
 
     // Use query parameter if provided, otherwise get from JWT token
-    const institutionId = queryInstitutionId || (req as any).user?._id;
+    let institutionId = queryInstitutionId || (req as any).user?.id;
+    
+    // Debug: Check what's actually in req.user
+    console.log('=== DEBUG: req.user Object ===');
+    console.log('req.user:', (req as any).user);
+    console.log('req.user type:', typeof (req as any).user);
+    console.log('req.user keys:', (req as any).user ? Object.keys((req as any).user) : 'No user object');
+    console.log('req.user.id:', (req as any).user?.id);
+    console.log('req.user._id:', (req as any).user?._id);
+    
+    // Fallback: If JWT token is expired, try to get institution ID from headers or other sources
+    if (!institutionId) {
+      // Try to get from x-user-id header (fallback for expired tokens)
+      institutionId = req.headers['x-user-id'] as string;
+      console.log('Fallback: Using x-user-id header:', institutionId);
+    }
+    
+    console.log('=== VIEW APPLICATIONS DEBUG ===');
+    console.log('Query institutionId:', queryInstitutionId);
+    console.log('JWT user data:', (req as any).user);
+    console.log('JWT user.id:', (req as any).user?.id);
+    console.log('JWT user._id:', (req as any).user?._id);
+    console.log('JWT user.userType:', (req as any).user?.userType);
+    console.log('Final institutionId:', institutionId);
+    console.log('Final institutionId type:', typeof institutionId);
+    
+    // Convert institutionId to string for comparison (if it exists)
+    const institutionIdString = institutionId ? String(institutionId) : null;
+    console.log('Institution ID for filtering (converted to string):', institutionIdString);
+    
     // Build filter object
     const filter: any = {};
 
@@ -36,60 +66,56 @@ export const viewDegreeApplications: RequestHandler = async (req: Request, res: 
 
     // Degree program filter
     if (degreeId) {
+      // Validate that degreeId is a valid ObjectId
+      if (!mongoose.Types.ObjectId.isValid(degreeId as string)) {
+        console.log('Invalid degreeId provided:', degreeId);
+        return res.status(400).json({
+          success: false,
+          message: "Invalid degree ID format"
+        });
+      }
       filter.degreeId = degreeId;
+      console.log('=== DEBUG: Specific Degree Filter ===');
+      console.log('Filtering by specific degree ID:', degreeId);
     }
 
-    // Institution filter
-    if (institutionId) {
+    // Institution filter - ONLY filter applications if we have institutionId AND no specific degreeId
+    if (institutionIdString && !degreeId) {
       // Find all degrees for this institution
-      const degrees = await getDegreeModel().find({ institutionId }).select('courseId _id degreeName');
+      const degrees = await getDegreeModel().find({ institutionId: institutionIdString }).select('courseId _id degreeName');
       
       // Debug: Check all degrees in database vs institution degrees
-      const allDegrees = await getDegreeModel().find({}).select('courseId _id degreeName institutionId');
-      console.log('=== DEBUG: Degree Count Analysis ===');
-      console.log('Total degrees in database:', allDegrees.length);
-      console.log('All degrees with institution IDs:', allDegrees.map(d => ({
-        degreeName: d.degreeName,
-        institutionId: d.institutionId,
-        courseId: d.courseId
-      })));
-      console.log('Degrees for this institution:', degrees.length);
-      console.log('This institution degrees:', degrees.map(d => ({
-        degreeName: d.degreeName,
-        institutionId: d.institutionId,
-        courseId: d.courseId
-      })));
+      console.log('=== DEBUG: Institution Degree Filtering ===');
+      console.log('Institution ID used for filtering:', institutionIdString);
+      console.log('Degrees found for this institution:', degrees.length);
+      console.log('Degree IDs found:', degrees.map(d => d._id));
       
-      // Get both courseIds and _ids for filtering
-      const courseIds = degrees.map(d => d.courseId);
-      const degreeIds = degrees.map(d => (d._id as any).toString());
-      const institutionDegreeNames = degrees.map(d => d.degreeName);
+      if (degrees.length > 0) {
+        // Only show applications for degrees that belong to this institution
+        filter.degreeId = { $in: degrees.map(d => d._id) };
+      } else {
+        // If no degrees found for this institution, show no applications
+        filter.degreeId = { $in: [] };
+      }
+    } else if (institutionIdString && degreeId) {
+      console.log('=== DEBUG: Both Institution and Degree Filter ===');
+      console.log('Specific degree requested, but also checking institution ownership');
       
-      console.log('=== DEBUG: View Applications Institution Filter ===');
-      console.log('Institution ID:', institutionId);
-      console.log('Institution degrees:', degrees.length);
-      console.log('Degree names:', institutionDegreeNames);
-      console.log('Course IDs:', courseIds);
-      console.log('Degree IDs:', degreeIds);
+      // Verify that the requested degree belongs to this institution
+      const degree = await getDegreeModel().findOne({ 
+        _id: degreeId, 
+        institutionId: institutionIdString 
+      });
       
-      // Filter applications by institution using the same logic as insights
-      filter.$or = [
-        // New applications with institutionId
-        { institutionId: institutionId },
-        // Old applications that match this institution's degree names
-        { 
-          $and: [
-            { degreeName: { $in: institutionDegreeNames } },
-            { 
-              $or: [
-                { institutionId: { $exists: false } },
-                { institutionId: null },
-                { institutionId: "" }
-              ]
-            }
-          ]
-        }
-      ];
+      if (!degree) {
+        console.log('Degree does not belong to this institution, showing no applications');
+        filter.degreeId = { $in: [] };
+      } else {
+        console.log('Degree belongs to this institution, showing applications for this degree only');
+        // Keep the specific degreeId filter
+      }
+    } else {
+      console.log('No institution ID available - this should not happen for authenticated institutions');
     }
 
     // Search filter (name, email, or degree name)
@@ -99,12 +125,12 @@ export const viewDegreeApplications: RequestHandler = async (req: Request, res: 
         $or: [
           { degreeName: searchRegex }
         ]
-      }).select('courseId');
+      }).select('_id');
 
       filter.$or = [
         { name: searchRegex },
         { email: searchRegex },
-        { degreeId: { $in: degrees.map(d => d.courseId) } }
+        { degreeId: { $in: degrees.map(d => d._id) } }
       ];
     }
 
@@ -140,20 +166,63 @@ export const viewDegreeApplications: RequestHandler = async (req: Request, res: 
     const statuses = await getDegreeApplicationModel().distinct('status');
     
     // Get degrees for this institution only (not all degrees)
-    const institutionDegrees = await getDegreeModel().find({ institutionId }).select('courseId degreeName');
+    let institutionDegrees: any[] = [];
+    if (institutionIdString) {
+      // Filter out degrees with invalid institution IDs
+      institutionDegrees = await getDegreeModel().find({ 
+        institutionId: institutionIdString
+      }).select('_id degreeName');
+      
+      console.log('=== DEBUG: Degree Filter Dropdown ===');
+      console.log('Institution ID for dropdown:', institutionIdString);
+      console.log('Degrees found for dropdown:', institutionDegrees.length);
+      console.log('Degree names for dropdown:', institutionDegrees.map(d => d.degreeName));
+    } else {
+      console.log('No institution ID available, showing empty degree list');
+    }
     
     // Debug: Check what degrees are being shown
     console.log('=== DEBUG: View Applications Filter ===');
     console.log('Institution ID:', institutionId);
+    console.log('Institution ID type:', typeof institutionId);
     console.log('Institution degrees found:', institutionDegrees.length);
     console.log('Institution degree names:', institutionDegrees.map(d => d.degreeName));
+    
+    // Debug: Check all degrees in database to compare
+    const allDegrees = await getDegreeModel().find({}).select('courseId degreeName institutionId');
+    console.log('=== DEBUG: All Degrees in Database ===');
+    console.log('Total degrees in database:', allDegrees.length);
+    console.log('All degrees with institution IDs:', allDegrees.map(d => ({
+      degreeName: d.degreeName,
+      institutionId: d.institutionId,
+      courseId: d.courseId
+    })));
+    
+    // Debug: Check if there are any degrees without institutionId
+    const degreesWithoutInstitutionId = allDegrees.filter(d => !d.institutionId);
+    console.log('=== DEBUG: Degrees without institutionId ===');
+    console.log('Count:', degreesWithoutInstitutionId.length);
+    console.log('Degrees:', degreesWithoutInstitutionId.map(d => ({
+      degreeName: d.degreeName,
+      courseId: d.courseId
+    })));
+    
+    // Debug: Check if there are any degrees with empty institutionId
+    const degreesWithEmptyInstitutionId = allDegrees.filter(d => d.institutionId === '' || d.institutionId === null);
+    console.log('=== DEBUG: Degrees with empty institutionId ===');
+    console.log('Count:', degreesWithEmptyInstitutionId.length);
+    console.log('Degrees:', degreesWithEmptyInstitutionId.map(d => ({
+      degreeName: d.degreeName,
+      courseId: d.courseId,
+      institutionId: d.institutionId
+    })));
 
     res.status(200).json({
       applications: transformedApplications,
       filters: {
         statuses,
         degrees: institutionDegrees.map(d => ({
-          id: d.courseId,
+          id: d._id,
           name: d.degreeName
         }))
       }

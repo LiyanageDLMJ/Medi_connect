@@ -94,10 +94,12 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 
   const markAsRead = async (notificationId: string) => {
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:3000/notifications/${notificationId}/read`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ userId }),
       });
@@ -119,10 +121,12 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 
   const markAllAsRead = async () => {
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:3000/notifications/mark-all-read', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ userId }),
       });
@@ -140,10 +144,12 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 
   const deleteNotification = async (notificationId: string) => {
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:3000/notifications/${notificationId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ userId }),
       });

@@ -326,6 +326,8 @@ const DegreeApplicationForm: React.FC<DegreeApplicationFormProps> = ({ degree, o
           source="degree_application"
           sourceDetails={`After submitting application for ${usedDegree.degreeName} at ${usedDegree.institution}`}
           degreeId={usedDegree._id}
+          institutionId={usedDegree?.institutionId}
+          redirectTo="/physician/higher-education"
         />
 
         {/* Form Body */}

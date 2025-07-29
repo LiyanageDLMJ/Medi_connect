@@ -746,6 +746,8 @@ const PostDegree: React.FC = () => {
         placeholder="Share your thoughts about posting a degree program..."
         source="course_posting"
         sourceDetails={`After posting degree: ${postedDegreeName}`}
+        institutionId={localStorage.getItem('userId') || undefined}
+        redirectTo="/higher-education/degree-listing"
       />
     </div>
   );

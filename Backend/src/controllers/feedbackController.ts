@@ -6,28 +6,39 @@ import getDegreeModel from '../models/Degree';
 export const submitFeedback = async (req: Request, res: Response) => {
   try {
     // Get user ID from JWT token instead of header
-    const userId = (req as any).user?._id;
+    const userId = (req as any).user?.id || (req as any).user?._id;
     if (!userId) {
       return res.status(401).json({ message: "User not authenticated" });
     }
 
-    const { rating, heading, feedback, source, degreeId, courseName } = req.body;
+    const { rating, heading, feedback, source, degreeId, institutionId, sourceDetails } = req.body;
 
     // Validate required fields
     if (!rating || !heading || !feedback || !source) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // Create feedback object
+    // Get user details from JWT token or request body
+    const userType = (req as any).user?.userType || req.body.userType;
+    const userName = (req as any).user?.name || req.body.userName;
+    const userEmail = (req as any).user?.email || req.body.userEmail;
+
+    // Create feedback object with all required fields
     const feedbackData = {
       userId,
+      userType: userType || 'Unknown',
+      userName: userName || 'Anonymous',
+      userEmail: userEmail || '',
       rating,
       heading,
       feedback,
       source,
+      sourceDetails: sourceDetails || null,
       degreeId: degreeId || null,
-      courseName: courseName || null,
-      createdAt: new Date()
+      institutionId: institutionId || null,
+      status: 'pending', // Default status
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
 
     const newFeedback = new (getFeedbackModel())(feedbackData);
@@ -46,11 +57,12 @@ export const submitFeedback = async (req: Request, res: Response) => {
 // GET /feedback/list (for institutions to see their feedback)
 export const getFeedbackList = async (req: Request, res: Response) => {
   try {
-    const institutionId = req.headers['x-user-id'] as string;
+    // Get institution ID from JWT token instead of header
+    const institutionId = (req as any).user?.id || (req as any).user?._id;
     const { source, status, page = 1, limit = 10 } = req.query;
 
     console.log('=== DEBUG: Get Feedback List ===');
-    console.log('Institution ID:', institutionId);
+    console.log('Institution ID from JWT:', institutionId);
     console.log('Filters:', { source, status, page, limit });
 
     // Build filter conditions

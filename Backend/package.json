@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^6.4.1",
+    "@supabase/supabase-js": "^2.53.0",
     "backend": "file:",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^3.0.2",
@@ -39,7 +40,7 @@
     "@types/bcrypt": "^5.0.2",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.1",
-    "@types/jsonwebtoken": "^9.0.9",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/mkdirp": "^1.0.2",
     "@types/mongoose": "^5.11.96",
     "@types/multer": "^1.4.12",
@@ -47,6 +48,7 @@
     "@types/node": "^22.13.9",
     "@types/nodemailer": "^6.4.17",
     "@types/validator": "^13.15.0",
+    "@types/webidl-conversions": "^7.0.3",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2"

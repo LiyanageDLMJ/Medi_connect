@@ -5,11 +5,12 @@ import {
   getAdminFeedbackList, 
   updateFeedbackStatus 
 } from '../controllers/feedbackController';
+import { authMiddleware } from '../middleware/authMiddleware';
 
 const router = Router();
 
-// Submit feedback
-router.post('/submit', submitFeedback);
+// Submit feedback (requires authentication)
+router.post('/submit', authMiddleware, submitFeedback);
 
 // Get feedback list (for institutions)
 router.get('/list', getFeedbackList);

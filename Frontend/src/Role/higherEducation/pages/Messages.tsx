@@ -4,15 +4,19 @@ import MessageBox from '../../../Components/MessageBox/MessageBox';
 
 const Messages = () => {
   return (
-    <div style={{ display: 'flex', height: '100vh', width: '100vw' }}>
+    <div className="flex h-screen">
       {/* Sidebar */}
       <Sidebar />
+
       {/* Main Content */}
-      <div style={{ flex: 1, height: '100vh', overflow: 'hidden' }}>
-        <MessageBox />
+      <div className="flex-1 overflow-auto md:ml-64"> {/* Add margin on larger screens to account for sidebar */}
+        <TopBar />
+        <div className="flex flex-col min-h-[calc(100vh-80px)]">
+          <MessageBox />
+        </div>
       </div>
     </div>
-  );
+  )
 }
 
 export default Messages

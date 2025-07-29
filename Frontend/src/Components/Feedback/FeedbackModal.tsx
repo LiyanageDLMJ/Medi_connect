@@ -41,22 +41,17 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
     setError("");
 
     try {
-      // Get user information from localStorage
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      const userId = localStorage.getItem('userId');
-      const userType = localStorage.getItem('userType');
-      const userEmail = localStorage.getItem('userEmail');
+      // Get JWT token from localStorage
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('User not authenticated');
+      }
 
-      // Prepare headers
+      // Prepare headers with JWT token
       const headers: any = {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
       };
-
-      // Add user information to headers
-      if (userId) headers['x-user-id'] = userId;
-      if (userType) headers['x-user-type'] = userType;
-      if (userEmail) headers['x-user-email'] = userEmail;
-      if (user.name) headers['x-user-name'] = user.name;
 
       // Prepare feedback data
       const feedbackData = {
@@ -66,12 +61,16 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
         source: source,
         sourceDetails: sourceDetails,
         degreeId: degreeId,
-        institutionId: institutionId
+        institutionId: institutionId,
+        // Add user details as fallback
+        userType: localStorage.getItem('userType') || undefined,
+        userName: localStorage.getItem('userName') || undefined,
+        userEmail: localStorage.getItem('userEmail') || undefined
       };
 
       console.log('=== DEBUG: Feedback Submission ===');
       console.log('Feedback data:', feedbackData);
-      console.log('Headers:', headers);
+      console.log('Token present:', !!token);
 
       // Submit feedback to backend
       const response = await fetch('http://localhost:3000/feedback/submit', {

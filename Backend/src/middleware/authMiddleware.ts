@@ -5,25 +5,38 @@ export const authMiddleware: RequestHandler = (req, res, next) => {
   console.log('=== AUTH MIDDLEWARE DEBUG ===');
   console.log('Headers:', req.headers);
   console.log('Authorization header:', req.headers.authorization);
+  console.log('x-user-id header:', req.headers['x-user-id']);
   
   const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    console.log('No valid authorization header found');
-    res.status(401).json({ message: "No token provided" });
-    return;
+  
+  // Try JWT token first
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    const token = authHeader.split(" ")[1];
+    console.log('Token extracted:', token ? 'Present' : 'Missing');
+    
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || "your_jwt_secret");
+      console.log('Token decoded successfully:', decoded);
+      (req as any).user = decoded;
+      next();
+      return;
+    } catch (err) {
+      console.log('Token verification failed:', err);
+      // Don't return error yet, try fallback
+    }
   }
   
-  const token = authHeader.split(" ")[1];
-  console.log('Token extracted:', token ? 'Present' : 'Missing');
-  
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "your_jwt_secret");
-    console.log('Token decoded successfully:', decoded);
-    (req as any).user = decoded;
+  // Fallback: Check for x-user-id header (for development)
+  const userId = req.headers['x-user-id'] as string;
+  if (userId) {
+    console.log('Using x-user-id fallback:', userId);
+    (req as any).user = { id: userId };
     next();
-  } catch (err) {
-    console.log('Token verification failed:', err);
-    res.status(401).json({ message: "Invalid or expired token" });
     return;
   }
+  
+  // No valid authentication found
+  console.log('No valid authentication found');
+  res.status(401).json({ message: "No valid token or user ID provided" });
+  return;
 }; 

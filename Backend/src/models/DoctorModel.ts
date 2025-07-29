@@ -9,7 +9,20 @@ const doctorSchema = new mongoose.Schema({
   specialty: {
     type: String,
     required: true,
-    // enum removed to allow any specialty
+    enum: [
+      'Dermatologist',
+      'Neurologist',
+      'Obstetrics and gynaecology',
+      'Family medicine',
+      'Cardiologist',
+      'Gastroenterologist',
+      'Internal medicine',
+      'Endocrinologist',
+      'Ophthalmologist',
+      'Pulmonologist',
+      'Rheumatologist',
+      'Urologist',
+    ],
   },
   location: {
     type: String,

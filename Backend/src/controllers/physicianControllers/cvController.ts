@@ -90,14 +90,15 @@ export const addDoctorCv = async (req: Request, res: Response) => {
         console.log("Resume URL validation passed:", resumeRawUrl);
 
         // Handle certification input
-        let certificationInput = [];
+        let certificationInput: string[] = [];
         if (certInput) {
             try {
-                certificationInput = typeof certInput === 'string'
+                const parsed = typeof certInput === 'string'
                     ? JSON.parse(certInput)
                     : certInput;
+                certificationInput = Array.isArray(parsed) ? parsed : [String(parsed)];
             } catch (e) {
-                certificationInput = [certInput];
+                certificationInput = [String(certInput)];
             }
         }
 

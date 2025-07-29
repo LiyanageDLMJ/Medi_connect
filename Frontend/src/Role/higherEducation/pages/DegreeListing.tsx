@@ -513,6 +513,8 @@ const DegreeListing: React.FC = () => {
                 placeholder="Share your thoughts about the application process..."
                 source="general"
                 sourceDetails="Feedback from degree listing page"
+                institutionId={localStorage.getItem('userId') || undefined}
+                redirectTo="/higher-education/degree-listing"
               />
             </div>
             {/* Pagination controls at the very bottom */}

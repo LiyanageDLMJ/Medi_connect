@@ -24,7 +24,7 @@ const asyncHandler = (fn: AsyncRequestHandler) => (req: Request, res: Response, 
 router.post("/createDegree", authMiddleware, imageUpload.single("image"), asyncHandler(createDegree));
 
 // Route to get all degrees with filters
-router.get("/viewDegrees", asyncHandler(getAllDegrees));
+router.get("/viewDegrees", authMiddleware, asyncHandler(getAllDegrees));
 
 // Route to get a single degree by ID
 router.get("/viewDegrees/:id", asyncHandler(getDegreeById));

@@ -11,7 +11,7 @@ import { FiFilter } from 'react-icons/fi';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button as MUIButton, TextField as MUITextField, Select as MUISelect, MenuItem as MUIMenuItem, FormControl as MUIFormControl, InputLabel as MUIInputLabel } from '@mui/material';
 
 const InstituteDegreeDetails: React.FC = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const [degree, setDegree] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -24,17 +24,55 @@ const InstituteDegreeDetails: React.FC = () => {
   const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
   const openEditOnLoad = searchParams.get("edit") === "true";
+  const [hasOpenedFromUrl, setHasOpenedFromUrl] = useState(false);
   const [applicants, setApplicants] = useState<any[]>([]);
   const [applicantsLoading, setApplicantsLoading] = useState(false);
   const [applicantsError, setApplicantsError] = useState<string | null>(null);
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const [filters, setFilters] = useState({
+    search: '',
+    status: '',
+    applicantType: ''
+  });
   const navigate = useNavigate();
+
+  // Function to check if token is valid
+  const isTokenValid = (token: string) => {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const currentTime = Date.now() / 1000;
+      return payload.exp > currentTime;
+    } catch (error) {
+      return false;
+    }
+  };
 
   useEffect(() => {
     const fetchDegree = async () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await axios.get(`http://localhost:3000/degrees/viewDegrees/${id}`);
+        
+        // Check if user is authenticated
+        const token = localStorage.getItem('token');
+        const userId = localStorage.getItem('userId');
+        
+        // Check if token exists and is valid
+        if (!token || !isTokenValid(token)) {
+          // Clear invalid token
+          localStorage.removeItem('token');
+          // Redirect to login if not authenticated
+          navigate('/login');
+          return;
+        }
+        
+        // Get JWT token from localStorage
+        const headers: any = {};
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        const response = await axios.get(`http://localhost:3000/degrees/viewDegrees/${id}`, { headers });
         setDegree(response.data);
       } catch (err) {
         setError("Failed to fetch degree details.");
@@ -43,25 +81,53 @@ const InstituteDegreeDetails: React.FC = () => {
       }
     };
     if (id) fetchDegree();
-  }, [id]);
+  }, [id, navigate]);
 
   useEffect(() => {
-    if (openEditOnLoad && degree) {
+    if (openEditOnLoad && degree && !hasOpenedFromUrl) {
       handleEditOpen();
+      setHasOpenedFromUrl(true);
     }
     // Only run when degree is loaded or search param changes
-  }, [openEditOnLoad, degree]);
+  }, [openEditOnLoad, degree, hasOpenedFromUrl]);
 
   useEffect(() => {
     const fetchApplicants = async () => {
       if (!degree?._id && !degree?.id) return;
+      
+      // Check if user is authenticated
+      const token = localStorage.getItem('token');
+      const userId = localStorage.getItem('userId');
+      
+      // Check if token exists and is valid
+      if (!token || !isTokenValid(token)) {
+        setApplicantsError("Please log in to view applicants");
+        setApplicantsLoading(false);
+        return;
+      }
+      
       setApplicantsLoading(true);
       setApplicantsError(null);
       try {
-        // Corrected endpoint
-        const response = await axios.get(`http://localhost:3000/viewDegreeApplications/view?degreeId=${degree._id || degree.id}`);
+        // Get JWT token from localStorage
+        const headers: any = {};
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        const degreeId = degree._id || degree.id;
+        console.log('=== DEBUG: Fetching Applicants ===');
+        console.log('Degree ID:', degreeId);
+        console.log('Degree Name:', degree.degreeName);
+        
+        // Corrected endpoint with authentication
+        const response = await axios.get(`http://localhost:3000/viewDegreeApplications/view?degreeId=${degreeId}`, { headers });
+        console.log('API Response:', response.data);
+        console.log('Applications found:', response.data.applications?.length || 0);
+        
         setApplicants(response.data.applications || []);
       } catch (err: any) {
+        console.error('Error fetching applicants:', err);
         setApplicantsError("Failed to fetch applicants.");
       } finally {
         setApplicantsLoading(false);
@@ -82,6 +148,36 @@ const InstituteDegreeDetails: React.FC = () => {
     else if (status === "REJECTED") { color = "bg-red-500"; text = "Rejected"; }
     return <span className={`px-2 py-1 text-xs font-semibold text-white rounded ${color}`}>{text}</span>;
   };
+
+  // Filter functions
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFilters(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      search: '',
+      status: '',
+      applicantType: ''
+    });
+  };
+
+  // Filter applicants based on current filters
+  const filteredApplicants = applicants.filter(applicant => {
+    const matchesSearch = !filters.search || 
+      applicant.name.toLowerCase().includes(filters.search.toLowerCase()) ||
+      applicant.email?.toLowerCase().includes(filters.search.toLowerCase());
+    
+    const matchesStatus = !filters.status || applicant.status === filters.status;
+    
+    const matchesType = !filters.applicantType || applicant.applicantType === filters.applicantType;
+    
+    return matchesSearch && matchesStatus && matchesType;
+  });
 
   // Add mockApplicants definition back
   const mockApplicants: Array<{
@@ -152,6 +248,7 @@ const InstituteDegreeDetails: React.FC = () => {
   const handleEditClose = () => {
     setEditOpen(false);
     setEditError(null);
+    setHasOpenedFromUrl(false);
   };
   const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | any) => {
     const { name, value } = e.target;
@@ -223,8 +320,30 @@ const InstituteDegreeDetails: React.FC = () => {
           }
         );
       }
-      setDegree(response.data.degree); // Use the degree data from the response
+      
+      // Update the degree data
+      setDegree(response.data.degree || response.data);
+      
+      console.log('=== DEBUG: Closing Edit Modal ===');
+      console.log('Setting editOpen to false');
+      
+      // Close the edit modal
       setEditOpen(false);
+      
+      // Reset the edit form
+      setEditForm(null);
+      setEditImageFile(null);
+      setEditImagePreview(null);
+      setHasOpenedFromUrl(false);
+      
+      console.log('Modal state reset complete');
+      
+      // If we came from DegreeListing with edit=true, remove the edit parameter from URL
+      if (openEditOnLoad) {
+        console.log('Removing edit parameter from URL');
+        navigate(`/higher-education/degree-listing/institute-degree-details/${degree._id || degree.id}`, { replace: true });
+      }
+      
     } catch (err: any) {
       console.error('Update error:', err);
       console.error('Error response:', err.response?.data);
@@ -372,20 +491,78 @@ const InstituteDegreeDetails: React.FC = () => {
             ) : (
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <span className="font-medium">Total Applicants: {applicants.length}</span>
+                  <span className="font-medium">Total Applicants: {filteredApplicants.length}</span>
                   <div className="flex items-center gap-2">
                     <input
                       type="text"
+                      name="search"
+                      value={filters.search}
+                      onChange={handleFilterChange}
                       placeholder="Search Applicants"
                       className="p-2 border border-gray-300 rounded w-56"
                     />
-                    <button
-                      className="inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm bg-white text-sm font-medium rounded hover:bg-gray-50 focus:outline-none"
-                      type="button"
-                    >
-                      <FiFilter className="mr-2" />
-                      Filter
-                    </button>
+                    <Menu as="div" className="relative inline-block text-left">
+                      <div>
+                        <Menu.Button className="inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm bg-white text-sm font-medium rounded hover:bg-gray-50 focus:outline-none">
+                          <FiFilter className="mr-2" />
+                          Filter
+                        </Menu.Button>
+                      </div>
+                      <Transition
+                        as={Fragment}
+                        enter="transition ease-out duration-100"
+                        enterFrom="transform opacity-0 scale-95"
+                        enterTo="transform opacity-100 scale-100"
+                        leave="transition ease-in duration-75"
+                        leaveFrom="transform opacity-100 scale-100"
+                        leaveTo="transform opacity-0 scale-95"
+                      >
+                        <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right bg-white border border-gray-200 divide-y divide-gray-100 rounded-md shadow-lg focus:outline-none z-50">
+                          <div className="p-4 space-y-3">
+                            {/* Status Filter */}
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                              <select
+                                name="status"
+                                value={filters.status}
+                                onChange={handleFilterChange}
+                                className="w-full p-2 border border-gray-300 rounded"
+                              >
+                                <option value="">All Statuses</option>
+                                <option value="PENDING">Pending</option>
+                                <option value="APPROVED">Approved</option>
+                                <option value="REJECTED">Rejected</option>
+                              </select>
+                            </div>
+                            
+                            {/* Applicant Type Filter */}
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Applicant Type</label>
+                              <select
+                                name="applicantType"
+                                value={filters.applicantType}
+                                onChange={handleFilterChange}
+                                className="w-full p-2 border border-gray-300 rounded"
+                              >
+                                <option value="">All Types</option>
+                                <option value="MedicalStudent">Medical Students</option>
+                                <option value="Doctor">Professional Doctors</option>
+                              </select>
+                            </div>
+                            
+                            {/* Clear Filters Button */}
+                            <div className="pt-2">
+                              <button
+                                onClick={clearFilters}
+                                className="w-full px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded"
+                              >
+                                Clear Filters
+                              </button>
+                            </div>
+                          </div>
+                        </Menu.Items>
+                      </Transition>
+                    </Menu>
                   </div>
                 </div>
                 {applicantsLoading ? (
@@ -399,16 +576,17 @@ const InstituteDegreeDetails: React.FC = () => {
                       <tr>
                         <th className="p-3 text-left">Applicant</th>
                         <th className="p-3 text-left">Current Education</th>
+                        <th className="p-3 text-left">Type</th>
                         <th className="p-3 text-left">Status</th>
                         <th className="p-3 text-left">Applied Date</th>
                         <th className="p-3 text-left">Action</th>
                       </tr>
                     </thead>
                     <tbody>
-                        {applicants.length === 0 ? (
-                          <tr><td colSpan={5} className="text-center p-4">No applicants found.</td></tr>
+                        {filteredApplicants.length === 0 ? (
+                          <tr><td colSpan={6} className="text-center p-4">No applicants found.</td></tr>
                         ) : (
-                          applicants.map((applicant) => (
+                          filteredApplicants.map((applicant) => (
                         <tr key={applicant.id} className="hover:bg-gray-50">
                           <td className="p-3">
                             <div className="flex items-center gap-3">
@@ -422,6 +600,15 @@ const InstituteDegreeDetails: React.FC = () => {
                             </div>
                           </td>
                               <td className="p-3">{applicant.currentEducation || '-'}</td>
+                              <td className="p-3">
+                                <span className={`px-2 py-1 text-xs font-semibold rounded ${
+                                  applicant.applicantType === 'MedicalStudent' 
+                                    ? 'bg-blue-100 text-blue-800' 
+                                    : 'bg-green-100 text-green-800'
+                                }`}>
+                                  {applicant.applicantType === 'MedicalStudent' ? 'Medical Student' : 'Professional Doctor'}
+                                </span>
+                              </td>
                           <td className="p-3">{statusBadge(applicant.status)}</td>
                           <td className="p-3">{applicant.appliedDate}</td>
                           <td className="p-3 text-sm font-medium flex items-center gap-2">

@@ -22,6 +22,7 @@ const FloatingFeedbackButton: React.FC = () => {
         placeholder="Type Here... (Share your experience in detail)"
         source="general"
         sourceDetails="General feedback from floating button"
+        institutionId={localStorage.getItem('userId') || undefined}
       />
     </>
   );
