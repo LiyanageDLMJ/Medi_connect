@@ -79,6 +79,7 @@ app.use('/viewDegreeApplications', viewDegreeApplicationRoutes);
 app.use('/jobApplicationControl', jobApplicationContolByRecuiterRoutes);
 app.use('/api/recruiter/candidates', recruiterCandidateRoutes);
 app.use('/image', express.static(path.join(__dirname, "../image")));
+app.use('/uploads', express.static(path.join(__dirname, "../uploads")));
 app.use('/medicalStudentCv', medicalCvRoutes);
 
 // Start the server
