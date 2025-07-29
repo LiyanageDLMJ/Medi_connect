@@ -7,6 +7,11 @@ import RecuiterJobPost from "./Routes/RecuiterRoutes/JobPostRoutes";
 import connectDB from "./Config/db";
 import JobSearch from "./Routes/PhysicianRoutes/JobSearchRoutes";
 import jobApplicationRoutes from "./Routes/PhysicianRoutes/jobApplicationRoutes";
+
+// import UpdateUser from "./Routes/AdminRoutes/UpdateUser";
+import adminRoute from './Routes/AdminRoutes/adminRoute'; 
+import { changePasswordByEmail } from './controllers/adminControllers/adminCondtroller';
+
 import chatUploadRoutes from './Routes/ChatUploadRoutes';
 import profilePhotoRoutes from './Routes/ProfilePhotoRoutes';
 import DegreeApplicationRoutes from "./Routes/PhysicianRoutes/degreeApplicationRoutes";
@@ -63,7 +68,13 @@ if (!fs.existsSync(uploadDir)) {
 // Middleware for parsing URL-encoded data
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Routes
+// Middleware for parsing URL-encoded data
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+
+
+
+//  Routes (unchanged)
 app.use("/api", router);
 app.use("/CvdoctorUpdate", CvDocRouter);
 app.use("/JobPost", RecuiterJobPost);
@@ -95,4 +106,49 @@ attachSocket(httpServer);
 
 httpServer.listen(PORT, () => {
   console.log(`Server and Socket.IO are running on port ${PORT}`);
+
+// Start the server
+
+
+//Admin Routes
+// app.use("/api/hello", UpdateUser); 
+
+app.use('/api/admin', adminRoute);
+
+// Direct change password route (accessible at /api/change-password)
+app.put('/api/change-password', async (req, res) => {
+  try {
+    const { email, currentPassword, newPassword } = req.body;
+    if (!email || !currentPassword || !newPassword) {
+      return res.status(400).json({ message: 'All fields are required.' });
+    }
+    
+    // Import AdminModel here to avoid circular imports
+    const AdminModel = (await import('./models/AdminModels/adminReg')).default;
+    const admin = await AdminModel.findOne({ email });
+    
+    if (!admin) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    const bcrypt = (await import('bcrypt')).default;
+    const isMatch = await bcrypt.compare(currentPassword, admin.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Current password is incorrect' });
+    }
+    
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    admin.password = hashedPassword;
+    await admin.save();
+    
+    res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error('Error changing password:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });

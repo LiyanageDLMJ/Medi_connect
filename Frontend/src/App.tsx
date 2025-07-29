@@ -1,12 +1,10 @@
 import { Route,Outlet,Routes } from "react-router-dom";
 
+import { Routes, Route } from "react-router-dom";
 import JobInternshipSearch from "./Role/Physician/pages/JobInternshipSearch";
-import HigherEducationSearch from "./Role/Physician/pages/HigherEducationSearch";
 import JobApplicationForm from "./Role/Physician/pages/JobApplicationForm";
-import JobInternshipDetails from "./Role/Physician/pages/JobInternshipDetails";
-import JobApplicationTracker from "./Role/Physician/pages/TrackJobApplication";
-import PostDegree from "./Role/higherEducation/pages/PostDegree";
-
+import AdminDashboard from "./Role/Admin/pages/Dashboard";
+import Login from "./LoginRegister/login/Login";
 import Register from "./LoginRegister/register/Register";
 import JobPost from "./Role/Recuiter/pages/JobPost";
 import JobListing from "./Role/Recuiter/pages/JobListing";
@@ -20,42 +18,12 @@ import InstitutionDashboard from "./Role/higherEducation/pages/Dashboard";
 import "react-datepicker/dist/react-datepicker.css";
 import Home from "./LoginRegister/Home/Home";
 import ForgotPassword from "./LoginRegister/login/ForgetPassword";
-import Login from "./LoginRegister/login/Login";
-import Footer from "./Components/FooterDiv/Footer"; // Adjust the path as needed
-import WithFooter from "./Layout/WithFooter"; // Adjust the path as needed
-import DegreeListing from "./Role/higherEducation/pages/DegreeListing";
-import DashboradAdmin from "./Role/Admin/pages/Dashboard";
-import DoctorDashboard from "./Role/Physician/pages/Doctordashboard";
+import AdminSignIn from "./Role/Admin/pages/AdminSignIn";
+import MonitoringDashboard from "./Role/Admin/components/MonitoringDashboard";
+import JobApplicationTable from './Role/Admin/components/JobListing/JobApplicationTable';
 
-import  DegreeApplication from "./Role/Physician/pages/DegreeApplicationForm"
 
-import  ViewApplications from "./Role/higherEducation/pages/ViewApplications"
-import ViewCandidates from "./Role/Recuiter/pages/VeiwCandidates";
-import SeeApplication from "./Role/higherEducation/pages/SeeApplication";
-import DegreeDetails from "./Role/Physician/pages/DegreeDetails";
-import InstituteDegreeDetails from "./Role/higherEducation/pages/InstituteDegreeDetails";
-import Feedbacks from "./Role/higherEducation/pages/Feedbackslist";
-
-import Dashborad from "./Role/higherEducation/pages/Dashboard";
-import './App.css'; // ✅ if App.css is in the same folder as App.tsx
-
-import Dashboard from "./Role/Physician/pages/Doctordashboard";
-import RecruiterDashboard from "./Role/Recuiter/pages/Dashboard";
-import { FormProvider } from "./context/FormContext";
-import Cvcompare from "./Role/Physician/pages/Cvcompare";
-import FAQ from "./Components/FAQ/FAQ";
-import PerformanceInsights from "./Role/higherEducation/pages/PerformanceInsights";
-import FloatingFeedbackButton from "./Components/Feedback/FloatingFeedbackButton";
-import FAQAdd from "./Role/Admin/pages/FAQAdd";
-import AdminFeedbacks from "./Role/Admin/pages/AdminFeedbacks";
-
-// Medical Student Higher Education Components
-import MedicalStudentHigherEducationSearch from "./Role/MedicalStudent/pages/HigherEducationSearch";
-import MedicalStudentDegreeApplication from "./Role/MedicalStudent/pages/DegreeApplicationForm";
-import MedicalStudentDegreeDetails from "./Role/MedicalStudent/pages/DegreeDetails";
-
-import { Toaster } from 'react-hot-toast';
-import { MessageNotificationProvider } from "./context/MessageNotificationContext";
+import ProtectedRoute from "./Role/Admin/ProtectedRoute";
 const App = () => {
   return (
     <FormProvider>
@@ -145,6 +113,151 @@ const App = () => {
               <Route path="messages" element={<Messages />} />
               <Route path="message-box" element={<Messages />} />
             </Route>
+
+
+<Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/job-applicants/:jobId"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/dashboard/inbox"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/dashboard/system-health"
+          element={
+            <ProtectedRoute>
+              <MonitoringDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/dashboard/reports"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/dashboard/jobs"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/dashboard/job-listing"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/dashboard/job-applications"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+       
+        <Route
+          path="/admin/dashboard/calendar"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+       
+        <Route
+          path="/admin/dashboard/users/doctors"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/dashboard/users/students"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/dashboard/users/institutes"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/dashboard/users/recruiters"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/dashboard/settings/adminRegister"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/dashboard/cv-data"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/dashboard/settings/profile"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/dashboard/settings/admins"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route path="/admin/admin-login" element={<AdminSignIn />} />
+      
 
             {/* Admin Routes */}
             <Route path="/admin">

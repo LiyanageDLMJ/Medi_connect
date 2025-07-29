@@ -1,9 +1,9 @@
-import * as React from "react";
+import React from 'react'
 import Sidebar from "../components/Sidebar";
-import TopBar from "../components/Topbar";
+import TopBar from "../components/TopBar";
 
 
-const DashboradAdmin = () => {
+const Dashborad = () => {
   return (
     <div className="flex h-screen">
     {/* Sidebar */}
@@ -22,4 +22,4 @@ const DashboradAdmin = () => {
   )
 }
 
-export default DashboradAdmin
+export default Dashborad

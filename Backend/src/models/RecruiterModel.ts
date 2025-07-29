@@ -1,28 +1,58 @@
-import mongoose from 'mongoose';
-import User from './UserModel'; // Import the common User model
+  import mongoose from 'mongoose';
+  import User from './UserModel'; // Import the common User model
 
-const recruiterSchema = new mongoose.Schema({
-  companyName: {
-    type: String,
-    required: true,
-  },
-  companyType: {
-    type: String,
-    required: true,
-    enum: ['hospital', 'clinic', 'pharmaceutical', 'medical device', 'other'],
-  },
-  position: {
-    type: String,
-    required: true,
-  },
-  contactNumber: {
-    type: String,
-    required: true,
-  },
-}, { timestamps: true });
+  const recruiterSchema = new mongoose.Schema({
+    companyName: {
+      type: String,
+      required: true,
+    },
+    companyType: {
+      type: String,
+      required: true,
+      enum: ['hospital', 'clinic', 'pharmaceutical', 'other'],
+    },
+    position: {
+      type: String,
+      required: true,
+    },
+    contactNumber: {
+      type: String,
+      required: true,
+    },
+    status: {
+      type: String,
+      enum: ['ACTIVE', 'REMOVED'],
+      default: 'ACTIVE',
+    },  
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
+    photoUrl: {
+      type: String,
+      default: '',
+    },
+    school: {
+      type: String,
+      default: '',
+    },
+    location: {
+      type: String,
+      default: '',
+    },
+    bio: {
+      type: String,
+      default: '',
+    },
+    higherEducation: {
+      type: String,
+      default: '',
+    },
+    
+  }, { timestamps: true });
 
-// Use discriminator for Recruiter
+ 
+const db = mongoose.connection.useDb('MediConnect');
+const Recruiter = db.model("Recruiter", recruiterSchema, "users");
 
-const Recruiter = User.discriminator('Recruiter', recruiterSchema);
-
-export default Recruiter;
+  export default Recruiter;
