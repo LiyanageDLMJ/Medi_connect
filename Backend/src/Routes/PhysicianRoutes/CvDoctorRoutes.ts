@@ -1,8 +1,6 @@
 import express from 'express';
-import multer from 'multer';
 import path from 'path';
 import { mkdirp } from 'mkdirp';
-
 
 import CvDoctorUpdate from '../../models/CvUpdate';
 const router = express.Router();
