@@ -1,6 +1,5 @@
 import { Route,Outlet,Routes } from "react-router-dom";
 
-import { Routes, Route } from "react-router-dom";
 import JobInternshipSearch from "./Role/Physician/pages/JobInternshipSearch";
 import JobApplicationForm from "./Role/Physician/pages/JobApplicationForm";
 import AdminDashboard from "./Role/Admin/pages/Dashboard";
@@ -22,6 +21,47 @@ import AdminSignIn from "./Role/Admin/pages/AdminSignIn";
 import MonitoringDashboard from "./Role/Admin/components/MonitoringDashboard";
 import JobApplicationTable from './Role/Admin/components/JobListing/JobApplicationTable';
 
+// Missing imports
+import WithFooter from "./Layout/WithFooter";
+import { FormProvider } from "./context/FormContext";
+import { MessageNotificationProvider } from "./context/MessageNotificationContext";
+import { Toaster } from "react-hot-toast";
+import FloatingFeedbackButton from "./Components/Feedback/FloatingFeedbackButton";
+
+// Physician components
+import DoctorDashboard from "./Role/Physician/pages/Doctordashboard";
+import HigherEducationSearch from "./Role/Physician/pages/HigherEducationSearch";
+import JobInternshipDetails from "./Role/Physician/pages/JobInternshipDetails";
+import Cvcompare from "./Role/Physician/pages/Cvcompare";
+import DegreeApplication from "./Role/Physician/pages/DegreeApplicationForm";
+import DegreeDetails from "./Role/Physician/pages/DegreeDetails";
+
+// Medical Student components
+import MedicalStudentHigherEducationSearch from "./Role/MedicalStudent/pages/HigherEducationSearch";
+import MedicalStudentDegreeApplication from "./Role/MedicalStudent/pages/DegreeApplicationForm";
+import MedicalStudentDegreeDetails from "./Role/MedicalStudent/pages/DegreeDetails";
+
+// Higher Education components
+import DegreeListing from "./Role/higherEducation/pages/DegreeListing";
+import PostDegree from "./Role/higherEducation/pages/PostDegree";
+import ViewApplications from "./Role/higherEducation/pages/ViewApplications";
+import SeeApplication from "./Role/higherEducation/pages/SeeApplication";
+import InstituteDegreeDetails from "./Role/higherEducation/pages/InstituteDegreeDetails";
+import Feedbacks from "./Role/higherEducation/pages/Feedbackslist";
+import PerformanceInsights from "./Role/higherEducation/pages/PerformanceInsights";
+import Dashboard from "./Role/higherEducation/pages/Dashboard";
+
+// Recruiter components
+import RecruiterDashboard from "./Role/Recuiter/pages/Dashboard";
+import ViewCandidates from "./Role/Recuiter/pages/VeiwCandidates";
+
+// Admin components
+import DashboradAdmin from "./Role/Admin/pages/Dashboard";
+import FAQAdd from "./Role/Admin/pages/FAQAdd";
+import AdminFeedbacks from "./Role/Admin/pages/AdminFeedbacks";
+
+// Other components
+import FAQ from "./Components/FAQ/FAQ";
 
 import ProtectedRoute from "./Role/Admin/ProtectedRoute";
 const App = () => {
@@ -76,7 +116,7 @@ const App = () => {
               <Route path="Cvcompare" element={<Cvcompare />} />
               <Route path="degreeapplication" element={<DegreeApplication />} />
               <Route path="degree-details/:id" element={<DegreeDetails />} />
-              <Route path="job-application-tracker" element={<JobApplicationTracker />} />
+              {/* <Route path="job-application-tracker" element={<JobApplicationTracker />} /> */}
               <Route path="medical-student-dashboard" element={<MedicalStudentDashboard />} />
               <Route path="messages" element={<Messages />} />
               <Route path="update-profile" element={<ProfilePage />} />
@@ -90,8 +130,10 @@ const App = () => {
               <Route path="view-applications/:id" element={<SeeApplication />} />
               <Route path="degree-listing" element={<DegreeListing />} />
               <Route path="degree-listing/institute-degree-details/:id" element={<InstituteDegreeDetails />} />
+              <Route path="/postdegree" element={<PostDegree />} />
+
               <Route path="degree-listing/feedbackslist" element={<Feedbacks />} />
-              <Route path="Dashboard" element={<Dashborad />} />
+              <Route path="Dashboard" element={<Dashboard />} />
               <Route path="performance-insights" element={<PerformanceInsights />} />
               <Route path="degree-listing/view-applications/:id" element={<SeeApplication />} />
               {/* <Route path="deshboard" element={<Dashborad />} /> */}
@@ -106,7 +148,7 @@ const App = () => {
               <Route path="JobListing" element={<JobListing />} />
               <Route path="ViewCandidates" element={<ViewCandidates />} />
               <Route path="Messages" element={<Messages />} />
-              <Route path="Dashborad" element={<Dashborad />} />
+              {/* <Route path="Dashborad" element={<Dashborad />} /> */}
               <Route path="jobListing" element={<JobListing />} />
               <Route path="profile" element={<ProfilePage />} />
               <Route path="update-profile" element={<ProfilePage />} />
@@ -258,18 +300,27 @@ const App = () => {
 
         <Route path="/admin/admin-login" element={<AdminSignIn />} />
       
+        {/* Admin FAQ and Feedbacks Routes */}
+        <Route
+          path="/admin/faq-add"
+          element={
+            <ProtectedRoute>
+              <FAQAdd />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/feedbacks"
+          element={
+            <ProtectedRoute>
+              <AdminFeedbacks />
+            </ProtectedRoute>
+          }
+        />
 
-            {/* Admin Routes */}
-            <Route path="/admin">
-              <Route path="messages" element={<Messages />} />
-              <Route path="dashboard" element={<DashboradAdmin />} />
-              <Route path="performance-insights" element={<PerformanceInsights />} />
-              <Route path="faq-add" element={<FAQAdd />} />
-              <Route path="feedbacks" element={<AdminFeedbacks />} />
-            </Route>
+            
 
             {/* Standalone Routes */}
-            <Route path="/postdegree" element={<PostDegree />} />
             <Route path="/faq" element={<FAQ />} />
           </Route>
         </Routes>

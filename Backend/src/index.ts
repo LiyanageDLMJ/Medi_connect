@@ -35,8 +35,8 @@ const PORT = process.env.PORT || 3000;
 
 // Configure CORS with specific options
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000'],
-  credentials: true,
+    origin: ['http://localhost:5173', 'http://localhost:3000'],
+    credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: [
     'Content-Type', 
@@ -106,8 +106,7 @@ attachSocket(httpServer);
 
 httpServer.listen(PORT, () => {
   console.log(`Server and Socket.IO are running on port ${PORT}`);
-
-// Start the server
+});
 
 
 //Admin Routes
@@ -146,9 +145,4 @@ app.put('/api/change-password', async (req, res) => {
     console.error('Error changing password:', error);
     res.status(500).json({ message: 'Server error' });
   }
-});
-
-
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
 });

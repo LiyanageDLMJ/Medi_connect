@@ -1,6 +1,6 @@
 import  { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
-import Topbar from "../components/Topbar";
+import Topbar from "../components/AdminDashboardHeader";
 
 const API_URL = "http://localhost:3000/api/faqs";
 
