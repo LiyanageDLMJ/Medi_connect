@@ -83,64 +83,64 @@ const InstituteDegreeDetails: React.FC = () => {
     return <span className={`px-2 py-1 text-xs font-semibold text-white rounded ${color}`}>{text}</span>;
   };
 
-  // // Add mockApplicants definition back
-  // const mockApplicants: Array<{
-  //   id: string;
-  //   name: string;
-  //   profilePic: string;
-  //   status: string;
-  //   appliedDate: string;
-  //   currentEducation: string;
-  // }> = [
-  //   {
-  //     id: "1",
-  //     name: "Jake Gyll",
-  //     profilePic: "",
-  //     status: "PENDING",
-  //     appliedDate: "13 July, 2021",
-  //     currentEducation: "BSc Biology, 3rd Year",
-  //   },
-  //   {
-  //     id: "2",
-  //     name: "Cymdy Lillibridge",
-  //     profilePic: "",
-  //     status: "APPROVED",
-  //     appliedDate: "12 July, 2021",
-  //     currentEducation: "MBBS Graduate",
-  //   },
-  //   {
-  //     id: "3",
-  //     name: "Rodolfo Goode",
-  //     profilePic: "",
-  //     status: "REJECTED",
-  //     appliedDate: "11 July, 2021",
-  //     currentEducation: "BSc Microbiology, 2nd Year",
-  //   },
-  //   {
-  //     id: "4",
-  //     name: "Leif Floyd",
-  //     profilePic: "",
-  //     status: "APPROVED",
-  //     appliedDate: "11 July, 2021",
-  //     currentEducation: "BSc Chemistry, 4th Year",
-  //   },
-  //   {
-  //     id: "5",
-  //     name: "Jenny Wilson",
-  //     profilePic: "",
-  //     status: "APPROVED",
-  //     appliedDate: "9 July, 2021",
-  //     currentEducation: "BSc Biochemistry, 3rd Year",
-  //   },
-  //   {
-  //     id: "6",
-  //     name: "Jerome Bell",
-  //     profilePic: "",
-  //     status: "PENDING",
-  //     appliedDate: "5 July, 2021",
-  //     currentEducation: "BSc Medical Science, 2nd Year",
-  //   },
-  // ];
+  // Add mockApplicants definition back
+  const mockApplicants: Array<{
+    id: string;
+    name: string;
+    profilePic: string;
+    status: string;
+    appliedDate: string;
+    currentEducation: string;
+  }> = [
+    {
+      id: "1",
+      name: "Jake Gyll",
+      profilePic: "",
+      status: "PENDING",
+      appliedDate: "13 July, 2021",
+      currentEducation: "BSc Biology, 3rd Year",
+    },
+    {
+      id: "2",
+      name: "Cymdy Lillibridge",
+      profilePic: "",
+      status: "APPROVED",
+      appliedDate: "12 July, 2021",
+      currentEducation: "MBBS Graduate",
+    },
+    {
+      id: "3",
+      name: "Rodolfo Goode",
+      profilePic: "",
+      status: "REJECTED",
+      appliedDate: "11 July, 2021",
+      currentEducation: "BSc Microbiology, 2nd Year",
+    },
+    {
+      id: "4",
+      name: "Leif Floyd",
+      profilePic: "",
+      status: "APPROVED",
+      appliedDate: "11 July, 2021",
+      currentEducation: "BSc Chemistry, 4th Year",
+    },
+    {
+      id: "5",
+      name: "Jenny Wilson",
+      profilePic: "",
+      status: "APPROVED",
+      appliedDate: "9 July, 2021",
+      currentEducation: "BSc Biochemistry, 3rd Year",
+    },
+    {
+      id: "6",
+      name: "Jerome Bell",
+      profilePic: "",
+      status: "PENDING",
+      appliedDate: "5 July, 2021",
+      currentEducation: "BSc Medical Science, 2nd Year",
+    },
+  ];
 
   // Open modal and prefill form
   const handleEditOpen = () => {
@@ -165,38 +165,69 @@ const InstituteDegreeDetails: React.FC = () => {
     }
   };
   const handleEditSubmit = async () => {
-    setEditLoading(true);
-    setEditError(null);
     try {
+      setEditLoading(true);
+      setEditError(null);
+
+      const updated = {
+        degreeName: editForm.degreeName,
+        status: editForm.status,
+        mode: editForm.mode,
+        duration: editForm.duration,
+        seatsAvailable: editForm.seatsAvailable,
+        applicationDeadline: editForm.applicationDeadline,
+        tuitionFee: editForm.tuitionFee,
+        eligibility: editForm.eligibility,
+        description: editForm.description,
+      };
+
       let response;
-      const updated = { ...editForm, perks: editForm.perks.split(/,|\n/).map((p: string) => p.trim()).filter(Boolean) };
       if (editImageFile) {
-        // Use FormData if a new image is selected
+        // New image selected, send FormData
         const formData = new FormData();
         Object.entries(updated).forEach(([key, value]) => {
-          if (key === 'perks' && Array.isArray(value)) {
-            value.forEach((perk) => formData.append('perks', perk));
-          } else if (value !== undefined && value !== null) {
+          if (value !== undefined && value !== null) {
             formData.append(key, value as string);
           }
         });
         formData.append('skillsRequired', editForm.skillsRequired || '');
         formData.append('image', editImageFile);
-        response = await axios.patch(
+        
+        const token = localStorage.getItem('token');
+        console.log('Token for update:', token ? 'Present' : 'Missing');
+        console.log('Token value:', token);
+        
+        response = await axios.put(
           `http://localhost:3000/degrees/updateDegree/${degree._id || degree.id}`,
           formData,
-          { headers: { 'Content-Type': 'multipart/form-data' } }
+          { 
+            headers: { 
+              'Content-Type': 'multipart/form-data',
+              'Authorization': `Bearer ${token}`
+            } 
+          }
         );
       } else {
         // No new image, send JSON
-        response = await axios.patch(
+        const token = localStorage.getItem('token');
+        console.log('Token for update (JSON):', token ? 'Present' : 'Missing');
+        console.log('Token value (JSON):', token);
+        
+        response = await axios.put(
           `http://localhost:3000/degrees/updateDegree/${degree._id || degree.id}`,
-          { ...updated, skillsRequired: editForm.skillsRequired }
+          { ...updated, skillsRequired: editForm.skillsRequired },
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
         );
       }
-      setDegree(response.data);
+      setDegree(response.data.degree); // Use the degree data from the response
       setEditOpen(false);
     } catch (err: any) {
+      console.error('Update error:', err);
+      console.error('Error response:', err.response?.data);
       setEditError(err.response?.data?.message || 'Failed to update degree.');
     } finally {
       setEditLoading(false);
@@ -208,7 +239,7 @@ const InstituteDegreeDetails: React.FC = () => {
       <Sidebar />
       <div className="flex-1 overflow-auto">
         <TopBar />
-        <div className="flex flex-col p-6  gap-6">
+        <div className="flex flex-col p-6 md:ml-64 gap-6">
           {/* Header Row: Back button + Degree Name + Status */}
           <div className="flex items-center gap-4 mb-2">
             <button

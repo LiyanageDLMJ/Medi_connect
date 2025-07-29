@@ -1,15 +1,19 @@
 import  { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import TopBar from "../components/TopBar";
+import { FiDownload, FiEye } from 'react-icons/fi';
 
 const SeeApplication: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [applicant, setApplicant] = useState<any>(null);
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState(0);
+  const [showCvPreview, setShowCvPreview] = useState(false);
+  const [selectedCvUrl, setSelectedCvUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchApplication = async () => {
@@ -39,6 +43,66 @@ const SeeApplication: React.FC = () => {
     if (id) fetchApplication();
   }, [id]);
 
+  const handleDeleteApplication = async () => {
+    if (!window.confirm("Are you sure you want to delete this application? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:3000/viewDegreeApplications/delete/${id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete application");
+      }
+
+      // Navigate back to applications list
+      navigate('/higher-education/view-applications');
+    } catch (err: any) {
+      console.error("Error deleting application:", err);
+      alert("Failed to delete application. Please try again.");
+    }
+  };
+
+  const handleCvPreview = () => {
+    if (applicant?.cv) {
+      // If it's a Cloudinary URL that might have access issues, use our backend endpoint
+      if (applicant.cv.includes('cloudinary.com')) {
+        const encodedUrl = encodeURIComponent(applicant.cv);
+        const backendUrl = `http://localhost:3000/degreeApplications/cv/${encodedUrl}`;
+        setSelectedCvUrl(backendUrl);
+      } else {
+        setSelectedCvUrl(applicant.cv);
+      }
+      setShowCvPreview(true);
+    }
+  };
+
+  const handleDownloadCv = () => {
+    if (applicant?.cv) {
+      // If it's a Cloudinary URL that might have access issues, use our backend endpoint
+      if (applicant.cv.includes('cloudinary.com')) {
+        const encodedUrl = encodeURIComponent(applicant.cv);
+        const backendUrl = `http://localhost:3000/degreeApplications/cv/${encodedUrl}`;
+        const link = document.createElement('a');
+        link.href = backendUrl;
+        link.download = `${applicant.name.replace(/\s+/g, '_')}_CV.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        const link = document.createElement('a');
+        link.href = applicant.cv;
+        link.download = `${applicant.name.replace(/\s+/g, '_')}_CV.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    }
+  };
+
   if (loading) return <div>Loading...</div>;
   if (error || !applicant) return <div>Error: {error || "Application not found"}</div>;
 
@@ -61,7 +125,7 @@ function getStatusColor(status: string) {
       <Sidebar />
       <div className="flex-1 overflow-auto">
         <TopBar />
-        <div className="flex flex-col md:flex-row p-6 gap-6">
+        <div className="flex flex-col md:flex-row p-6 md:ml-64 gap-6">
           {/* Left Panel: Summary/Contact */}
           <div className="w-full md:w-1/3 bg-white rounded-xl shadow p-8 flex flex-col items-center border border-gray-100">
             <img
@@ -191,12 +255,108 @@ function getStatusColor(status: string) {
                 </>
               )}
               {/* Resume and Hiring Progress tabs can be implemented as needed */}
+              {activeTab === 1 && (
+                <div className="space-y-6">
+                  <h3 className="font-semibold mb-4 text-lg text-gray-700">Resume/CV</h3>
+                  {applicant?.cv ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-4">
+                        <button
+                          onClick={handleCvPreview}
+                          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200"
+                        >
+                          <FiEye size={16} />
+                          Preview CV
+                        </button>
+                        <button
+                          onClick={handleDownloadCv}
+                          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-200"
+                        >
+                          <FiDownload size={16} />
+                          Download CV
+                        </button>
+                      </div>
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <p className="text-sm text-gray-600">
+                          <strong>CV File:</strong> {applicant.cv.split('/').pop() || 'CV Document'}
+                        </p>
+                        <p className="text-sm text-gray-600 mt-1">
+                          <strong>Uploaded:</strong> {applicant.submissionDate ? new Date(applicant.submissionDate).toLocaleDateString() : 'Unknown'}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-gray-500">No CV uploaded with this application.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+              {activeTab === 2 && (
+                <div className="space-y-6">
+                  <h3 className="font-semibold mb-4 text-lg text-gray-700">Hiring Progress</h3>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <p className="text-gray-600">Hiring progress tracking will be implemented here.</p>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {/* Action Buttons */}
+            <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
+              <button
+                onClick={() => navigate('/higher-education/view-applications')}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+              >
+                ← Back to Applications
+              </button>
+              <button
+                onClick={handleDeleteApplication}
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+              >
+                Delete Application
+              </button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* CV Preview Modal */}
+      {showCvPreview && selectedCvUrl && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl h-5/6 mx-4 relative">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="text-lg font-semibold text-gray-900">
+                CV Preview - {applicant.name}
+              </h3>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleDownloadCv}
+                  className="flex items-center gap-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-200"
+                >
+                  <FiDownload size={16} />
+                  Download
+                </button>
+                <button
+                  onClick={() => setShowCvPreview(false)}
+                  className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+                >
+                  &times;
+                </button>
+              </div>
+            </div>
+            <div className="flex-1 p-4">
+              <iframe
+                src={selectedCvUrl}
+                className="w-full h-full border-0 rounded"
+                title={`CV Preview - ${applicant.name}`}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default SeeApplication; 
+export default SeeApplication;

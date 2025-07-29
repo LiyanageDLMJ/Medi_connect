@@ -20,6 +20,8 @@ const FloatingFeedbackButton: React.FC = () => {
         onClose={() => setOpen(false)}
         title="Feedback Us"
         placeholder="Type Here... (Share your experience in detail)"
+        source="general"
+        sourceDetails="General feedback from floating button"
       />
     </>
   );

@@ -49,6 +49,11 @@ import FloatingFeedbackButton from "./Components/Feedback/FloatingFeedbackButton
 import FAQAdd from "./Role/Admin/pages/FAQAdd";
 import AdminFeedbacks from "./Role/Admin/pages/AdminFeedbacks";
 
+// Medical Student Higher Education Components
+import MedicalStudentHigherEducationSearch from "./Role/MedicalStudent/pages/HigherEducationSearch";
+import MedicalStudentDegreeApplication from "./Role/MedicalStudent/pages/DegreeApplicationForm";
+import MedicalStudentDegreeDetails from "./Role/MedicalStudent/pages/DegreeDetails";
+
 import { Toaster } from 'react-hot-toast';
 const App = () => {
   return (
@@ -78,6 +83,10 @@ const App = () => {
             <Route path="messages" element={<Messages />} />
             <Route path="update-profile" element={<ProfilePage />} />
             <Route path="message-box" element={<Messages />} />
+            {/* Higher Education Routes for Medical Students */}
+            <Route path="higher-education" element={<MedicalStudentHigherEducationSearch />} />
+            <Route path="degreeapplication" element={<MedicalStudentDegreeApplication />} />
+            <Route path="degree-details/:id" element={<MedicalStudentDegreeDetails />} />
           </Route>
 
           {/* Physician Routes */}

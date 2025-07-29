@@ -1,5 +1,6 @@
 import express, { RequestHandler } from 'express';
 import { register, login, getUserByEmail, getCurrentUser, getInstituteByName } from '../controllers/AuthControllers/UserController'; // Import the centralized controller
+import { authMiddleware } from '../middleware/authMiddleware';
 
 const router = express.Router();
 
@@ -13,7 +14,7 @@ router.post('/login', login as RequestHandler);
 router.get('/by-email/:email', getUserByEmail as RequestHandler);
 
 // Route to get current user info from JWT
-router.get('/api/me', getCurrentUser as RequestHandler);
+router.get('/me', authMiddleware, getCurrentUser as RequestHandler);
 
 // Route to get institute by name
 router.get('/by-institute-name/:name', getInstituteByName as RequestHandler);

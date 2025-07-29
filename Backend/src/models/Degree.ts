@@ -12,7 +12,6 @@ export interface IDegree extends Document {
   applicationDeadline: Date;
   eligibility: string;
   seatsAvailable: number;
-  applicantsApplied: number;
   duration: string;
   tuitionFee: string;
   image?: string;
@@ -85,12 +84,6 @@ const DegreeSchema: Schema = new Schema(
       required: false,
       min: [0, "Seats available cannot be negative"],
     },
-    applicantsApplied: {
-      type: Number,
-      required: false,
-      min: [0, "Applicants applied cannot be negative"],
-      default: 0,
-    },
     duration: {
       type: String,
       required: [true, "Duration is required"],
@@ -143,6 +136,27 @@ DegreeSchema.pre("save", async function (next) {
   next();
 });
 
-const Degree = db.model<IDegree>("Degree", DegreeSchema, "Degrees");
+// Function to get the Degree model with EducationalInstitution database
+let Degree: mongoose.Model<IDegree> | null = null;
 
-export default Degree;
+const getDegreeModel = (): mongoose.Model<IDegree> => {
+  if (!Degree) {
+    try {
+      // Ensure we're connected to the database
+      if (mongoose.connection.readyState !== 1) {
+        throw new Error('Database not connected');
+      }
+      
+      // Use the 'EducationalInstitution' database
+      const db = mongoose.connection.useDb('EducationalInstitution');
+      Degree = db.model<IDegree>("Degree", DegreeSchema, "Degrees");
+      console.log('Degree model initialized with EducationalInstitution database');
+    } catch (error) {
+      console.error('Error initializing Degree model with EducationalInstitution:', error);
+      throw new Error('Failed to initialize Degree model');
+    }
+  }
+  return Degree;
+};
+
+export default getDegreeModel;

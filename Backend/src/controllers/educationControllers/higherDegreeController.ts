@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import Degree, { IDegree } from '../../models/Degree';
+import getDegreeModel, { IDegree } from '../../models/Degree';
 import { parseTuitionFee } from '../../utils/degreeUtils';
 
 type AsyncRequestHandler = (req: Request, res: Response, next: NextFunction) => Promise<void>;
@@ -15,7 +15,8 @@ export const getAllHigherDegrees: AsyncRequestHandler = async (req, res) => {
       institutionId: queryInstitutionId
     } = req.query;
 
-    const institutionId = queryInstitutionId || req.headers['x-user-id'];
+    // Use query parameter if provided, otherwise get from JWT token
+    const institutionId = queryInstitutionId || (req as any).user?._id;
     const query: any = {};
 
     if (searchText) {
@@ -35,7 +36,7 @@ export const getAllHigherDegrees: AsyncRequestHandler = async (req, res) => {
     }
 
     if (tuitionFee) {
-      const degrees = await Degree.find();
+      const degrees = await getDegreeModel().find();
       query._id = {
         $in: degrees
           .filter((degree) => {
@@ -49,8 +50,8 @@ export const getAllHigherDegrees: AsyncRequestHandler = async (req, res) => {
       };
     }
 
-    const total = await Degree.countDocuments(query);
-    const degrees = await Degree.find(query);
+    const total = await getDegreeModel().countDocuments(query);
+    const degrees = await getDegreeModel().find(query);
 
     res.status(200).json({
       degrees,
@@ -63,8 +64,8 @@ export const getAllHigherDegrees: AsyncRequestHandler = async (req, res) => {
 
 export const getFilterOptions: AsyncRequestHandler = async (req, res, next) => {
   try {
-    const durations = await Degree.distinct('duration');
-    const modes = await Degree.distinct('mode');
+    const durations = await getDegreeModel().distinct('duration');
+    const modes = await getDegreeModel().distinct('mode');
     res.status(200).json({
       durations: durations.filter((duration: string) => duration),
       modes: modes.filter((mode: string) => mode),

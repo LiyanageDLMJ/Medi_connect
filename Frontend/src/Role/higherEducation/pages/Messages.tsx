@@ -9,7 +9,7 @@ const Messages = () => {
       <Sidebar />
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto md:pl-64"> {/* Add padding on larger screens to account for sidebar */}
+      <div className="flex-1 overflow-auto md:ml-64"> {/* Add margin on larger screens to account for sidebar */}
         <TopBar />
         <div className="flex flex-col min-h-[calc(100vh-80px)]">
           <MessageBox />

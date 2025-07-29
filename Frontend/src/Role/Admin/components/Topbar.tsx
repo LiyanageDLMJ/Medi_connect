@@ -29,9 +29,9 @@ const TopBar: React.FC = () => {
       const token = localStorage.getItem('token');
       let userData = null;
 
-      // Try /api/me first
+      // Try /me first
       if (token) {
-        const res = await fetch('http://localhost:3000/api/me', {
+        const res = await fetch('http://localhost:3000/me', {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {
@@ -59,7 +59,14 @@ const TopBar: React.FC = () => {
         }
       }
 
-      if (userData) setUser(userData);
+      if (userData) {
+        setUser(userData);
+        // Store userId for consistency - handle both id and _id
+        const userId = userData._id || userData.id;
+        if (userId) {
+          localStorage.setItem('userId', userId);
+        }
+      }
     };
     fetchUser();
   }, []);

@@ -79,7 +79,7 @@ const HigherEducationSearch = () => {
   return (
     <div className="flex h-screen">
       <Sidebar />
-      <div className="flex-1 overflow-auto md:pl-60">
+      <div className="flex-1 overflow-auto md:ml-64">
         <TopBar />
         <div className="flex flex-col min-h-[calc(100vh-80px)] p-4">
           <Search filters={filters} onFilterChange={handleFilterChange} onClear={handleClearFilters} />

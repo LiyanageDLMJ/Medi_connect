@@ -5,6 +5,7 @@ interface Degree {
   courseId: number;
   degreeName: string;
   institution: string;
+  institutionId?: string; // Add institutionId field
   duration: string;
   mode: string;
   tuitionFee: string;
@@ -89,7 +90,19 @@ const DegreeCard: React.FC<DegreeCardProps> = ({ degrees, totalDegrees }) => {
                     name: degree.degreeName, 
                     institution: degree.institution,
                     courseId: degree.courseId,
+                    institutionId: degree.institutionId, // Add institutionId
                   }
+                }}
+                onClick={() => {
+                  console.log('=== DEBUG: DegreeCard Apply Click ===');
+                  console.log('Full degree object:', degree);
+                  console.log('Degree institutionId:', degree.institutionId);
+                  console.log('State being passed:', {
+                    name: degree.degreeName, 
+                    institution: degree.institution,
+                    courseId: degree.courseId,
+                    institutionId: degree.institutionId,
+                  });
                 }}
               >
                 <button className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2">

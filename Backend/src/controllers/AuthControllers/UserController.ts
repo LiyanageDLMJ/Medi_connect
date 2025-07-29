@@ -187,8 +187,11 @@ export const login = async (req: Request, res: Response) => {
       token,
       user: {
         id: user._id,
+        _id: user._id,
         email: user.email,
         userType: user.userType,
+        name: user.name,
+        profilePic: user.profilePic,
       },
     });
   } catch (error) {
@@ -214,8 +217,10 @@ export const getCurrentUser: RequestHandler = async (req, res) => {
     }
     res.json({
       id: user._id,
+      _id: user._id,
       email: user.email,
       userType: user.userType,
+      name: user.name,
       profilePic: user.profilePic,
       // add other fields as needed
     });

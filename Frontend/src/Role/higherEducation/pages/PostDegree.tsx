@@ -5,6 +5,7 @@ import { FaCalendarAlt, FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import TopBar from "../components/TopBar";
+import FeedbackModal from "../../../Components/Feedback/FeedbackModal";
 import {
   Button,
   TextField,
@@ -70,6 +71,11 @@ const PostDegree: React.FC = () => {
   // State for submission status
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  // State for feedback modal
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [showPostingFeedbackModal, setShowPostingFeedbackModal] = useState(false);
+  const [postedDegreeName, setPostedDegreeName] = useState("");
 
   // In the component state, use a string for perks input and an array for the data
   const [perksInput, setPerksInput] = useState<string>("");
@@ -201,12 +207,22 @@ const PostDegree: React.FC = () => {
         if (imageFile) {
           formDataToSend.append("image", imageFile);
         }
+        // Get user ID from localStorage for institution association
+        const token = localStorage.getItem('token');
+        const headers: any = { "Content-Type": "multipart/form-data" };
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+
         // Send the request to the backend
-        const response = await axios.post("http://localhost:3000/degrees/postDegree", formDataToSend, {
-          headers: { "Content-Type": "multipart/form-data" },
+        const response = await axios.post("http://localhost:3000/degrees/createDegree", formDataToSend, {
+          headers,
         });
         console.log("Degree posted successfully:", response.data);
-        navigate("/higher-education/degree-listing"); // Redirect to the degree listing page
+        
+        // Show feedback modal instead of immediately navigating
+        setPostedDegreeName(formData.degreeName);
+        setShowFeedbackModal(true);
       } catch (err: any) {
         const errorMessage = err.response?.data?.message || "Failed to post degree. Please try again.";
         setError(errorMessage);
@@ -247,7 +263,7 @@ const PostDegree: React.FC = () => {
       <Sidebar />
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto md:pl-64">
+      <div className="flex-1 overflow-auto md:ml-64">
         <TopBar />
 
         <div className="flex flex-col min-h-[calc(100vh-64px)] p-6">
@@ -677,6 +693,60 @@ const PostDegree: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Success Modal */}
+      {showFeedbackModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-600 bg-opacity-50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md relative border border-gray-100">
+            <button
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold"
+              onClick={() => setShowFeedbackModal(false)}
+              aria-label="Close"
+            >
+              &times;
+            </button>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-bold mb-3 text-gray-800">Degree Posted Successfully!</h2>
+              <p className="mb-6 text-gray-600">Your degree "{postedDegreeName}" has been posted successfully.</p>
+              <div className="space-y-3">
+                <button
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition duration-200 shadow-md"
+                  onClick={() => {
+                    setShowFeedbackModal(false);
+                    navigate("/higher-education/degree-listing");
+                  }}
+                >
+                  Continue to Degree Listing
+                </button>
+                <button
+                  className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition duration-200 shadow-md"
+                  onClick={() => {
+                    setShowFeedbackModal(false);
+                    setShowPostingFeedbackModal(true);
+                  }}
+                >
+                  Give Feedback
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Feedback Modal for posting experience */}
+      <FeedbackModal
+        open={showPostingFeedbackModal}
+        onClose={() => setShowPostingFeedbackModal(false)}
+        title="How was your posting experience?"
+        placeholder="Share your thoughts about posting a degree program..."
+        source="course_posting"
+        sourceDetails={`After posting degree: ${postedDegreeName}`}
+      />
     </div>
   );
 };

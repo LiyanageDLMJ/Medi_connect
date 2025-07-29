@@ -4,12 +4,14 @@ import TopBar from "../components/TopBar";
 
 const Dashborad = () => {
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'linear-gradient(135deg, #f7fafd 0%, #e3eafc 100%)' }}>
+    <div className="flex h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <Sidebar />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', minHeight: '100vh', padding: '2.5rem 1rem' }}>
+      <div className="flex-1 overflow-auto md:ml-64 flex flex-col">
         <TopBar />
-        <div style={{ width: '100%', maxWidth: 900, marginTop: 32 }}>
-          {/* Main content goes here */}
+        <div className="flex-1 p-8 flex items-center justify-center">
+          <div className="w-full max-w-4xl">
+            {/* Main content goes here */}
+          </div>
         </div>
       </div>
     </div>

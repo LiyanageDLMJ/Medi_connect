@@ -54,7 +54,7 @@ const Sidebar = () => {
         className={`sidebar-container fixed inset-y-0 left-0 w-64 h-screen bg-white shadow-lg transform transition-transform md:transform-none ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         } md:translate-x-0 z-40`}
-        style={{ minHeight: '100vh', position: 'relative' }}
+        style={{ minHeight: '100vh' }}
       >
         <div className="sidebar-header flex items-center justify-between p-7">
           <span className="text-xl font-bold">

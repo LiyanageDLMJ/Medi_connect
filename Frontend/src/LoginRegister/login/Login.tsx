@@ -33,10 +33,12 @@ const LoginPage = () => {
         throw new Error(data.message || 'Login failed');
       }
 
-      // Store token if needed
+      // Store token and user data
       localStorage.setItem('token', data.token);
       localStorage.setItem('userType', data.user.userType);
       localStorage.setItem('userId', data.user.id);
+      localStorage.setItem('userEmail', data.user.email);
+      localStorage.setItem('user', JSON.stringify(data.user));
       setMessage('Login successful! Redirecting...');
       toast.success('Login successful!'); // Show success toast
 

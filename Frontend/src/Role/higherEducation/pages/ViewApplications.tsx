@@ -1,7 +1,7 @@
-import  { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Menu, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
-import { FiFilter } from 'react-icons/fi';
+import { FiFilter, FiEye, FiDownload } from 'react-icons/fi';
 import Sidebar from "../components/Sidebar";
 import TopBar from "../components/TopBar";
 import { BsThreeDotsVertical } from 'react-icons/bs';
@@ -17,32 +17,36 @@ interface Application {
   phone: string;
   currentEducation: string;
   additionalInfo: string;
+  applicantType?: string; // Add applicantType field
   status: string;
   appliedDate: string;
+  cv?: string; // Add CV URL field
 }
 
 interface FilterOptions {
   statuses: string[];
   degrees: Array<{
-    id: string;
+    id: string; // Change from number to string
     name: string;
   }>;
 }
 
-type FilterKey = "degreeId" | "fromDate" | "toDate" | "search";
-const filterKeys: FilterKey[] = ["degreeId", "fromDate", "toDate", "search"];
+type FilterKey = "degreeId" | "fromDate" | "toDate" | "search" | "applicantType";
+const filterKeys: FilterKey[] = ["degreeId", "fromDate", "toDate", "search", "applicantType"];
 type ActiveFilters = {
   degreeId: string;
   fromDate: string;
   toDate: string;
   search: string;
+  applicantType: string;
 };
 
 const initialFilters: ActiveFilters = {
   degreeId: "",
   fromDate: "",
   toDate: "",
-  search: ""
+  search: "",
+  applicantType: ""
 };
 
 // Add a status badge function for consistent color logic
@@ -68,6 +72,9 @@ const ViewApplications: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [showCvPreview, setShowCvPreview] = useState(false);
+  const [selectedCvUrl, setSelectedCvUrl] = useState<string>("");
+  const [selectedApplicantName, setSelectedApplicantName] = useState<string>("");
 
   useEffect(() => {
     fetchApplications();
@@ -82,9 +89,18 @@ const ViewApplications: React.FC = () => {
       if (activeFilters.fromDate) queryParams.append('fromDate', activeFilters.fromDate);
       if (activeFilters.toDate) queryParams.append('toDate', activeFilters.toDate);
       if (activeFilters.search) queryParams.append('search', activeFilters.search);
+      if (activeFilters.applicantType) queryParams.append('applicantType', activeFilters.applicantType);
+
+      // Get user ID from localStorage
+      const userId = localStorage.getItem('userId');
+      const headers: any = { 'Content-Type': 'application/json' };
+      if (userId) {
+        headers['x-user-id'] = userId;
+      }
 
       const response = await fetch(
-        `http://localhost:3000/viewDegreeApplications/view?${queryParams.toString()}&page=${currentPage}&limit=${applicantsPerPage}`
+        `http://localhost:3000/viewDegreeApplications/view?${queryParams.toString()}&page=${currentPage}&limit=${applicantsPerPage}`,
+        { headers }
       );
       
       if (!response.ok) throw new Error("Failed to fetch applications");
@@ -120,7 +136,8 @@ const ViewApplications: React.FC = () => {
       degreeId: "",
       fromDate: "",
       toDate: "",
-      search: ""
+      search: "",
+      applicantType: ""
     });
   };
 
@@ -134,13 +151,77 @@ const ViewApplications: React.FC = () => {
     );
     // Call backend to update status
     try {
+      const userId = localStorage.getItem('userId');
+      const headers: any = { "Content-Type": "application/json" };
+      if (userId) {
+        headers['x-user-id'] = userId;
+      }
+      
       await fetch(`http://localhost:3000/viewDegreeApplications/updateStatus/${applicationId}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ status: newStatus }),
       });
     } catch (err) {
       // Optionally handle error and revert UI
+    }
+  };
+
+  // Handler to delete application
+  const handleDeleteApplication = async (applicationId: string) => {
+    if (!window.confirm("Are you sure you want to delete this application? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:3000/viewDegreeApplications/delete/${applicationId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete application");
+      }
+
+      // Refresh the applications list
+      fetchApplications();
+    } catch (err: any) {
+      console.error("Error deleting application:", err);
+      alert("Failed to delete application. Please try again.");
+    }
+  };
+
+  const handleCvPreview = (cvUrl: string, applicantName: string) => {
+    // If it's a Cloudinary URL that might have access issues, use our backend endpoint
+    if (cvUrl.includes('cloudinary.com')) {
+      const encodedUrl = encodeURIComponent(cvUrl);
+      const backendUrl = `http://localhost:3000/degreeApplications/cv/${encodedUrl}`;
+      setSelectedCvUrl(backendUrl);
+    } else {
+      setSelectedCvUrl(cvUrl);
+    }
+    setSelectedApplicantName(applicantName);
+    setShowCvPreview(true);
+  };
+
+  const handleDownloadCv = (cvUrl: string, applicantName: string) => {
+    // If it's a Cloudinary URL that might have access issues, use our backend endpoint
+    if (cvUrl.includes('cloudinary.com')) {
+      const encodedUrl = encodeURIComponent(cvUrl);
+      const backendUrl = `http://localhost:3000/degreeApplications/cv/${encodedUrl}`;
+      const link = document.createElement('a');
+      link.href = backendUrl;
+      link.download = `${applicantName.replace(/\s+/g, '_')}_CV.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      const link = document.createElement('a');
+      link.href = cvUrl;
+      link.download = `${applicantName.replace(/\s+/g, '_')}_CV.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
   };
 
@@ -153,9 +234,9 @@ const ViewApplications: React.FC = () => {
   return (
     <div className="flex h-screen">
       <Sidebar />
-      <div className="flex-1 overflow-auto ">
+      <div className="flex-1 overflow-auto">
         <TopBar />
-        <div className="flex flex-col min-h-[calc(100vh-80px)] p-4 h-full">
+        <div className="flex flex-col min-h-[calc(100vh-80px)] p-4 md:ml-64 h-full">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
             <h2 className="text-2xl font-semibold whitespace-nowrap">Total Applicants: {applications.length}</h2>
             <div className="flex flex-wrap gap-2 items-center w-full md:w-auto">
@@ -204,7 +285,23 @@ const ViewApplications: React.FC = () => {
                   ))}
                 </select>
               </div>
-                      {/* From Date Filter */}
+              
+              {/* Applicant Type Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Applicant Type</label>
+                <select
+                  name="applicantType"
+                  value={activeFilters.applicantType}
+                  onChange={handleFilterChange}
+                  className="w-full p-2 border border-gray-300 rounded"
+                >
+                  <option value="">All Types</option>
+                  <option value="MedicalStudent">Medical Students</option>
+                  <option value="Doctor">Professional Doctors</option>
+                </select>
+              </div>
+              
+              {/* From Date Filter */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">From Date</label>
                 <input
@@ -252,10 +349,16 @@ const ViewApplications: React.FC = () => {
                             Status
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Type
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Degree
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Applied Date
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            CV
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Action
@@ -280,10 +383,35 @@ const ViewApplications: React.FC = () => {
                               {statusBadge(application.status)}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`px-2 py-1 text-xs font-semibold rounded ${
+                                application.applicantType === 'MedicalStudent' 
+                                  ? 'bg-blue-100 text-blue-800' 
+                                  : application.applicantType === 'Doctor'
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-gray-100 text-gray-800'
+                              }`}>
+                                {application.applicantType === 'MedicalStudent' ? 'Medical Student' : 
+                                 application.applicantType === 'Doctor' ? 'Professional Doctor' : 
+                                 application.applicantType || 'Unknown'}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
                               <div>{application.degreeName}</div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               {application.appliedDate}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              {application.cv ? (
+                                <button
+                                  onClick={() => handleCvPreview(application.cv!, application.name)}
+                                  className="text-blue-600 hover:underline text-sm"
+                                >
+                                  View CV
+                                </button>
+                              ) : (
+                                "N/A"
+                              )}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center gap-2">
                               <button
@@ -333,6 +461,16 @@ const ViewApplications: React.FC = () => {
                                            onClick={() => handleStatusChange(application.id, "Pending")}
                                          >
                                            Pending
+                                         </button>
+                                       )}
+                                     </Menu.Item>
+                                     <Menu.Item>
+                                       {({ active }: { active: boolean }) => (
+                                         <button
+                                           className={`px-3 py-1 text-sm rounded text-red-600 hover:bg-red-50 ${active ? 'bg-red-50' : ''}`}
+                                           onClick={() => handleDeleteApplication(application.id)}
+                                         >
+                                           Delete
                                          </button>
                                        )}
                                      </Menu.Item>
@@ -394,6 +532,54 @@ const ViewApplications: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* CV Preview Modal */}
+      {showCvPreview && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl h-5/6 mx-4 relative">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="text-lg font-semibold text-gray-900">
+                CV Preview - {selectedApplicantName}
+              </h3>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleDownloadCv(selectedCvUrl, selectedApplicantName)}
+                  className="flex items-center gap-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-200"
+                >
+                  <FiDownload size={16} />
+                  Download
+                </button>
+                <button
+                  onClick={() => setShowCvPreview(false)}
+                  className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+                >
+                  &times;
+                </button>
+              </div>
+            </div>
+            
+            {/* Modal Content */}
+            <div className="flex-1 p-4">
+              <iframe
+                src={selectedCvUrl}
+                className="w-full h-full border-0 rounded"
+                title={`CV Preview - ${selectedApplicantName}`}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Feedback Modal */}
+      <FeedbackModal
+        open={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
+        title="Share Your Experience"
+        placeholder="Tell us about your experience with the application review process..."
+        source="general"
+        sourceDetails="General feedback from institution"
+      />
     </div>
   );
 };

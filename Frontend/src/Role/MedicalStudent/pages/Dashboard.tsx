@@ -30,6 +30,7 @@ const MedicalStudentDashboard: React.FC = () => {
         <div style={{ background: '#e0f2fe', borderRadius: 12, padding: 32, maxWidth: 700 }}>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 600, color: '#0369a1' }}>Explore Opportunities</h2>
           <ul style={{ marginTop: 16, color: '#334155', fontSize: '1.1rem' }}>
+            <li>• Search and apply for higher education degrees</li>
             <li>• Search and apply for internships and jobs</li>
             <li>• Access study resources and webinars</li>
             <li>• Track your application status</li>

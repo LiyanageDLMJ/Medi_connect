@@ -1,4 +1,4 @@
-import { useState, FormEvent, ChangeEvent } from "react";
+import { useState, FormEvent, ChangeEvent, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import FeedbackModal from "../../../Components/Feedback/FeedbackModal";
 
@@ -9,7 +9,9 @@ interface Degree {
   degreeId?: number;
   degreeName?: string;
   name: string;
+  
   institution: string;
+  institutionId?: string; // Add institutionId field
   status?: string;
   mode?: string;
   applicationDeadline?: string;
@@ -47,6 +49,16 @@ interface DegreeApplicationFormProps {
 
 const DegreeApplicationForm: React.FC<DegreeApplicationFormProps> = ({ degree, onClose, onSuccess }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const usedDegree = degree || location.state?.degree;
+
+  // Debug: Log the degree data
+  console.log('=== DEBUG: DegreeApplicationForm ===');
+  console.log('Props degree:', degree);
+  console.log('Location state degree:', location.state?.degree);
+  console.log('Used degree:', usedDegree);
+  console.log('Used degree institutionId:', usedDegree?.institutionId);
+
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -55,11 +67,63 @@ const DegreeApplicationForm: React.FC<DegreeApplicationFormProps> = ({ degree, o
   const [cvError, setCvError] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  // Auto-fill form with user data from localStorage
+  useEffect(() => {
+    const userStr = localStorage.getItem('user');
+    const userEmail = localStorage.getItem('userEmail');
+    const userName = localStorage.getItem('userName');
+    const userType = localStorage.getItem('userType');
+    
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        
+        // Build current education string based on user type
+        let currentEducation = '';
+        if (userType === 'MedicalStudent') {
+          if (user.currentInstitute && user.fieldOfStudy) {
+            currentEducation = `${user.fieldOfStudy} at ${user.currentInstitute}`;
+            if (user.yearOfStudy) {
+              currentEducation += ` (Year ${user.yearOfStudy})`;
+            }
+          }
+        } else if (userType === 'Doctor') {
+          if (user.highestQualification && user.specialty) {
+            currentEducation = `${user.highestQualification} in ${user.specialty}`;
+          } else if (user.highestQualification) {
+            currentEducation = user.highestQualification;
+          } else if (user.specialty) {
+            currentEducation = `Specialist in ${user.specialty}`;
+          }
+        }
+        
+        setFormData(prev => ({
+          ...prev,
+          name: user.name || userName || '',
+          email: user.email || userEmail || '',
+          phone: user.phone || '',
+          currentEducation: currentEducation
+        }));
+        console.log('Auto-filled form with user data:', user);
+        console.log('Current education built:', currentEducation);
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+      }
+    } else if (userName || userEmail) {
+      // Fallback to individual localStorage items
+      setFormData(prev => ({
+        ...prev,
+        name: userName || '',
+        email: userEmail || ''
+      }));
+      console.log('Auto-filled form with fallback data:', { name: userName, email: userEmail });
+    }
+  }, []);
 
   // Use degree from navigation state, or prop, or fallback
-  const location = useLocation();
-  const usedDegree: Degree = location.state?.degree;
-  const idToSend = (usedDegree?.degreeId || usedDegree?._id || usedDegree?.courseId)?.toString();
+  const idToSend = (usedDegree?._id || usedDegree?.courseId || usedDegree?.degreeId)?.toString();
 
   const ADDITIONAL_INFO_MAX_LENGTH = 500;
 
@@ -68,12 +132,28 @@ const DegreeApplicationForm: React.FC<DegreeApplicationFormProps> = ({ degree, o
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleClearForm = () => {
+    setFormData(initialFormData);
+    setCvFile(null);
+    setCvError(null);
+  };
+
   const handleCvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
-      // Accept only PDF, max 10MB
-      if (file.type !== "application/pdf") {
-        setCvError("Only PDF files are allowed.");
+      // Accept PDF, DOC, and DOCX files, max 10MB
+      const allowedTypes = [
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      ];
+      const allowedExtensions = [".pdf", ".doc", ".docx"];
+      
+      const isValidType = allowedTypes.includes(file.type) || 
+                         allowedExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
+      
+      if (!isValidType) {
+        setCvError("Only PDF, DOC, and DOCX files are allowed.");
         setCvFile(null);
         return;
       }
@@ -90,7 +170,8 @@ const DegreeApplicationForm: React.FC<DegreeApplicationFormProps> = ({ degree, o
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log("usedDegree:", usedDegree);
-    console.log("courseId:", usedDegree?.courseId, "degreeId:", usedDegree?.degreeId, "idToSend:", idToSend);
+    console.log("_id:", usedDegree?._id, "courseId:", usedDegree?.courseId, "degreeId:", usedDegree?.degreeId);
+    console.log("idToSend:", idToSend);
     setLoading(true);
     setError(null);
     setSuccess(null);
@@ -119,6 +200,43 @@ const DegreeApplicationForm: React.FC<DegreeApplicationFormProps> = ({ degree, o
       formDataToSend.append("degreeId", idToSend);
       formDataToSend.append("degreeName", usedDegree.name);
       formDataToSend.append("institution", usedDegree.institution);
+      
+      // Add applicant type from localStorage
+      const userType = localStorage.getItem('userType');
+      console.log('=== DEBUG: Frontend Application Submission ===');
+      console.log('userType from localStorage:', userType);
+      if (userType) {
+        formDataToSend.append("applicantType", userType);
+        console.log('applicantType added to formData:', userType);
+      } else {
+        // Fallback: try to get from user object
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+          try {
+            const user = JSON.parse(userStr);
+            if (user.userType) {
+              formDataToSend.append("applicantType", user.userType);
+              console.log('applicantType added from user object:', user.userType);
+            } else {
+              formDataToSend.append("applicantType", "Unknown");
+              console.log('No userType found, using "Unknown"');
+            }
+          } catch (e) {
+            formDataToSend.append("applicantType", "Unknown");
+            console.log('Error parsing user object, using "Unknown"');
+          }
+        } else {
+          formDataToSend.append("applicantType", "Unknown");
+          console.log('No userType found in localStorage');
+        }
+      }
+      
+      // Log all form data being sent
+      console.log('Form data being sent:');
+      for (let [key, value] of formDataToSend.entries()) {
+        console.log(`${key}:`, value);
+      }
+
       if (cvFile) {
         formDataToSend.append("cv", cvFile);
       }
@@ -135,6 +253,7 @@ const DegreeApplicationForm: React.FC<DegreeApplicationFormProps> = ({ degree, o
 
       // On success:
       setSuccess("Application submitted successfully!");
+      setShowSuccessModal(true);
       if (onSuccess) onSuccess();
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "An unknown error occurred";
@@ -204,6 +323,9 @@ const DegreeApplicationForm: React.FC<DegreeApplicationFormProps> = ({ degree, o
           onClose={() => setShowFeedbackModal(false)}
           title="How was your application experience?"
           placeholder="Share your thoughts about the application process..."
+          source="degree_application"
+          sourceDetails={`After submitting application for ${usedDegree.degreeName} at ${usedDegree.institution}`}
+          degreeId={usedDegree._id}
         />
 
         {/* Form Body */}
@@ -262,9 +384,7 @@ const DegreeApplicationForm: React.FC<DegreeApplicationFormProps> = ({ degree, o
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Current or Previous Education
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Current Education</label>
               <input
                 type="text"
                 name="currentEducation"
@@ -310,11 +430,18 @@ const DegreeApplicationForm: React.FC<DegreeApplicationFormProps> = ({ degree, o
               {cvFile && !cvError && <p className="text-green-600 text-xs mt-1">Selected: {cvFile.name}</p>}
             </div>
 
-            <div className="pt-4">
+            <div className="pt-4 flex gap-3">
+              <button
+                type="button"
+                onClick={handleClearForm}
+                className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 py-3 px-4 rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-200"
+              >
+                Clear Form
+              </button>
               <button
                 type="submit"
                 disabled={loading}
-                className={`w-full bg-gradient-to-tr from-[#2E5FB7] to-[#1a365d] text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200 ${
+                className={`flex-1 bg-gradient-to-tr from-[#2E5FB7] to-[#1a365d] text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200 ${
                   loading ? "opacity-50 cursor-not-allowed" : ""
                 }`}
               >
@@ -324,6 +451,64 @@ const DegreeApplicationForm: React.FC<DegreeApplicationFormProps> = ({ degree, o
           </form>
         </div>
       </div>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-600 bg-opacity-50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md relative border border-gray-100">
+            <button
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold"
+              onClick={() => setShowSuccessModal(false)}
+              aria-label="Close"
+            >
+              &times;
+            </button>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-bold mb-3 text-gray-800">Application Submitted!</h2>
+              <p className="mb-6 text-gray-600">Your application has been submitted successfully.</p>
+              <div className="space-y-3">
+                <button
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition duration-200 shadow-md"
+                  onClick={() => {
+                    setShowSuccessModal(false);
+                    navigate("/physician/higher-education");
+                  }}
+                >
+                  Go to Higher Education
+                </button>
+                <button
+                  className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition duration-200 shadow-md"
+                  onClick={() => {
+                    setShowSuccessModal(false);
+                    setShowFeedbackModal(true);
+                  }}
+                >
+                  Give Feedback
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Feedback Modal */}
+      <FeedbackModal
+        open={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
+        title="How was your application experience?"
+        placeholder="Share your thoughts about the application process..."
+        source="degree_application"
+        sourceDetails={`After submitting application for ${usedDegree?.name} at ${usedDegree?.institution}`}
+        degreeId={usedDegree?._id}
+        institutionId={usedDegree?.institutionId} // Use the actual institutionId from degree data
+        redirectTo="/physician/higher-education"
+      />
+      
     </div>
   );
 };

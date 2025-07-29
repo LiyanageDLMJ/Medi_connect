@@ -75,7 +75,7 @@ const DegreeDetails: React.FC = () => {
       <Sidebar />
       <div className="flex-1 overflow-auto">
         <TopBar />
-        <div className="flex flex-col md:flex-row p-6 md:pl-72 gap-6">
+        <div className="flex flex-col md:flex-row p-6 md:ml-64 gap-6">
           {/* Main Content */}
           <div className="flex-1">
             <button onClick={() => navigate(-1)} className="text-blue-600 mb-4 hover:underline">&larr; Back to Degrees</button>

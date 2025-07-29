@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const getBarColor = (percent: number) => {
   if (percent > 0.8) return "bg-green-500";
@@ -14,20 +14,47 @@ const ProgramFillRate: React.FC = () => {
   useEffect(() => {
     setLoading(true);
     setError(null);
-    fetch("http://localhost:3000/higherDegrees/insights/program-fill-rate")
-      .then(res => res.json())
-      .then(setPrograms)
-      .catch(() => setError("Failed to load data"))
+    
+    const token = localStorage.getItem('token');
+    const headers: any = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    const url = "http://localhost:3000/higherDegrees/insights/program-fill-rate";
+    fetch(url, { headers })
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+        return res.json();
+      })
+      .then(data => {
+        console.log('ProgramFillRate - Data received:', data);
+        // Ensure data is an array
+        if (Array.isArray(data)) {
+          setPrograms(data);
+        } else {
+          console.error('ProgramFillRate - Data is not an array:', data);
+          setPrograms([]);
+          setError('Invalid data format received');
+        }
+      })
+      .catch((error) => {
+        console.error('ProgramFillRate - Error:', error);
+        setError("Failed to load data");
+        setPrograms([]);
+      })
       .finally(() => setLoading(false));
   }, []);
 
   return (
-    <div className="bg-white p-4 rounded shadow">
-      <h2 className="font-semibold mb-2">Program Fill Rate</h2>
+    <div className="bg-white p-4 rounded shadow" style={{ height: 400 }}>
+      <h2 className="font-semibold mb-4">Program Fill Rate</h2>
       {loading ? (
-        <div>Loading...</div>
+        <div className="flex items-center justify-center h-64">Loading...</div>
       ) : error ? (
-        <div className="text-red-500">{error}</div>
+        <div className="flex items-center justify-center h-64 text-red-500">{error}</div>
       ) : (
         <div className="space-y-4">
           {programs.map((prog) => {

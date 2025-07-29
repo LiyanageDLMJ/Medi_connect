@@ -27,6 +27,7 @@ interface Degree {
   courseId: number;
   degreeName: string;
   institution: string;
+  institutionId?: string; // Add institutionId field
   status: string;
   mode: string;
   applicationDeadline: string;
@@ -88,21 +89,24 @@ const DegreeListing: React.FC = () => {
   const fetchDegrees = async () => {
     try {
       setLoading(true);
-      setError(null);
-      const params: any = {
-        searchQuery,
-        status: filterStatus,
-        mode: filterMode,
-        duration: filterDuration,
-        tuitionFee: filterTuitionFee,
-      };
+      const token = localStorage.getItem('token');
+      const headers: any = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
 
-      const [startDate, endDate] = dateRange;
-      if (startDate) params.startDate = startDate.toISOString();
-      if (endDate) params.endDate = endDate.toISOString();
+      const params = new URLSearchParams();
+      if (searchQuery) params.append('searchQuery', searchQuery);
+      if (filterStatus !== 'all') params.append('status', filterStatus);
+      if (filterMode !== 'all') params.append('mode', filterMode);
+      if (filterDuration !== 'all') params.append('duration', filterDuration);
+      if (filterTuitionFee !== 'all') params.append('tuitionFee', filterTuitionFee);
+      if (dateRange[0]) params.append('startDate', dateRange[0].toISOString());
+      if (dateRange[1]) params.append('endDate', dateRange[1].toISOString());
 
-      const response = await axios.get("http://localhost:3000/degrees/viewDegrees", { params });
-      setDegrees(response.data.degrees);
+      const response = await axios.get(`http://localhost:3000/degrees/viewDegrees?${params}`, { headers });
+      setDegrees(response.data.degrees || []);
+      // setTotal(response.data.total || 0); // This line was not in the new_code, so it's removed.
     } catch (error: any) {
       setError("Failed to fetch degrees. Please try again later.");
       console.error("Error fetching degrees:", error);
@@ -114,9 +118,13 @@ const DegreeListing: React.FC = () => {
   // Fetch filter options from the backend
   const fetchFilterOptions = async () => {
     try {
-      setLoading(true);
-      setError(null);
-      const response = await axios.get("http://localhost:3000/degrees/filters");
+      const token = localStorage.getItem('token');
+      const headers: any = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await axios.get("http://localhost:3000/degrees/filters", { headers });
       setFilterOptions(response.data);
     } catch (error: any) {
       setError("Failed to fetch filter options. Please try again later.");
@@ -162,7 +170,14 @@ const DegreeListing: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      await axios.delete(`http://localhost:3000/degrees/deleteDegree/${id}`);
+      
+      const token = localStorage.getItem('token');
+      const headers: any = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      await axios.delete(`http://localhost:3000/degrees/deleteDegree/${id}`, { headers });
       setDegrees((prevDegrees) => prevDegrees.filter((deg) => deg._id !== id));
       setMenuOpen(null);
     } catch (error: any) {
@@ -209,7 +224,7 @@ const DegreeListing: React.FC = () => {
   return (
     <div className="flex h-screen">
       <Sidebar />
-      <div className="flex-1 overflow-auto ">
+      <div className="flex-1 overflow-auto md:ml-64">
         <TopBar />
         <div className="p-4 flex flex-col min-h-screen">
           <div className="flex items-center bg-white px-3 py-1 rounded-t-lg border-gray-200">
@@ -445,32 +460,49 @@ const DegreeListing: React.FC = () => {
                     ...selectedDegree,
                     name: selectedDegree.degreeName,
                     institution: selectedDegree.institution,
+                    institutionId: selectedDegree.institutionId, // Add institutionId field
                   }}
                   onClose={() => setShowApplicationForm(false)}
                   onSuccess={handleApplicationSuccess}
                 />
               )}
               {showSuccessModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
-                  <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm relative">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-600 bg-opacity-50 backdrop-blur-sm">
+                  <div className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md relative border border-gray-100">
                     <button
-                      className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 text-xl"
+                      className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold"
                       onClick={() => setShowSuccessModal(false)}
                       aria-label="Close"
                     >
                       &times;
                     </button>
-                    <h2 className="text-lg font-semibold mb-3 text-green-700">Application submitted!</h2>
-                    <p className="mb-4 text-gray-700">Your application has been submitted successfully.</p>
-                    <button
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded transition mb-2"
-                      onClick={() => {
-                        setShowSuccessModal(false);
-                        setShowFeedbackModal(true);
-                      }}
-                    >
-                      Give Feedback
-                    </button>
+                    <div className="text-center">
+                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <h2 className="text-xl font-bold mb-3 text-gray-800">Application submitted!</h2>
+                      <p className="mb-6 text-gray-600">Your application has been submitted successfully.</p>
+                      <button
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition duration-200 shadow-md"
+                        onClick={() => {
+                          setShowSuccessModal(false);
+                          setShowFeedbackModal(true);
+                        }}
+                      >
+                        Give Feedback
+                      </button>
+                      <button
+                        className="w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 rounded-lg transition duration-200 shadow-md mt-2"
+                        onClick={() => {
+                          setShowSuccessModal(false);
+                          navigate("/higher-education/degree-listing");
+                        }}
+                      >
+                        Go to Degree Listing
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -479,6 +511,8 @@ const DegreeListing: React.FC = () => {
                 onClose={() => setShowFeedbackModal(false)}
                 title="How was your application experience?"
                 placeholder="Share your thoughts about the application process..."
+                source="general"
+                sourceDetails="Feedback from degree listing page"
               />
             </div>
             {/* Pagination controls at the very bottom */}

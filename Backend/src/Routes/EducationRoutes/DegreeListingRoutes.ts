@@ -5,9 +5,10 @@ import {
   getDegreeById,
   updateDegree,
   deleteDegree,
-  getFilterOptions,
+  getFilterOptions
 } from '../../controllers/educationControllers/degreeListingController';
-import {imageUpload} from '../../middleware/multerConfig'; // Import the imageUpload middleware
+import { imageUpload } from '../../middleware/multerConfig';
+import { authMiddleware } from '../../middleware/authMiddleware';
 
 // Define a type for async route handlers
 type AsyncRequestHandler = (req: Request, res: Response, next: NextFunction) => Promise<void>;
@@ -19,24 +20,22 @@ const asyncHandler = (fn: AsyncRequestHandler) => (req: Request, res: Response, 
   Promise.resolve(fn(req, res, next)).catch(next);
 };
 
-// Route to view all degrees
-router.get('/viewDegrees', asyncHandler(getAllDegrees));
+// Route to create a new degree
+router.post("/createDegree", authMiddleware, imageUpload.single("image"), asyncHandler(createDegree));
 
-// Route to view a degree by ID
-router.get('/viewDegrees/:id', asyncHandler(getDegreeById));
+// Route to get all degrees with filters
+router.get("/viewDegrees", asyncHandler(getAllDegrees));
 
-// Route to add a new degree (with image upload middleware)
-router.post('/postDegree', imageUpload.single("image"), asyncHandler(createDegree));
+// Route to get a single degree by ID
+router.get("/viewDegrees/:id", asyncHandler(getDegreeById));
 
-// Route to update a degree by ID (also support image upload for updates)
-router.put('/updateDegree/:id', imageUpload.single("image"), asyncHandler(updateDegree));
-// Also allow PATCH for partial updates
-router.patch('/updateDegree/:id', imageUpload.single("image"), asyncHandler(updateDegree));
+// Route to update a degree by ID
+router.put("/updateDegree/:id", authMiddleware, imageUpload.single("image"), asyncHandler(updateDegree));
 
 // Route to delete a degree by ID
-router.delete('/deleteDegree/:id', asyncHandler(deleteDegree));
+router.delete('/deleteDegree/:id', authMiddleware, asyncHandler(deleteDegree));
 
 // Route to get filter options
-router.get('/filters', asyncHandler(getFilterOptions));
+router.get("/filters", asyncHandler(getFilterOptions));
 
 export default router;

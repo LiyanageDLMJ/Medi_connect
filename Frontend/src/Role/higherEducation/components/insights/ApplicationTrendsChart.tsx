@@ -3,10 +3,11 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "rec
 
 type ApplicationTrendsChartProps = {
   dateRange: string;
-  courseType: string;
+  courseType?: string;
+  applicantType?: string; // Add applicantType prop
 };
 
-const ApplicationTrendsChart: React.FC<ApplicationTrendsChartProps> = ({ dateRange, courseType }) => {
+const ApplicationTrendsChart: React.FC<ApplicationTrendsChartProps> = ({ dateRange, courseType = "All", applicantType = "All" }) => {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -14,20 +15,64 @@ const ApplicationTrendsChart: React.FC<ApplicationTrendsChartProps> = ({ dateRan
   useEffect(() => {
     setLoading(true);
     setError(null);
-    fetch(`http://localhost:3000/higherDegrees/insights/application-trends?dateRange=${encodeURIComponent(dateRange)}&courseType=${encodeURIComponent(courseType)}`)
-      .then(res => res.json())
-      .then(setData)
-      .catch(() => setError("Failed to load data"))
+    
+    const token = localStorage.getItem('token');
+    const headers: any = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    // Build query parameters for filtering
+    const params = new URLSearchParams();
+    if (courseType && courseType !== "All") {
+      params.append('courseType', courseType);
+    }
+    if (applicantType && applicantType !== "All") {
+      params.append('applicantType', applicantType);
+    }
+    if (dateRange) {
+      params.append('dateRange', dateRange);
+    }
+    
+    const url = `http://localhost:3000/higherDegrees/insights/application-trends${params.toString() ? '?' + params.toString() : ''}`;
+    
+    fetch(url, { headers })
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+        return res.json();
+      })
+      .then(data => {
+        console.log('ApplicationTrendsChart - Data received:', data);
+        // Ensure data is an array
+        if (Array.isArray(data)) {
+          setData(data);
+        } else {
+          console.error('ApplicationTrendsChart - Data is not an array:', data);
+          setData([]);
+          setError('Invalid data format received');
+        }
+      })
+      .catch((error) => {
+        console.error('ApplicationTrendsChart - Error:', error);
+        setError("Failed to load data");
+        setData([]);
+      })
       .finally(() => setLoading(false));
-  }, [dateRange, courseType]);
+  }, [dateRange, courseType, applicantType]); // Add applicantType to dependencies
 
-  // Determine which lines to show
+  // Determine which lines to show - add safety check
   const allCoursesSet = new Set<string>();
-  data.forEach(row => {
-    Object.keys(row).forEach(k => {
-      if (k !== "month") allCoursesSet.add(k);
+  if (Array.isArray(data)) {
+    data.forEach(row => {
+      if (row && typeof row === 'object') {
+        Object.keys(row).forEach(k => {
+          if (k !== "month") allCoursesSet.add(k);
+        });
+      }
     });
-  });
+  }
   const allCourses = Array.from(allCoursesSet);
   let linesToShow: string[] = [];
   if (courseType === "All") {
@@ -55,7 +100,11 @@ const ApplicationTrendsChart: React.FC<ApplicationTrendsChartProps> = ({ dateRan
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={formattedData}>
             <XAxis dataKey="month" angle={-30} textAnchor="end" interval={0} height={60} />
-            <YAxis />
+            <YAxis 
+              domain={[0, 'dataMax + 1']}
+              tickFormatter={(value) => Math.round(value).toString()}
+              allowDecimals={false}
+            />
             <Tooltip />
             {linesToShow.map((course, idx) => (
               <Line

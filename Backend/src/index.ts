@@ -14,6 +14,8 @@ import viewDegreeApplicationRoutes from "./Routes/EducationRoutes/ViewDegreeAppl
 import degreeListingRoutes from './Routes/EducationRoutes/DegreeListingRoutes';
 import higherEducationRoutes from './Routes/EducationRoutes/higherEducationRoutes';
 import jobApplicationContolByRecuiterRoutes from './Routes/RecuiterRoutes/jobApplicationcontolByRecuiterRoutes';
+import feedbackRoutes from './Routes/feedbackRoutes';
+import notificationRoutes from './Routes/notificationRoutes';
 import fs from "fs";
 import path from "path";
 import LoginRegisterRoutes from "./Routes/LoginRegisterRoutes";
@@ -40,7 +42,10 @@ app.use(cors({
     'Access-Control-Allow-Origin',
     'Access-Control-Allow-Headers',
     'Access-Control-Allow-Methods',
-    'x-user-id'
+    'x-user-id',
+    'x-user-type',
+    'x-user-email',
+    'x-user-name'
   ]
 }));
 
@@ -74,12 +79,13 @@ app.use("/higherDegrees", higherEducationRoutes);
 app.use('/degreeApplications', DegreeApplicationRoutes);
 app.use('/viewDegreeApplications', viewDegreeApplicationRoutes);
 app.use('/jobApplicationControl', jobApplicationContolByRecuiterRoutes);
+app.use('/feedback', feedbackRoutes);
+app.use('/notifications', notificationRoutes);
 app.use("/api/faqs", faqRoutes);
 // app.use('/images', express.static('src/image'));
 app.use('/image', express.static(path.join(__dirname, "../image")));
 
 app.use("/auth", LoginRegisterRoutes);
-app.use("/", LoginRegisterRoutes);
 
 // Create HTTP server from existing Express app
 const httpServer = createServer(app);
