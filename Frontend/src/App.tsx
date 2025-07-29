@@ -33,7 +33,7 @@ import  ViewApplications from "./Role/higherEducation/pages/ViewApplications"
 import ViewCandidates from "./Role/Recuiter/pages/VeiwCandidates";
 import RecruiterDashboard from "./Role/Recuiter/pages/Dashboard";
 import { FormProvider } from "./context/FormContext";
-import Cvcompare  from "./Role/Physician/pages/Cvcompare";
+import CVComparison from "./Role/Recuiter/pages/CvComparison";
 import { Toaster } from 'react-hot-toast';
 import { MessageNotificationProvider } from './context/MessageNotificationContext';
 import MedicalStudentMessages from "./Role/MedicalStudent/pages/Messages";
@@ -41,6 +41,8 @@ import PhysicianMessages from "./Role/Physician/pages/Messages";
 import RecruiterMessages from "./Role/Recuiter/pages/Messages";
 import HigherEducationMessages from "./Role/higherEducation/pages/Messages";
 import MedStudentDashboard from "./Role/MedicalStudent/pages/MedStudentDashboard";
+import MedicalCvStep1 from "./Role/MedicalStudent/pages/MedicalCvStep1";
+import MedicalCvStep2 from "./Role/MedicalStudent/pages/MedicalCvStep2";
 const App = () => {
   return (
     <MessageNotificationProvider>
@@ -72,7 +74,8 @@ const App = () => {
             <Route path="update-profile" element={<ProfilePage />} />
             <Route path="message-box" element={<MedicalStudentMessages />} />
             <Route path="update-cv01" element={<UpdateCV01 />} />
-            <Route path="cvCompare" element={<Cvcompare />} />
+            <Route path="cv-step1" element={<MedicalCvStep1 />} />
+            <Route path="cv-step2" element={<MedicalCvStep2 />} />
             <Route path="job-internship" element={<JobInternshipSearch />} />
             <Route path="job-application-tracker" element={<JobApplicationTracker />} />
             <Route path="higher-education" element={<HigherEducationSearch />} />
@@ -92,7 +95,7 @@ const App = () => {
           <Route path="update-cv02" element={<UpdateCV02 />} />
           <Route path="update-cv03" element={<UpdateCV03 />} />
           <Route path="job-details/:jobId" element={<JobInternshipDetails />} />
-          <Route path="Cvcompare" element={<Cvcompare />} />
+         
           <Route path="degreeapplication" element={<DegreeApplication />} />
           <Route path="job-application-tracker" element={<JobApplicationTracker />} />
           <Route path="medical-student-dashboard" element={<MedicalStudentDashboard />} />
@@ -127,6 +130,7 @@ const App = () => {
             <Route path="update-profile" element={<ProfilePage />} />
             <Route path="messages" element={<RecruiterMessages />} />
             <Route path="message-box" element={<RecruiterMessages />} />
+             <Route path="cvCompare" element={<CVComparison />} />
           </Route>
 
         

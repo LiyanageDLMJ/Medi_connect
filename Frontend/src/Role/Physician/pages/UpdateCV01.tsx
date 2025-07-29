@@ -1,6 +1,6 @@
 "use client";
 import { useNavigate } from "react-router-dom";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Bell,
   ChevronDown,
@@ -10,14 +10,53 @@ import {
   Search,
   User,
 } from "lucide-react";
+import Sidebar from "../components/NavBar/Sidebar";
+import DoctorForm from "../../../LoginRegister/register/forms/DoctorForm";
 import SidebarWrapper from "../../../Components/SidebarWrapper";
 import { useFormContext } from "../../../context/FormContext";
 import UpdateCV02 from "./UpdateCV02";
 
 export default function UpdateCV01() {
+  // We only keep the Insert CV tab now
+  const [activeTab] = useState<"cv">("cv");
   const { formData, setFormData } = useFormContext();
   const navigate = useNavigate();
   const [phoneError, setPhoneError] = useState<string>("");
+  const [linkedinError, setLinkedinError] = useState<string>("");
+
+  // Fetch user basic details once after component mounts
+  useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    if (!userId) return;
+
+    const fetchProfile = async () => {
+      try {
+        const API_BASE = window.location.origin.includes("localhost")
+          ? "http://localhost:3000"
+          : window.location.origin;
+        const res = await fetch(`${API_BASE}/profile/${userId}`);
+        if (!res.ok) throw new Error("Failed to fetch user profile");
+        const data = await res.json();
+
+        // Map backend fields to formData keys
+        setFormData((prev) => ({
+          ...prev,
+          yourName: data.name || prev.yourName,
+          age: data.age ? String(data.age) : prev.age,
+          currentLocation: data.location || prev.currentLocation,
+          professionalTitle: data.profession || prev.professionalTitle,
+          specialization: data.specialty || prev.specialization,
+          contactEmail: data.email || prev.contactEmail,
+        }));
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchProfile();
+    // run only once
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Get user role from localStorage
   const userType = localStorage.getItem('userType');
@@ -28,7 +67,16 @@ export default function UpdateCV01() {
     return phoneRegex.test(phone);
   };
 
+  const validateURL = (linkedinLink: string) => {
+    const urlPattern =
+      /^(https?:\/\/)?([\w.-]+)\.([a-z]{2,6})([\/\w .-]*)*\/?$/i;
+    return urlPattern.test(linkedinLink);
+  };
+
   const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
@@ -40,6 +88,14 @@ export default function UpdateCV01() {
         );
       } else {
         setPhoneError("");
+      }
+    }
+
+    if (name === "linkedinLink") {
+      if (!validateURL(value) && value !== "") {
+        setLinkedinError("Please enter a valid URL");
+      } else {
+        setLinkedinError("");
       }
     }
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -96,10 +152,43 @@ export default function UpdateCV01() {
 
         {/* Main Content */}
         <main className="max-w-6xl mx-auto p-6">
-          <h1 className="text-2xl font-bold mb-6">Update CV</h1>
+          <h1 className="text-2xl font-bold mb-6">Insert CV</h1>
 
-          {/* Tabs */}
+          {/* Single Tab Heading */}
           <div className="flex border-b mb-8">
+            <span className="flex items-center gap-2 px-6 py-4 border-b-2 border-blue-500 text-blue-500">
+              Insert CV
+            </span>
+          </div>
+
+          {/* Profile tab removed; only CV section remains */}
+
+          {activeTab === "cv" && (
+            <form
+              onSubmit={handleNext}
+              className="bg-white p-8 rounded-lg shadow-sm"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Left Column */}
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="yourName"
+                      className="block text-sm font-medium"
+                    >
+                      Your Full Name*
+                    </label>
+                    <input
+                      id="yourName"
+                      name="yourName"
+                      type="text"
+                      value={formData.yourName}
+                      onChange={handleInputChange}
+                      placeholder="John Doe"
+                      className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
+                      required
+                    />
+                  </div>
             <button className="flex items-center gap-2 px-6 py-4 border-b-2 border-blue-500 text-blue-500">
               <User className="w-5 h-5" />
               <span>Basic Details</span>
@@ -176,6 +265,88 @@ export default function UpdateCV01() {
                   />
                 </div>
 
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="contactPhone"
+                      className="block text-sm font-medium"
+                    >
+                      Contact (Phone)*
+                    </label>
+                    <input
+                      id="contactPhone"
+                      name="contactPhone"
+                      type="tel"
+                      value={formData.contactPhone}
+                      onChange={handleInputChange}
+                      className={`w-full p-3 bg-gray-50 border ${
+                        phoneError ? "border-red-500" : "border-gray-200"
+                      } rounded-md`}
+                      placeholder="+94771234567"
+                      required
+                    />
+                    {phoneError && (
+                      <p className="text-red-500 text-sm mt-1">{phoneError}</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right Column */}
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="professionalTitle"
+                      className="block text-sm font-medium"
+                    >
+                      Professional Title*
+                    </label>
+                    <input
+                      id="professionalTitle"
+                      name="professionalTitle"
+                      type="text"
+                      value={formData.professionalTitle}
+                      onChange={handleInputChange}
+                      placeholder="cardiologist"
+                      className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="careerSummary"
+                      className="block text-sm font-medium"
+                    >
+                      Career Summary*
+                    </label>
+                    <textarea
+                      id="careerSummary"
+                      name="careerSummary"
+                      value={formData.careerSummary}
+                      onChange={handleInputChange}
+                      placeholder="A brief summary of your career"
+                      className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md h-40 resize-none"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="contactEmail"
+                      className="block text-sm font-medium"
+                    >
+                      Contact (Email)*
+                    </label>
+                    <input
+                      id="contactEmail"
+                      name="contactEmail"
+                      type="email"
+                      value={formData.contactEmail}
+                      onChange={handleInputChange}
+                      placeholder="example@gmail.com"
+                      className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
+                      required
+                    />
+                  </div>
                 <div className="space-y-2">
                   <label
                     htmlFor="contactPhone"
@@ -201,6 +372,17 @@ export default function UpdateCV01() {
                 </div>
               </div>
 
+              {/* Next Button */}
+              <div className="mt-8 flex justify-end">
+                <button
+                  type="submit"
+                  className="px-6 py-2 bg-blue-500 text-white rounded-md"
+                >
+                  Next
+                </button>
+              </div>
+            </form>
+          )}
               {/* Right Column */}
               <div className="space-y-6">
                 <div className="space-y-2">

@@ -202,6 +202,34 @@ export default function UpdateCV02() {
                   </select>
                 </div>
 
+                  {/* University/Medical School */}
+                  <div>
+                    <label className="block text-sm mb-1">
+                      University/Medical School
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      name="university"
+                      value={formData.university}
+                      onChange={handleInputChange}
+                      className="w-full p-2 border rounded-md  border-gray-200 bg-gray-50"
+                      required
+                    >
+                      <option value="">Select University</option>
+                      <option value="University of Moratuwa">
+                        University of Moratuwa
+                      </option>
+                      <option value="University of Ruhuna">
+                        University of Ruhuna
+                      </option>
+                      <option value="University of Colombo">
+                        University of Colombo
+                      </option>
+                      <option value="University of Jayawardhanapura">
+                        University of Jayawarshanapura
+                      </option>
+                    </select>
+                  </div>
                 {/* University/Medical School */}
                 <div>
                   <label className="block text-sm mb-1">
@@ -314,6 +342,93 @@ export default function UpdateCV02() {
                   </div>
                 </div>
 
+                  {/* Graduation Date */}
+                  <div>
+                    <label className="block text-sm mb-1">
+                      Graduation Date<span className="text-red-500">*</span>
+                    </label>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DatePicker
+                        label="MM/DD/YYYY"
+                        value={
+                          formData.graduationDate
+                            ? dayjs(formData.graduationDate, "MM/DD/YYYY")
+                            : null
+                        }
+                        onChange={(newValue) => {
+                          if (newValue) {
+                            setFormData((prev) => ({
+                              ...prev,
+                              graduationDate: newValue.format("MM/DD/YYYY"),
+                            }));
+                          }
+                        }}
+                        slotProps={{ textField: { fullWidth: true } }}
+                      />
+                    </LocalizationProvider>
+                  </div>
+
+                  {/* Medical License Number */}
+                  <div>
+                    <label className="block text-sm mb-1">
+                      Medical License Number
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="medicalLicenseNumber"
+                      value={String(formData.medicalLicenseNumber)}
+                      onChange={handleInputChange}
+                      className={`w-full p-2 border rounded-md  border-gray-200 bg-gray-50 ${
+                        errors.medicalLicenseNumber ? "border-red-500" : ""
+                      }`}
+                      placeholder="123456789"
+                      required
+                    />
+                    {errors.medicalLicenseNumber && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.medicalLicenseNumber}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Medical License Issuer */}
+                  <div>
+                    <label className="block text-sm mb-1">
+                      Medical License Issuer
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="medicalLicenseIssuer"
+                      value={formData.medicalLicenseIssuer}
+                      onChange={handleInputChange}
+                      className="w-full p-2 border rounded-md border-gray-200 bg-gray-50"
+                      placeholder="Medical Board of California"
+                    />
+                  </div>
+                </div>
+
+                {/* Navigation Buttons */}
+                <div className="flex justify-between mt-10">
+                  <button
+                    type="button"
+                    onClick={handleBack}
+                    className="flex items-center justify-center w-10 h-10 rounded-md border"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2 bg-blue-500 text-white rounded-md"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </main>
                 {/* Graduation Date */}
                 <div>
                   <label className="block text-sm mb-1">

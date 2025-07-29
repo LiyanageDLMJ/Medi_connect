@@ -1,6 +1,10 @@
 "use client";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { useFormContext } from "../../../context/FormContext";
+import { supabase } from "../../../utils/supabase";
+
 import {
   Bell,
   ChevronDown,
@@ -9,6 +13,7 @@ import {
   Menu,
   Search,
   User,
+  Check,
 } from "lucide-react";
 import SidebarWrapper from "../../../Components/SidebarWrapper";
 import { useFormContext } from "../../../context/FormContext";
@@ -18,6 +23,11 @@ export default function UpdateCV03() {
   const { formData, setFormData } = useFormContext();
   const navigate = useNavigate();
   const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [createdDoctorId, setCreatedDoctorId] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null); // Added for user feedback
 
   // Get user role from localStorage
@@ -31,57 +41,131 @@ export default function UpdateCV03() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
+
+      // Validate file
+      if (file.type !== "application/pdf") {
+        setError("Only PDF files are allowed");
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        // 5MB limit
+        setError("File size exceeds 5MB limit");
+        return;
+      }
+
       setResumeFile(file);
+      setError(null);
+    }
+  };
+
+  const uploadToSupabase = async (file: File): Promise<string> => {
+    const fileExt = file.name.split(".").pop();
+    const fileName = `${Date.now()}-${Math.random()
+      .toString(36)
+      .substring(2)}.${fileExt}`;
+    const filePath = `medical_cvs/${fileName}`;
+
+    console.log("Starting Supabase upload...");
+    console.log("File:", file.name, "Size:", file.size);
+    console.log("Target bucket: cvdata");
+    console.log("Target path:", filePath);
+
+    try {
+      setUploadProgress(10);
+
+      // Upload to Supabase cvdata bucket
+      const { data, error } = await supabase.storage
+        .from("cvdata")
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+
+      if (error) {
+        console.error("Supabase storage error:", error);
+        throw new Error(`Upload failed: ${error.message}`);
+      }
+
+      console.log("Upload successful, data:", data);
+      setUploadProgress(70);
+
+      // Get the public URL from cvdata bucket
+      const { data: urlData } = supabase.storage
+        .from("cvdata")
+        .getPublicUrl(filePath);
+
+      setUploadProgress(100);
+
+      console.log("Supabase upload completed successfully!");
+      console.log("Public URL:", urlData.publicUrl);
+      return urlData.publicUrl;
+    } catch (error) {
+      console.error("Supabase upload failed:", error);
+      throw error;
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null); // Clear previous errors
+    setError(null);
+
+    if (!resumeFile) {
+      setError("Please upload a PDF resume");
+      return;
+    }
+
+    console.log("Form submission started...");
+    console.log("Form data:", formData);
 
     try {
-      const formDataToSubmit = new FormData();
+      setIsUploading(true);
+      setUploadProgress(0);
 
-      const formDataCopy = { ...formData };
+      console.log("Uploading to Supabase cvdata bucket...");
+      // Upload to Supabase ONLY
+      const supabaseUrl = await uploadToSupabase(resumeFile);
 
-      // Remove fields that shouldn't be sent to the backend
-      if ((formDataCopy as any).additionalCertifications !== undefined) {
-        delete (formDataCopy as any).additionalCertifications;
-      }
+      console.log("File uploaded successfully, URL:", supabaseUrl);
 
-      // Handle certification input array
-      if (!formDataCopy.certificationInput) {
-        formDataCopy.certificationInput = [];
-      }
+      // Prepare payload with Supabase URL
+      const payload = {
+        ...formData,
+        resumeRawUrl: supabaseUrl, // This should be the Supabase URL
+        jobTitle: formData.jobTitle,
+        hospitalInstitution: formData.hospitalInstitution,
+        employmentPeriod: formData.employmentPeriod,
+      };
 
-      // Add all form fields to the FormData
-      Object.entries(formDataCopy).forEach(([key, value]) => {
-        if (key === "certificationInput" && Array.isArray(value)) {
-          formDataToSubmit.append(key, JSON.stringify(value));
-        } else if (value !== null && value !== undefined) {
-          formDataToSubmit.append(key, String(value));
-        }
-      });
+      console.log("Sending payload to backend:", payload);
 
-      if (resumeFile) {
-        formDataToSubmit.append("resume", resumeFile);
-      }
-
-      // Send as multipart/form-data
+      // Send to backend
       const response = await axios.post(
         "http://localhost:3000/CvdoctorUpdate/addDoctorCv",
-        formDataToSubmit,
-        {
-          headers: {
-            // No need to set Content-Type; axios sets it to multipart/form-data automatically
-          },
-        }
+        payload
       );
 
-      navigate("/success");
-    } catch (error) {
-      console.error("Error submitting data:", error);
-      setError("Failed to submit the form. Please try again later."); // User feedback
+      console.log("Backend response:", response.data);
+
+      // Handle response
+      const newDoctorId =
+        response.data?.doctorId || response.data?.id || response.data?._id;
+      if (newDoctorId) {
+        localStorage.setItem("doctorId", newDoctorId.toString());
+        setCreatedDoctorId(newDoctorId);
+      }
+
+      setSubmitSuccess(true);
+      console.log("CV submission completed successfully!");
+    } catch (error: any) {
+      console.error("CV upload failed:", error);
+      setError(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to upload CV. Please try again later."
+      );
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -142,8 +226,26 @@ export default function UpdateCV03() {
             onSubmit={handleSubmit}
             className="bg-white p-8 rounded-lg shadow-sm"
           >
+            {submitSuccess && (
+              <div className="mb-4 p-4 border border-green-300 rounded-md bg-green-50 text-green-700 flex items-center gap-2">
+                <Check className="w-4 h-4" />
+                <span>Your CV has been updated successfully!</span>
+                {createdDoctorId && (
+                  <button
+                    onClick={() =>
+                      navigate(`/physician/profile/${createdDoctorId}`)
+                    }
+                    className="ml-auto text-blue-600 underline text-sm"
+                  >
+                    View Profile
+                  </button>
+                )}
+              </div>
+            )}
             {error && (
-              <div className="mb-4 text-red-500 text-sm">{error}</div>
+              <div className="mb-4 p-3 border border-red-300 rounded-md bg-red-50 text-red-700">
+                {error}
+              </div>
             )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-6">
@@ -152,6 +254,7 @@ export default function UpdateCV03() {
                     htmlFor="JobTitle"
                     className="block text-sm font-medium"
                   >
+                    Expected Job Type*
                     Job Title*
                   </label>
                   <input
@@ -160,7 +263,7 @@ export default function UpdateCV03() {
                     type="text"
                     value={formData.jobTitle || ""}
                     onChange={handleInputChange}
-                    placeholder="Cardiologist"
+                    placeholder="Full-time, Part-time, Contract"
                     className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
                     required
                   />
@@ -207,10 +310,7 @@ export default function UpdateCV03() {
                 </div>
 
                 <div className="space-y-2">
-                  <label
-                    htmlFor="resume"
-                    className="block text-sm font-medium"
-                  >
+                  <label htmlFor="resume" className="block text-sm font-medium">
                     Upload Resume (PDF)*
                   </label>
                   <input
@@ -223,9 +323,25 @@ export default function UpdateCV03() {
                     required
                   />
                   {resumeFile && (
-                    <p className="text-sm text-green-600">
-                      File selected: {resumeFile.name}
-                    </p>
+                    <div className="mt-2">
+                      <p className="text-sm text-green-600">
+                        File selected: {resumeFile.name}
+                      </p>
+                      {isUploading && (
+                        <div className="mt-2">
+                          <div className="flex justify-between text-xs text-gray-600 mb-1">
+                            <span>Uploading to Supabase...</span>
+                            <span>{uploadProgress}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div
+                              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                              style={{ width: `${uploadProgress}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
@@ -247,9 +363,14 @@ export default function UpdateCV03() {
               </button>
               <button
                 type="submit"
-                className="px-6 py-2 bg-blue-500 text-white rounded-md"
+                disabled={isUploading}
+                className={`px-6 py-2 text-white rounded-md ${
+                  isUploading
+                    ? "bg-blue-400 cursor-not-allowed"
+                    : "bg-blue-500 hover:bg-blue-600"
+                }`}
               >
-                Submit
+                {isUploading ? "Uploading..." : "Submit"}
               </button>
             </div>
           </form>

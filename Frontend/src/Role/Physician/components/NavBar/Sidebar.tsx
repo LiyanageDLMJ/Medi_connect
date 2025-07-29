@@ -22,7 +22,7 @@ const SidebarNav = () => {
     { label: "Dashboard", to: "/physician/Doctordashboard", icon: <FiHome size={20} /> },
     { label: "Your Profile", to: "/physician/profile", icon: <FiUser size={20} /> },
     { label: "Update CV", to: "/physician/update-cv01", icon: <FiFileText size={20} /> },
-    { label: "CompareCV", to: "/physician/cvCompare", icon: <FiFileText size={20} /> },
+    
     {
       label: "Job & Internships",
       to: "/physician/job-internship",
