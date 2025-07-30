@@ -1,4 +1,4 @@
-import { useState, FormEvent, ChangeEvent, useEffect } from "react";
+import { useState, FormEvent, ChangeEvent, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import FeedbackModal from "../../../Components/Feedback/FeedbackModal";
 
@@ -51,6 +51,7 @@ const DegreeApplicationForm: React.FC<DegreeApplicationFormProps> = ({ degree, o
   const navigate = useNavigate();
   const location = useLocation();
   const usedDegree = degree || location.state?.degree;
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Debug: Log the degree data
   console.log('=== DEBUG: DegreeApplicationForm ===');
@@ -68,6 +69,10 @@ const DegreeApplicationForm: React.FC<DegreeApplicationFormProps> = ({ degree, o
   const [showFeedback, setShowFeedback] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  
+  // New CV-related states
+  const [isLoadingCv, setIsLoadingCv] = useState(false);
+  const [cvAutoLoaded, setCvAutoLoaded] = useState(false);
 
   // Auto-fill form with user data from localStorage
   useEffect(() => {
@@ -98,44 +103,120 @@ const DegreeApplicationForm: React.FC<DegreeApplicationFormProps> = ({ degree, o
             currentEducation = `Specialist in ${user.specialty}`;
           }
         }
-        
-        setFormData(prev => ({
-          ...prev,
-          name: user.name || userName || '',
-          email: user.email || userEmail || '',
-          phone: user.phone || '',
-          currentEducation: currentEducation
-        }));
-        console.log('Auto-filled form with user data:', user);
-        console.log('Current education built:', currentEducation);
+
+        setFormData({
+          name: user.name || userName || user.yourName || "",
+          email: user.email || userEmail || user.contactEmail || "",
+          phone: user.phone || user.contactPhone || "",
+          currentEducation: currentEducation,
+          additionalInfo: "",
+        });
       } catch (error) {
-        console.error('Error parsing user data:', error);
+        console.error("Error parsing user data:", error);
+        // Fallback to basic data
+        setFormData({
+          name: userName || "",
+          email: userEmail || "",
+          phone: "",
+          currentEducation: "",
+          additionalInfo: "",
+        });
       }
-    } else if (userName || userEmail) {
-      // Fallback to individual localStorage items
-      setFormData(prev => ({
-        ...prev,
-        name: userName || '',
-        email: userEmail || ''
-      }));
-      console.log('Auto-filled form with fallback data:', { name: userName, email: userEmail });
+    } else {
+      // Fallback to basic data
+      setFormData({
+        name: userName || "",
+        email: userEmail || "",
+        phone: "",
+        currentEducation: "",
+        additionalInfo: "",
+      });
     }
   }, []);
 
-  // Use degree from navigation state, or prop, or fallback
-  const idToSend = (usedDegree?._id || usedDegree?.courseId || usedDegree?.degreeId)?.toString();
+  // --- NEW: Fetch user's CV data ---
+  useEffect(() => {
+    const fetchCvData = async () => {
+      const userId = localStorage.getItem('userId');
+      if (!userId) return;
+      
+      setIsLoadingCv(true);
+      try {
+        console.log("Fetching CV data for user:", userId);
+        const res = await fetch(`http://localhost:3000/CvdoctorUpdate/getCvByUser/${userId}`);
+        
+        if (res.ok) {
+          const data = await res.json();
+          console.log("CV API response:", data);
+          
+          if (data.success && data.cvData && data.cvData.resumeRawUrl) {
+            console.log("Found existing CV data:", data.cvData.resumeRawUrl);
 
-  const ADDITIONAL_INFO_MAX_LENGTH = 500;
+            // Download and create File object from CV URL
+            try {
+              console.log("Downloading CV from URL:", data.cvData.resumeRawUrl);
+              const cvResponse = await fetch(data.cvData.resumeRawUrl);
+              
+              if (!cvResponse.ok) {
+                throw new Error(`Failed to download CV: ${cvResponse.status}`);
+              }
+              
+              const cvBlob = await cvResponse.blob();
+              console.log("CV blob size:", cvBlob.size);
+              
+              // Create a File object from the blob
+              const cvFile = new File([cvBlob], 'cv.pdf', { type: 'application/pdf' });
+              console.log("Created CV file:", cvFile.name, cvFile.size);
+              
+              setCvFile(cvFile);
+              
+              // Programmatically set the file input
+              if (fileInputRef.current) {
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(cvFile);
+                fileInputRef.current.files = dataTransfer.files;
+              }
+              
+              setCvAutoLoaded(true);
+              console.log("CV file successfully set in form");
+            } catch (cvError) {
+              console.error("Failed to download CV file:", cvError);
+              // Show user-friendly error message
+              alert("Your CV was found but couldn't be automatically loaded. Please upload it manually.");
+            }
+          } else {
+            console.log("No CV data found for user");
+          }
+        } else {
+          console.error("CV API error:", res.status, res.statusText);
+          const errorData = await res.json().catch(() => ({}));
+          console.error("CV API error details:", errorData);
+        }
+      } catch (err) {
+        console.error("Failed to fetch CV data:", err);
+      } finally {
+        setIsLoadingCv(false);
+      }
+    };
+    
+    fetchCvData();
+  }, []);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
   };
 
   const handleClearForm = () => {
     setFormData(initialFormData);
     setCvFile(null);
     setCvError(null);
+    setCvAutoLoaded(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleCvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -164,6 +245,7 @@ const DegreeApplicationForm: React.FC<DegreeApplicationFormProps> = ({ degree, o
       }
       setCvFile(file);
       setCvError(null);
+      setCvAutoLoaded(false); // Reset auto-loaded flag when user manually selects file
     }
   };
 
@@ -269,6 +351,11 @@ const DegreeApplicationForm: React.FC<DegreeApplicationFormProps> = ({ degree, o
     if (onClose) onClose();
     else navigate(-1);
   };
+
+  // Determine which ID to send based on available fields
+  const idToSend = usedDegree?._id || usedDegree?.courseId?.toString() || usedDegree?.degreeId?.toString();
+
+  const ADDITIONAL_INFO_MAX_LENGTH = 1000;
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/10 backdrop-blur-sm">
@@ -419,17 +506,54 @@ const DegreeApplicationForm: React.FC<DegreeApplicationFormProps> = ({ degree, o
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Upload CV (PDF, DOC, or DOCX, max 10MB)</label>
-              <input
-                type="file"
-                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                onChange={handleCvChange}
-                className="w-full p-2 border border-gray-300 rounded-lg"
-                required
-                aria-label="Upload CV"
-              />
-              {cvError && <p className="text-red-500 text-xs mt-1">{cvError}</p>}
-              {cvFile && !cvError && <p className="text-green-600 text-xs mt-1">Selected: {cvFile.name}</p>}
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Upload CV/Resume</label>
+              <div
+                className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 ${
+                  cvError ? "border-red-500" : cvFile ? "border-green-500" : "border-gray-300"
+                } border-dashed rounded-lg hover:border-blue-400 transition duration-200`}
+              >
+                <div className="space-y-1 text-center">
+                  {isLoadingCv ? (
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                      <span className="ml-2 text-sm text-gray-500">Loading your CV...</span>
+                    </div>
+                  ) : (
+                    <>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        name="cv"
+                        accept=".pdf,.doc,.docx"
+                        onChange={handleCvChange}
+                        className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        required
+                        aria-label="Upload CV/Resume"
+                        aria-describedby={cvError ? "cv-error" : undefined}
+                      />
+                      <p className="text-xs text-gray-500">PDF, DOC, or DOCX up to 10MB</p>
+                      {cvFile && (
+                        <div className="text-sm">
+                          {cvAutoLoaded ? (
+                            <p className="text-green-600">
+                              ✓ Auto-loaded: {cvFile.name}
+                            </p>
+                          ) : (
+                            <p className="text-blue-600">
+                              ✓ Selected: {cvFile.name}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+              {cvError && (
+                <p id="cv-error" className="text-red-500 text-xs mt-1">
+                  {cvError}
+                </p>
+              )}
             </div>
 
             <div className="pt-4 flex gap-3">

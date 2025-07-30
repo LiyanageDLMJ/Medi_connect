@@ -43,13 +43,14 @@ const memoryUsageGauge = new Gauge({
 
 export const monitorRequest = (req: Request, res: Response, next: Function) => {
   const start = Date.now();
-  const originalEnd = res.end;
-  res.end = (...args: any[]) => {
+  
+  // Use res.on('finish') instead of overriding res.end
+  res.on('finish', () => {
     const duration = (Date.now() - start) / 1000;
     apiResponseTimeHistogram.labels(req.method, req.path).observe(duration);
     apiRequestCounter.labels(req.method, req.path, res.statusCode.toString()).inc();
-    originalEnd.apply(res, args);
-  };
+  });
+  
   next();
 };
 

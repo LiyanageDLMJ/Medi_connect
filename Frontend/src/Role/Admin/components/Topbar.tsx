@@ -29,17 +29,22 @@ const TopBar: React.FC = () => {
       const token = localStorage.getItem('token');
       let userData = null;
 
-      // Try /me first
+      // Try /auth/me first
       if (token) {
-        const res = await fetch('http://localhost:3000/me', {
+        console.log('TopBar - Making request to /auth/me with token');
+        const res = await fetch('http://localhost:3000/auth/me', {
           headers: { Authorization: `Bearer ${token}` }
         });
+        console.log('TopBar - /auth/me response status:', res.status);
         if (res.ok) {
           userData = await res.json();
+          console.log('TopBar - User data received:', userData);
+        } else {
+          console.error('TopBar - /auth/me request failed:', res.status, res.statusText);
         }
       }
 
-      // If /api/me fails or is missing fields, try /by-email/:email
+      // If /auth/me fails or is missing fields, try /auth/by-email/:email
       if (!userData || !userData.name || !userData.profilePic) {
         let email = localStorage.getItem('userEmail');
         if (!email) {
@@ -51,7 +56,7 @@ const TopBar: React.FC = () => {
           }
         }
         if (email) {
-          const res2 = await fetch(`http://localhost:3000/by-email/${encodeURIComponent(email)}`);
+          const res2 = await fetch(`http://localhost:3000/auth/by-email/${encodeURIComponent(email)}`);
           if (res2.ok) {
             const userByEmail = await res2.json();
             userData = { ...userData, ...userByEmail }; // Merge fields

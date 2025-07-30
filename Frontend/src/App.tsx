@@ -12,7 +12,6 @@ import UpdateCV02 from "./Role/Physician/pages/UpdateCV02";
 import UpdateCV03 from "./Role/Physician/pages/UpdateCV03";
 import Messages from "./Role/Physician/pages/Messages";
 import ProfilePage from "./Components/Profile/ProfilePage";
-import MedicalStudentDashboard from "./Role/MedicalStudent/pages/Dashboard";
 import InstitutionDashboard from "./Role/higherEducation/pages/Dashboard";
 import "react-datepicker/dist/react-datepicker.css";
 import Home from "./LoginRegister/Home/Home";
@@ -32,7 +31,7 @@ import FloatingFeedbackButton from "./Components/Feedback/FloatingFeedbackButton
 import DoctorDashboard from "./Role/Physician/pages/Doctordashboard";
 import HigherEducationSearch from "./Role/Physician/pages/HigherEducationSearch";
 import JobInternshipDetails from "./Role/Physician/pages/JobInternshipDetails";
-import Cvcompare from "./Role/Physician/pages/Cvcompare";
+// import Cvcompare from "./Role/Physician/pages/";
 import DegreeApplication from "./Role/Physician/pages/DegreeApplicationForm";
 import DegreeDetails from "./Role/Physician/pages/DegreeDetails";
 
@@ -52,17 +51,13 @@ import PerformanceInsights from "./Role/higherEducation/pages/PerformanceInsight
 import Dashboard from "./Role/higherEducation/pages/Dashboard";
 
 // Recruiter components
-import RecruiterDashboard from "./Role/Recuiter/pages/Dashboard";
 import ViewCandidates from "./Role/Recuiter/pages/VeiwCandidates";
 import RecruiterDashboard from "./Role/Recuiter/pages/Dashboard";
-import { FormProvider } from "./context/FormContext";
-import { Toaster } from 'react-hot-toast';
-import { MessageNotificationProvider } from './context/MessageNotificationContext';
 import MedicalStudentMessages from "./Role/MedicalStudent/pages/Messages";
 import PhysicianMessages from "./Role/Physician/pages/Messages";
 import RecruiterMessages from "./Role/Recuiter/pages/Messages";
 import HigherEducationMessages from "./Role/higherEducation/pages/Messages";
-import MedStudentDashboard from "./Role/MedicalStudent/pages/MedStudentDashboard";
+import MedicalStudentDashboard from "./Role/MedicalStudent/pages/MedStudentDashboard";
 import MedicalCvStep1 from "./Role/MedicalStudent/pages/MedicalCvStep01";
 import MedicalCvStep2 from "./Role/MedicalStudent/pages/MedicalCvStep02";
 import CvComparison from "./Role/Recuiter/pages/campairCV";
@@ -71,6 +66,16 @@ import CvComparison from "./Role/Recuiter/pages/campairCV";
 import DashboradAdmin from "./Role/Admin/pages/Dashboard";
 import FAQAdd from "./Role/Admin/pages/FAQAdd";
 import AdminFeedbacks from "./Role/Admin/pages/AdminFeedbacks";
+import ManageDoctors from "./Role/Admin/pages/ManageUsers/ManageDoctors";
+import ManageStudents from "./Role/Admin/pages/ManageUsers/ManageStudents";
+import ManageInstitute from "./Role/Admin/pages/ManageUsers/ManageInstitute";
+import ManageRecruiters from "./Role/Admin/pages/ManageUsers/ManageRecruiters";
+import AdminRegister from "./Role/Admin/pages/Settings/AdminRegister";
+import Admins from "./Role/Admin/pages/Settings/Admins";
+import Inbox from "./Role/Admin/pages/Inbox";
+import JobListingAdmin from "./Role/Admin/pages/JobListing";
+import Reports from "./Role/Admin/pages/Reports";
+import Calendar from "./Role/Admin/pages/Calendar";
 
 // Other components
 import FAQ from "./Components/FAQ/FAQ";
@@ -110,9 +115,11 @@ const App = () => {
             <Route path="cv-step01" element={<MedicalCvStep1 />} />
             <Route path="cv-step02" element={<MedicalCvStep2 />} />
             <Route path="job-internship" element={<JobInternshipSearch />} />
-            <Route path="job-application-tracker" element={<JobApplicationTracker />} />
+            <Route path="job-application-tracker" element={<JobApplicationTable />} />
             <Route path="higher-education" element={<HigherEducationSearch />} />
-            <Route path="interview-invitations" element={<JobApplicationTracker />} />
+            <Route path="degree-details/:id" element={<MedicalStudentDegreeDetails />} />
+            <Route path="degreeapplication" element={<MedicalStudentDegreeApplication />} />
+            {/* <Route path="interview-invitations" element={<JobApplicationTracker />} /> */}
           </Route>
 
         {/* Physician Routes */}
@@ -130,12 +137,12 @@ const App = () => {
           <Route path="job-details/:jobId" element={<JobInternshipDetails />} />
          
           <Route path="degreeapplication" element={<DegreeApplication />} />
-          <Route path="job-application-tracker" element={<JobApplicationTracker />} />
-          <Route path="medical-student-dashboard" element={<MedicalStudentDashboard />} />
+          <Route path="degree-details/:id" element={<DegreeDetails />} />
+          <Route path="job-application-tracker" element={<JobApplicationTable />} />
+          {/* <Route path="medical-student-dashboard" element={<MedicalStudentDashboard />} /> */}
           <Route path="messages" element={<Messages />} />
           <Route path="update-profile" element={<ProfilePage />} />
           <Route path="message-box" element={<Messages />} />
-          <Route path="med-student-dashboard" element={<MedStudentDashboard />} />
           
         </Route>
 
@@ -164,7 +171,7 @@ const App = () => {
             <Route path="JobListing" element={<JobListing />} />
             <Route path="ViewCandidates" element={<ViewCandidates />} />
             <Route path="Messages" element={<RecruiterMessages />} />
-            <Route path="Dashborad" element={<Dashborad />} />
+            <Route path="Dashborad" element={<RecruiterDashboard />} />
             <Route path="jobListing" element={<JobListing />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="update-profile" element={<ProfilePage />} />
@@ -194,7 +201,7 @@ const App = () => {
           path="/admin/dashboard/inbox"
           element={
             <ProtectedRoute>
-              <AdminDashboard />
+              <Inbox />
             </ProtectedRoute>
           }
         />
@@ -212,7 +219,7 @@ const App = () => {
           path="/admin/dashboard/reports"
           element={
             <ProtectedRoute>
-              <AdminDashboard />
+              <Reports />
             </ProtectedRoute>
           }
         />
@@ -220,7 +227,7 @@ const App = () => {
           path="/admin/dashboard/jobs"
           element={
             <ProtectedRoute>
-              <AdminDashboard />
+              <JobListingAdmin />
             </ProtectedRoute>
           }
         />
@@ -228,7 +235,7 @@ const App = () => {
           path="/admin/dashboard/job-listing"
           element={
             <ProtectedRoute>
-              <AdminDashboard />
+              <JobListingAdmin />
             </ProtectedRoute>
           }
         />
@@ -236,7 +243,7 @@ const App = () => {
           path="/admin/dashboard/job-applications"
           element={
             <ProtectedRoute>
-              <AdminDashboard />
+              <JobApplicationTable />
             </ProtectedRoute>
           }
         />
@@ -245,7 +252,7 @@ const App = () => {
           path="/admin/dashboard/calendar"
           element={
             <ProtectedRoute>
-              <AdminDashboard />
+              <Calendar />
             </ProtectedRoute>
           }
         />
@@ -254,7 +261,7 @@ const App = () => {
           path="/admin/dashboard/users/doctors"
           element={
             <ProtectedRoute>
-              <AdminDashboard />
+              <ManageDoctors />
             </ProtectedRoute>
           }
         />
@@ -262,7 +269,7 @@ const App = () => {
           path="/admin/dashboard/users/students"
           element={
             <ProtectedRoute>
-              <AdminDashboard />
+              <ManageStudents />
             </ProtectedRoute>
           }
         />
@@ -270,7 +277,7 @@ const App = () => {
           path="/admin/dashboard/users/institutes"
           element={
             <ProtectedRoute>
-              <AdminDashboard />
+              <ManageInstitute />
             </ProtectedRoute>
           }
         />
@@ -278,7 +285,7 @@ const App = () => {
           path="/admin/dashboard/users/recruiters"
           element={
             <ProtectedRoute>
-              <AdminDashboard />
+              <ManageRecruiters />
             </ProtectedRoute>
           }
         />
@@ -286,7 +293,7 @@ const App = () => {
           path="/admin/dashboard/settings/adminRegister"
           element={
             <ProtectedRoute>
-              <AdminDashboard />
+              <AdminRegister />
             </ProtectedRoute>
           }
         />
@@ -294,7 +301,7 @@ const App = () => {
           path="/admin/dashboard/cv-data"
           element={
             <ProtectedRoute>
-              <AdminDashboard />
+              <Reports />
             </ProtectedRoute>
           }
         />
@@ -302,7 +309,7 @@ const App = () => {
           path="/admin/dashboard/settings/profile"
           element={
             <ProtectedRoute>
-              <AdminDashboard />
+              <DashboradAdmin />
             </ProtectedRoute>
           }
         />
@@ -310,12 +317,38 @@ const App = () => {
           path="/admin/dashboard/settings/admins"
           element={
             <ProtectedRoute>
-              <AdminDashboard />
+              <Admins />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/dashboard/inbox"
+          element={
+            <ProtectedRoute>
+              <Inbox />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/dashboard/jobs"
+          element={
+            <ProtectedRoute>
+              <JobListingAdmin />
             </ProtectedRoute>
           }
         />
 
         <Route path="/admin/admin-login" element={<AdminSignIn />} />
+        
+        {/* Main Admin Dashboard Route */}
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboradAdmin />
+            </ProtectedRoute>
+          }
+        />
       
         {/* Admin FAQ and Feedbacks Routes */}
         <Route

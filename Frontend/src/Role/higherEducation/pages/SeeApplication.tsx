@@ -33,7 +33,7 @@ const SeeApplication: React.FC = () => {
         setApplicant(data);
         // Try to fetch user info by email (or userId if available)
         if (data.email) {
-          const userRes = await fetch(`http://localhost:3000/by-email/${encodeURIComponent(data.email)}`, { headers });
+          const userRes = await fetch(`http://localhost:3000/auth/by-email/${encodeURIComponent(data.email)}`, { headers });
           if (userRes.ok) {
             const userData = await userRes.json();
             setUser(userData);
@@ -120,85 +120,70 @@ const SeeApplication: React.FC = () => {
 
   const handleCvPreview = () => {
     if (applicant?.cv) {
-      // If it's a Cloudinary URL that might have access issues, use our backend endpoint
-      if (applicant.cv.includes('cloudinary.com')) {
-        const encodedUrl = encodeURIComponent(applicant.cv);
-        const token = localStorage.getItem('token');
-        const backendUrl = `http://localhost:3000/degreeApplications/cv/${encodedUrl}`;
-        
-        // For iframe preview, we need to handle authentication differently
-        // We'll use a different approach - fetch the file and create a blob URL
-        fetch(backendUrl, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        })
-        .then(response => {
-          if (response.ok) {
-            return response.blob();
-          } else {
-            throw new Error('Failed to fetch CV');
-          }
-        })
-        .then(blob => {
-          const blobUrl = URL.createObjectURL(blob);
-          setSelectedCvUrl(blobUrl);
-          setShowCvPreview(true);
-        })
-        .catch(error => {
-          console.error('Error fetching CV:', error);
-          alert('Failed to load CV preview. Please try again.');
-        });
-      } else {
-        setSelectedCvUrl(applicant.cv);
+      // For local storage, cv is a file path, so we need to use our backend endpoint
+      const encodedPath = encodeURIComponent(applicant.cv);
+      const token = localStorage.getItem('token');
+      const backendUrl = `http://localhost:3000/degreeApplications/cv/${encodedPath}`;
+      
+      // Fetch the file with authentication and create a blob URL for preview
+      fetch(backendUrl, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      .then(response => {
+        if (response.ok) {
+          return response.blob();
+        } else {
+          throw new Error('Failed to fetch CV');
+        }
+      })
+      .then(blob => {
+        const blobUrl = URL.createObjectURL(blob);
+        setSelectedCvUrl(blobUrl);
         setShowCvPreview(true);
-      }
+      })
+      .catch(error => {
+        console.error('Error fetching CV:', error);
+        alert('Failed to load CV preview. Please try again.');
+      });
     }
   };
 
   const handleDownloadCv = () => {
     if (applicant?.cv) {
-      // If it's a Cloudinary URL that might have access issues, use our backend endpoint
-      if (applicant.cv.includes('cloudinary.com')) {
-        const encodedUrl = encodeURIComponent(applicant.cv);
-        const token = localStorage.getItem('token');
-        const backendUrl = `http://localhost:3000/degreeApplications/cv/${encodedUrl}`;
-        
-        // Fetch the file with authentication and trigger download
-        fetch(backendUrl, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        })
-        .then(response => {
-          if (response.ok) {
-            return response.blob();
-          } else {
-            throw new Error('Failed to fetch CV');
-          }
-        })
-        .then(blob => {
-          const blobUrl = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = blobUrl;
-          link.download = `${applicant.name.replace(/\s+/g, '_')}_CV.pdf`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(blobUrl);
-        })
-        .catch(error => {
-          console.error('Error downloading CV:', error);
-          alert('Failed to download CV. Please try again.');
-        });
-      } else {
+      // For local storage, cv is a file path, so we need to use our backend endpoint
+      const encodedPath = encodeURIComponent(applicant.cv);
+      const token = localStorage.getItem('token');
+      const backendUrl = `http://localhost:3000/degreeApplications/cv/${encodedPath}`;
+      
+      // Fetch the file with authentication and trigger download
+      fetch(backendUrl, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      .then(response => {
+        if (response.ok) {
+          return response.blob();
+        } else {
+          throw new Error('Failed to fetch CV');
+        }
+      })
+      .then(blob => {
+        const blobUrl = URL.createObjectURL(blob);
         const link = document.createElement('a');
-        link.href = applicant.cv;
+        link.href = blobUrl;
         link.download = `${applicant.name.replace(/\s+/g, '_')}_CV.pdf`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-      }
+        URL.revokeObjectURL(blobUrl);
+      })
+      .catch(error => {
+        console.error('Error downloading CV:', error);
+        alert('Failed to download CV. Please try again.');
+      });
     }
   };
 
@@ -481,9 +466,9 @@ function getStatusColor(status: string) {
 
       {/* CV Preview Modal */}
       {showCvPreview && selectedCvUrl && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl h-5/6 mx-4 relative">
-            <div className="flex items-center justify-between p-4 border-b">
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl h-5/6 relative flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b bg-gray-50 rounded-t-lg">
               <h3 className="text-lg font-semibold text-gray-900">
                 CV Preview - {applicant.name}
               </h3>
@@ -503,11 +488,12 @@ function getStatusColor(status: string) {
                 </button>
               </div>
             </div>
-            <div className="flex-1 p-4">
+            <div className="flex-1 relative">
               <iframe
                 src={selectedCvUrl}
-                className="w-full h-full border-0 rounded"
+                className="w-full h-full border-0 rounded-b-lg"
                 title={`CV Preview - ${applicant.name}`}
+                style={{ minHeight: '500px' }}
               />
             </div>
           </div>

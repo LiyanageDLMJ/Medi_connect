@@ -23,7 +23,7 @@ const DegreeDetails: React.FC = () => {
         setDegree(data);
         // Fetch institute profile by institution name
         if (data.institution) {
-          const instRes = await fetch(`http://localhost:3000/by-institute-name/${encodeURIComponent(data.institution)}`);
+          const instRes = await fetch(`http://localhost:3000/auth/by-institute-name/${encodeURIComponent(data.institution)}`);
           if (instRes.ok) {
             const instData = await instRes.json();
             setInstituteProfile(instData);

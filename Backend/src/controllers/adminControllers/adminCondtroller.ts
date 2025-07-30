@@ -7,7 +7,7 @@ import User from "../../models/AdminModels/AdminDoctorModel";
 import MedicalStudent from "../../models/AdminModels/AdminStudentModel";
 import Institute from "../../models/AdminModels/AdminInstitute";
 import AdminModel from "../../models/AdminModels/adminReg";
-import jwt from "jsonwebtoken";
+import * as jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
 import dotenv from "dotenv";

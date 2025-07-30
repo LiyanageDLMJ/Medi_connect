@@ -1,15 +1,6 @@
-import React from 'react';
-import { FiHome, FiUser, FiBookOpen, FiMessageSquare, FiBriefcase, FiLogOut, FiBook } from 'react-icons/fi';
+import React, { useState, useEffect } from 'react';
+import { FiHome, FiUser, FiBookOpen, FiMessageSquare, FiBriefcase, FiLogOut, FiBook, FiFileText, FiSearch, FiCalendar } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
-
-const navLinks = [
-  { label: 'Dashboard', to: '/medical_student/dashboard', icon: <FiHome size={20} /> },
-  { label: 'Profile', to: '/medical_student/profile', icon: <FiUser size={20} /> },
-  { label: 'Higher Education', to: '/medical_student/higher-education', icon: <FiBook size={20} /> },
-  { label: 'Resources', to: '/medical_student/resources', icon: <FiBookOpen size={20} /> },
-  { label: 'Internships', to: '/medical_student/internships', icon: <FiBriefcase size={20} /> },
-  { label: 'Messages', to: '/medical_student/messages', icon: <FiMessageSquare size={20} /> },
-];
 
 const Sidebar: React.FC = () => {
   const navigate = useNavigate();
@@ -44,22 +35,6 @@ const Sidebar: React.FC = () => {
       icon: <FiCalendar size={20} />,
     },
   ];
-
-  // --- Notification Badge Logic ---
-  const [unread, setUnread] = useState(false);
-  
-  useEffect(() => {
-    const userId = localStorage.getItem('userId') || '1';
-    initiateSocket(userId);
-    const socket = getSocket();
-    if (!socket) return;
-    socket.on('receive_message', () => {
-      setUnread(true);
-    });
-    return () => {
-      socket?.off('receive_message');
-    };
-  }, []);
 
   return (
     <div style={{ width: 250, background: '#fff', minHeight: '100vh', boxShadow: '2px 0 8px rgba(0,0,0,0.03)', position: 'relative' }}>

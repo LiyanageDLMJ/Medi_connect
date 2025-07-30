@@ -84,7 +84,7 @@ const DegreeDetails: React.FC = () => {
     return (
       <div className="flex h-screen">
         <Sidebar />
-        <div className="flex-1 overflow-auto md:ml-[250px]">
+        <div className="flex-1 overflow-auto md:ml-64">
           <TopBar />
           <div className="flex items-center justify-center h-full">
             <div className="text-lg">Loading degree details...</div>
@@ -98,7 +98,7 @@ const DegreeDetails: React.FC = () => {
     return (
       <div className="flex h-screen">
         <Sidebar />
-        <div className="flex-1 overflow-auto md:ml-[250px]">
+        <div className="flex-1 overflow-auto md:ml-64">
           <TopBar />
           <div className="flex items-center justify-center h-full">
             <div className="text-red-600">Error: {error || 'Degree not found'}</div>
@@ -111,7 +111,7 @@ const DegreeDetails: React.FC = () => {
   return (
     <div className="flex h-screen">
       <Sidebar />
-      <div className="flex-1 overflow-auto md:ml-[250px]">
+      <div className="flex-1 overflow-auto md:ml-64">
         <TopBar />
         <div className="p-8">
           <div className="max-w-4xl mx-auto">

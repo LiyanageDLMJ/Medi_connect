@@ -10,6 +10,7 @@ import {
   FiSettings,
   FiLogOut,
   FiFileText,
+  FiTrendingUp,
 } from "react-icons/fi";
 import { initiateSocket, getSocket } from "../../../Components/MessageBox/socket";
 
@@ -18,7 +19,7 @@ const Sidebar = () => {
   const navigate = useNavigate();
 
   const navLinks = [
-    { label: "Dashboard", to: "/higher-education/dashboard", icon: <FiHome size={20} /> },
+    { label: "Dashboard", to: "/higher-education/Dashboard", icon: <FiHome size={20} /> },
     { label: "Your Profile", to: "/higher-education/update-profile", icon: <FiUser size={20} /> },
     { label: "Messages", to: "/higher-education/messages", icon: <FiMessageSquare size={20} /> },
     {
@@ -30,6 +31,11 @@ const Sidebar = () => {
       label: "View Applications",
       to: "/higher-education/view-applications",
       icon: <FiFileText size={20} />,
+    },
+    {
+      label: "Performance Insights",
+      to: "/higher-education/performance-insights",
+      icon: <FiTrendingUp size={20} />,
     },
   ];
 

@@ -1,6 +1,6 @@
 import { Request, Response, RequestHandler } from 'express';
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
 import User from '../../models/UserModel'; // Base User model
 import Doctor from '../../models/DoctorModel'; // Doctor model
 import EducationalInstitute from '../../models/EducationalInstituteModel'; // Educational Institute model
@@ -260,15 +260,55 @@ export const getUserByEmail: RequestHandler = async (req, res) => {
 
 export const getInstituteByName: RequestHandler = async (req, res) => {
   try {
-    const name = req.params.name;
-    // Find the user with userType EducationalInstitute and matching instituteName
-    const user = await User.findOne({ userType: 'EducationalInstitute', instituteName: name });
-    if (!user) {
-      res.status(404).json({ error: "Institute not found" });
-      return;
+    const { name } = req.params;
+    const institute = await EducationalInstitute.findOne({ name: { $regex: name, $options: 'i' } });
+    if (!institute) {
+      return res.status(404).json({ message: 'Institute not found' });
     }
+    res.json(institute);
+  } catch (error) {
+    console.error('Error fetching institute:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const getCurrentUser: RequestHandler = async (req, res) => {
+  try {
+    // Get user ID from the request (set by auth middleware)
+    const userId = (req as any).user?.id;
+    
+    console.log('=== GET CURRENT USER DEBUG ===');
+    console.log('Request user object:', (req as any).user);
+    console.log('User ID from request:', userId);
+    console.log('User ID type:', typeof userId);
+    
+    if (!userId) {
+      console.log('No user ID found in request');
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+
+    // Find the user by ID
+    console.log('Searching for user with ID:', userId);
+    const user = await User.findById(userId).select('-password');
+    
+    console.log('User found:', user ? 'Yes' : 'No');
+    if (user) {
+      console.log('User details:', {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        userType: user.userType
+      });
+    }
+    
+    if (!user) {
+      console.log('User not found in database');
+      return res.status(404).json({ message: 'User not found' });
+    }
+
     res.json(user);
   } catch (error) {
-    res.status(500).json({ error: "Failed to fetch institute" });
+    console.error('Error fetching current user:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 };

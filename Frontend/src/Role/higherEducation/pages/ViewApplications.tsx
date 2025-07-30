@@ -410,7 +410,7 @@ const ViewApplications: React.FC = () => {
                       {/* Table Body */}
                       <tbody className="bg-white divide-y divide-gray-200">
                         {currentApplications.map((application) => (
-                          <tr key={application.id} className="hover:bg-gray-50">
+                          <tr key={application.id as string} className="hover:bg-gray-50">
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center gap-3">
                                 <img
@@ -446,7 +446,7 @@ const ViewApplications: React.FC = () => {
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center gap-2">
                               <button
                                 className="bg-blue-100 text-blue-700 px-4 py-2 rounded hover:bg-blue-200 border border-blue-200"
-                                onClick={() => navigate(`/higher-education/view-applications/${application.id}`)}
+                                onClick={() => navigate(`/higher-education/view-applications/${application.id as string}`)}
                               >
                                 See Application
                               </button>
@@ -468,7 +468,7 @@ const ViewApplications: React.FC = () => {
                                        {({ active }: { active: boolean }) => (
                                          <button
                                            className={`px-3 py-1 text-sm rounded ${active ? 'bg-gray-100' : ''}`}
-                                           onClick={() => handleStatusChange(application.id, "Approved")}
+                                           onClick={() => handleStatusChange(application.id as string, "Approved")}
                                          >
                                            Approve
                                          </button>
@@ -478,7 +478,7 @@ const ViewApplications: React.FC = () => {
                                        {({ active }: { active: boolean }) => (
                                          <button
                                            className={`px-3 py-1 text-sm rounded ${active ? 'bg-gray-100' : ''}`}
-                                           onClick={() => handleStatusChange(application.id, "Rejected")}
+                                           onClick={() => handleStatusChange(application.id as string, "Rejected")}
                                          >
                                            Reject
                                          </button>
@@ -488,7 +488,7 @@ const ViewApplications: React.FC = () => {
                                        {({ active }: { active: boolean }) => (
                                          <button
                                            className={`px-3 py-1 text-sm rounded ${active ? 'bg-gray-100' : ''}`}
-                                           onClick={() => handleStatusChange(application.id, "Pending")}
+                                           onClick={() => handleStatusChange(application.id as string, "Pending")}
                                          >
                                            Pending
                                          </button>
@@ -498,7 +498,7 @@ const ViewApplications: React.FC = () => {
                                        {({ active }: { active: boolean }) => (
                                          <button
                                            className={`px-3 py-1 text-sm rounded text-red-600 hover:bg-red-50 ${active ? 'bg-red-50' : ''}`}
-                                           onClick={() => handleDeleteApplication(application.id)}
+                                           onClick={() => handleDeleteApplication(application.id as string)}
                                          >
                                            Delete
                                          </button>

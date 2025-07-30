@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction, RequestHandler } from "express";
-import jwt from "jsonwebtoken";
+import * as jwt from "jsonwebtoken";
 
 export const authMiddleware: RequestHandler = (req, res, next) => {
   console.log('=== AUTH MIDDLEWARE DEBUG ===');

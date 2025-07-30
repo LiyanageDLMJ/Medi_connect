@@ -271,9 +271,9 @@ const HigherEducationSearch: React.FC = () => {
   return (
     <div className="flex h-screen">
       <Sidebar />
-      <div className="flex-1 overflow-auto md:ml-[250px]">
+      <div className="flex-1 overflow-auto md:ml-64">
         <TopBar />
-        <div className="flex flex-col min-h-[calc(100vh-80px)] p-4">
+        <div className="flex flex-col min-h-[calc(100vh-80px)]">
           <DegreeSearch filters={filters} onFilterChange={handleFilterChange} onClear={handleClearFilters} />
           {loading ? (
             <div className="flex justify-center items-center h-64">
