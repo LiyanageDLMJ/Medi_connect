@@ -1,7 +1,7 @@
 import React, { useEffect, useState, ChangeEvent, FormEvent } from 'react';
 import styles from './ProfilePage.module.css';
 import toast from 'react-hot-toast';
-import { FaUser, FaEnvelope, FaIdBadge, FaBirthdayCake, FaInfoCircle, FaCamera, FaChevronRight, FaMapMarkerAlt, FaStethoscope, FaGraduationCap, FaUniversity, FaClock, FaExclamationTriangle } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaIdBadge, FaBirthdayCake, FaInfoCircle, FaCamera, FaChevronRight, FaMapMarkerAlt, FaStethoscope, FaGraduationCap, FaUniversity, FaClock, FaExclamationTriangle, FaArrowLeft } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
 
@@ -711,7 +711,30 @@ const ProfilePage: React.FC = () => {
                 {!editing && (
                   <div className={styles.detailsHeader} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
                     <div className={styles.profileTitle}>Profile Details</div>
-                    <button className={styles.editBtn} title="Edit Profile" onClick={handleEditProfile}>Edit Profile</button>
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                      <button 
+                        className={styles.editBtn} 
+                        title="Go Back" 
+                        onClick={() => navigate(-1)}
+                        style={{ 
+                          background: '#f8fafc', 
+                          color: '#64748b', 
+                          border: '1px solid #e2e8f0',
+                          padding: '8px 16px',
+                          borderRadius: '8px',
+                          fontWeight: '500',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <FaArrowLeft style={{ fontSize: '14px' }} />
+                        Back
+                      </button>
+                      <button className={styles.editBtn} title="Edit Profile" onClick={handleEditProfile}>Edit Profile</button>
+                    </div>
                   </div>
                 )}
                 <div className={styles.detailGrid}>

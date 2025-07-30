@@ -1,37 +1,45 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  FiMenu,
-  FiHome,
-  FiUser,
-  FiFileText,
-  FiBriefcase,
-  FiBook,
-  FiMessageSquare,
-  FiCalendar,
-  FiSearch,
-  FiLogOut,
-} from "react-icons/fi";
-import { initiateSocket, getSocket } from "../../../../Components/MessageBox/socket";
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { FiMenu, FiHome, FiUser, FiMessageSquare, FiBook, FiBarChart2, FiSettings, FiLogOut, FiFileText, FiBriefcase, FiCalendar } from 'react-icons/fi';
+import { initiateSocket, getSocket } from '../../../../Components/MessageBox/socket';
+import { useNotification } from '../../../../context/NotificationContext';
 
 const SidebarNav = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { resetUnreadCount } = useNotification();
 
   const navLinks = [
-    { label: "Dashboard", to: "/physician/Doctordashboard", icon: <FiHome size={20} /> },
-    { label: "Your Profile", to: "/physician/profile", icon: <FiUser size={20} /> },
-    { label: "Update CV", to: "/physician/update-cv01", icon: <FiFileText size={20} /> },
-    { label: "CompareCV", to: "/physician/cvCompare", icon: <FiFileText size={20} /> },
+    {
+      label: "Dashboard",
+      to: "/physician/Doctordashboard",
+      icon: <FiHome size={20} />,
+    },
+    {
+      label: "Your Profile",
+      to: "/physician/profile",
+      icon: <FiUser size={20} />,
+    },
+    {
+      label: "Update CV",
+      to: "/physician/update-cv01",
+      icon: <FiFileText size={20} />,
+    },
+    {
+      label: "CompareCV",
+      to: "/physician/Cvcompare",
+      icon: <FiFileText size={20} />,
+    },
     {
       label: "Job & Internships",
       to: "/physician/job-internship",
       icon: <FiBriefcase size={20} />,
     },
-     {
+    {
       label: "Track job Application",
       to: "/physician/job-application-tracker",
-      icon: <FiSearch size={20} />,
+      icon: <FiBarChart2 size={20} />,
     },
     {
       label: "Higher Education",
@@ -66,6 +74,15 @@ const SidebarNav = () => {
     };
   }, []);
 
+  const handleNavClick = (to: string, label: string) => {
+    navigate(to);
+    setIsOpen(false);
+    if (label === 'Messages') {
+      setUnread(false);
+      resetUnreadCount(); // Reset all unread counts when visiting Messages
+    }
+  };
+
   return (
     <>
       {/* Toggle Button */}
@@ -96,12 +113,10 @@ const SidebarNav = () => {
             {navLinks.map(({ to, label, icon }) => (
               <button
                 key={to}
-                onClick={() => {
-                  navigate(to);
-                  setIsOpen(false);
-                  if (label === 'Messages') setUnread(false);
-                }}
-                className="flex items-center gap-3 px-4 py-2 text-black hover:bg-[#184389] hover:text-white rounded-[12px] transition-all relative"
+                onClick={() => handleNavClick(to, label)}
+                className={`flex items-center gap-3 px-4 py-2 text-black hover:bg-[#184389] hover:text-white rounded-[12px] transition-all relative ${
+                  location.pathname === to ? 'bg-[#184389] text-white' : ''
+                }`}
               >
                 {icon}
                 <span>{label}</span>

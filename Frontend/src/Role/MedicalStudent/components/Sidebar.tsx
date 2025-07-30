@@ -1,38 +1,45 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  FiMenu,
-  FiHome,
-  FiUser,
-  FiFileText,
-  FiBriefcase,
-  FiBook,
-  FiMessageSquare,
-  FiCalendar,
-  FiSearch,
-  FiLogOut,
-} from "react-icons/fi";
-// TODO: Fix import path if socket module is moved or renamed
-import { initiateSocket, getSocket } from "../../../Components/MessageBox/socket";
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { FiMenu, FiHome, FiUser, FiMessageSquare, FiBook, FiBarChart2, FiSettings, FiLogOut, FiFileText, FiBriefcase, FiCalendar } from 'react-icons/fi';
+import { initiateSocket, getSocket } from '../../../Components/MessageBox/socket';
+import { useNotification } from '../../../context/NotificationContext';
 
-const SidebarNav: React.FC = () => {
+const Sidebar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { resetUnreadCount } = useNotification();
 
   const navLinks = [
-    { label: "Dashboard", to: "/medical_student/dashboard", icon: <FiHome size={20} /> },
-    { label: "Your Profile", to: "/medical_student/profile", icon: <FiUser size={20} /> },
-    { label: "Update CV", to: "/medical_student/update-cv01", icon: <FiFileText size={20} /> },
-    { label: "CompareCV", to: "/medical_student/cvCompare", icon: <FiFileText size={20} /> },
+    {
+      label: "Dashboard",
+      to: "/medical_student/dashboard",
+      icon: <FiHome size={20} />,
+    },
+    {
+      label: "Your Profile",
+      to: "/medical_student/profile",
+      icon: <FiUser size={20} />,
+    },
+    {
+      label: "Update CV",
+      to: "/medical_student/update-cv01",
+      icon: <FiFileText size={20} />,
+    },
+    {
+      label: "CompareCV",
+      to: "/medical_student/cvCompare",
+      icon: <FiFileText size={20} />,
+    },
     {
       label: "Job & Internships",
       to: "/medical_student/job-internship",
       icon: <FiBriefcase size={20} />,
     },
-     {
+    {
       label: "Track job Application",
       to: "/medical_student/job-application-tracker",
-      icon: <FiSearch size={20} />,
+      icon: <FiBarChart2 size={20} />,
     },
     {
       label: "Higher Education",
@@ -67,6 +74,15 @@ const SidebarNav: React.FC = () => {
     };
   }, []);
 
+  const handleNavClick = (to: string, label: string) => {
+    navigate(to);
+    setIsOpen(false);
+    if (label === 'Messages') {
+      setUnread(false);
+      resetUnreadCount(); // Reset all unread counts when visiting Messages
+    }
+  };
+
   return (
     <>
       {/* Toggle Button */}
@@ -97,12 +113,10 @@ const SidebarNav: React.FC = () => {
             {navLinks.map(({ to, label, icon }) => (
               <button
                 key={to}
-                onClick={() => {
-                  navigate(to);
-                  setIsOpen(false);
-                  if (label === 'Messages') setUnread(false);
-                }}
-                className="flex items-center gap-3 px-4 py-2 text-black hover:bg-[#184389] hover:text-white rounded-[12px] transition-all relative"
+                onClick={() => handleNavClick(to, label)}
+                className={`flex items-center gap-3 px-4 py-2 text-black hover:bg-[#184389] hover:text-white rounded-[12px] transition-all relative ${
+                  location.pathname === to ? 'bg-[#184389] text-white' : ''
+                }`}
               >
                 {icon}
                 <span>{label}</span>
@@ -138,4 +152,4 @@ const SidebarNav: React.FC = () => {
   );
 };
 
-export default SidebarNav;
+export default Sidebar;

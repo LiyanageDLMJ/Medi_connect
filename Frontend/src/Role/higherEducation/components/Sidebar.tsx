@@ -1,35 +1,45 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  FiMenu,
-  FiHome,
-  FiUser,
-  FiMessageSquare,
-  FiBook,
-  FiBarChart2,
-  FiSettings,
-  FiLogOut,
-  FiFileText,
-} from "react-icons/fi";
-import { initiateSocket, getSocket } from "../../../Components/MessageBox/socket";
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { FiMenu, FiHome, FiUser, FiMessageSquare, FiBook, FiBarChart2, FiSettings, FiLogOut, FiFileText, FiBriefcase, FiCalendar } from 'react-icons/fi';
+import { initiateSocket, getSocket } from '../../../Components/MessageBox/socket';
+import { useNotification } from '../../../context/NotificationContext';
 
-const Sidebar = () => {
+const Sidebar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { resetUnreadCount } = useNotification();
 
   const navLinks = [
-    { label: "Dashboard", to: "/higher-education/dashboard", icon: <FiHome size={20} /> },
-    { label: "Your Profile", to: "/higher-education/update-profile", icon: <FiUser size={20} /> },
-    { label: "Messages", to: "/higher-education/messages", icon: <FiMessageSquare size={20} /> },
     {
-      label: "Degree Listings",
+      label: "Dashboard",
+      to: "/higher-education/dashboard",
+      icon: <FiHome size={20} />,
+    },
+    {
+      label: "Your Profile",
+      to: "/higher-education/profile",
+      icon: <FiUser size={20} />,
+    },
+    {
+      label: "Post Degree",
+      to: "/postdegree",
+      icon: <FiFileText size={20} />,
+    },
+    {
+      label: "Degree Listing",
       to: "/higher-education/degree-listing",
       icon: <FiBook size={20} />,
     },
     {
       label: "View Applications",
       to: "/higher-education/view-applications",
-      icon: <FiFileText size={20} />,
+      icon: <FiBarChart2 size={20} />,
+    },
+    {
+      label: "Messages",
+      to: "/higher-education/messages",
+      icon: <FiMessageSquare size={20} />,
     },
   ];
 
@@ -48,6 +58,15 @@ const Sidebar = () => {
       socket?.off('receive_message');
     };
   }, []);
+
+  const handleNavClick = (to: string, label: string) => {
+    navigate(to);
+    setIsOpen(false);
+    if (label === 'Messages') {
+      setUnread(false);
+      resetUnreadCount(); // Reset all unread counts when visiting Messages
+    }
+  };
 
   return (
     <>
@@ -79,12 +98,10 @@ const Sidebar = () => {
             {navLinks.map(({ to, label, icon }) => (
               <button
                 key={to}
-                onClick={() => {
-                  navigate(to);
-                  setIsOpen(false);
-                  if (label === 'Messages') setUnread(false);
-                }}
-                className="flex items-center gap-3 px-4 py-2 text-black hover:bg-[#184389] hover:text-white rounded-[12px] transition-all relative"
+                onClick={() => handleNavClick(to, label)}
+                className={`flex items-center gap-3 px-4 py-2 text-black hover:bg-[#184389] hover:text-white rounded-[12px] transition-all relative ${
+                  location.pathname === to ? 'bg-[#184389] text-white' : ''
+                }`}
               >
                 {icon}
                 <span>{label}</span>

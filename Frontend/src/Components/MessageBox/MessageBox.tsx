@@ -7,7 +7,7 @@ import ProfilePanel from './ProfilePanel';
 import toast from 'react-hot-toast';
 import './MessageBox.css';
 import { initiateSocket, getSocket, disconnectSocket } from './socket';
-import { useMessageNotification } from '../../context/MessageNotificationContext';
+import { useNotification } from '../../context/NotificationContext';
 
 // User type includes companyName for recruiters
 export type User = { id: string; name: string; userType: string; email: string; companyName?: string; photoUrl?: string };
@@ -51,12 +51,13 @@ const MessageBox: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
-  const [showProfile, setShowProfile] = useState(true); // Changed to true to show by default
+  const [showProfile, setShowProfile] = useState(false); // Changed to false to not show profile by default
   const [lastReadTimestamps, setLastReadTimestamps] = useState<{ [userId: string]: string }>({});
   const [showClearModal, setShowClearModal] = useState(false);
-  const { setUnreadCount } = useMessageNotification();
+  const { unreadCountsBySender, markMessageAsRead, resetUnreadCount, initializeUnreadCounts } = useNotification();
   const fetchedUserIdsRef = useRef<Set<string>>(new Set());
   const didInitialRead = useRef(false);
+  const hasInitializedUnreadCounts = useRef(false);
 
   // New: Store latest messages for chat list sorting
   const [latestMessages, setLatestMessages] = useState<Message[]>([]);
@@ -75,6 +76,31 @@ const MessageBox: React.FC = () => {
       setLastReadTimestamps(JSON.parse(stored));
     }
   }, []);
+
+  // Initialize unread counts from existing messages when Messages page loads
+  useEffect(() => {
+    if (!currentUserId || !messages.length || hasInitializedUnreadCounts.current) return;
+    
+    // Calculate unread counts from existing messages
+    const existingUnreadCounts: { [userId: string]: number } = {};
+    
+    messages.forEach(message => {
+      if (message.senderId !== currentUserId && message.receiverId === currentUserId) {
+        const lastRead = lastReadTimestamps[message.senderId];
+        const isUnread = !lastRead || new Date(message.timestamp) > new Date(lastRead);
+        
+        if (isUnread) {
+          existingUnreadCounts[message.senderId] = (existingUnreadCounts[message.senderId] || 0) + 1;
+        }
+      }
+    });
+
+    // Initialize notification context with existing unread counts
+    if (Object.keys(existingUnreadCounts).length > 0) {
+      initializeUnreadCounts(existingUnreadCounts);
+      hasInitializedUnreadCounts.current = true;
+    }
+  }, [currentUserId, messages, lastReadTimestamps, initializeUnreadCounts]);
 
   // Fetch users on mount
   useEffect(() => {
@@ -102,9 +128,7 @@ const MessageBox: React.FC = () => {
         });
         
         setUsers(validUsers);
-        // Pre-select first peer if none chosen
-        const firstPeer = validUsers[0]?.id;
-        if (firstPeer) setSelectedUserId(firstPeer);
+        // Don't pre-select any user - let user choose which chat to open
       })
       .catch(console.error);
   }, [currentUserId]);
@@ -533,16 +557,22 @@ const MessageBox: React.FC = () => {
     if (!currentUserId) return {};
     const newUnreadCounts: { [userId: string]: number } = {};
     finalSortedUsers.forEach(user => {
+      // Use the notification context for real-time unread counts
+      const contextUnreadCount = unreadCountsBySender[user.id] || 0;
+      // Also consider local message-based unread count as fallback
       const lastRead = lastReadTimestamps[user.id];
-      const unread = messages.filter(m =>
+      const localUnread = messages.filter(m =>
         m.senderId === user.id &&
         m.receiverId === currentUserId &&
         (!lastRead || new Date(m.timestamp) > new Date(lastRead))
       ).length;
-      newUnreadCounts[user.id] = user.id === selectedUserId ? 0 : unread;
+      
+      // Use the higher of the two counts to ensure we don't miss any
+      const totalUnread = Math.max(contextUnreadCount, localUnread);
+      newUnreadCounts[user.id] = user.id === selectedUserId ? 0 : totalUnread;
     });
     return newUnreadCounts;
-  }, [messages, currentUserId, selectedUserId, lastReadTimestamps, finalSortedUsers]);
+  }, [messages, currentUserId, selectedUserId, lastReadTimestamps, finalSortedUsers, unreadCountsBySender]);
 
   const selectedUser = users.find(u => u.id === selectedUserId);
 
@@ -553,6 +583,9 @@ const MessageBox: React.FC = () => {
     const updated = { ...lastReadTimestamps, [userId]: new Date().toISOString() };
     setLastReadTimestamps(updated);
     localStorage.setItem('lastReadTimestamps', JSON.stringify(updated));
+    
+    // Reset unread count for this sender when conversation is selected
+    resetUnreadCount(userId);
   };
 
   const handleDeleteMessage = async (id: string) => {
@@ -633,28 +666,49 @@ const MessageBox: React.FC = () => {
           currentUserId={currentUserId}
         />
         <div className="message-thread-section">
-          <ConversationHeader 
-            user={selectedUser} 
-            onProfileClick={() => setShowProfile(true)}
-            showProfile={showProfile}
-            onToggleProfile={() => setShowProfile(!showProfile)}
-            onClearChat={handleClearChat}
-          />
-          <ConfirmModal
-            open={showClearModal}
-            onConfirm={confirmClearChat}
-            onCancel={() => setShowClearModal(false)}
-            message="Are you sure you want to clear all messages in this chat?"
-          />
-          <MessageThread
-            messages={conversationMessages}
-            users={[...users, { id: currentUserId, name: 'You', userType: '', email: '' }]}
-            currentUserId={currentUserId}
-            onDeleteMessage={handleDeleteMessage}
-          />
-          <MessageInput onSend={handleSendMessage} />
+          {selectedUserId ? (
+            <>
+              <ConversationHeader 
+                user={selectedUser} 
+                onProfileClick={() => setShowProfile(true)}
+                showProfile={showProfile}
+                onToggleProfile={() => setShowProfile(!showProfile)}
+                onClearChat={handleClearChat}
+              />
+              <ConfirmModal
+                open={showClearModal}
+                onConfirm={confirmClearChat}
+                onCancel={() => setShowClearModal(false)}
+                message="Are you sure you want to clear all messages in this chat?"
+              />
+              <MessageThread
+                messages={conversationMessages}
+                users={[...users, { id: currentUserId, name: 'You', userType: '', email: '' }]}
+                currentUserId={currentUserId}
+                onDeleteMessage={handleDeleteMessage}
+              />
+              <MessageInput onSend={handleSendMessage} />
+            </>
+          ) : (
+            <div className="welcome-message" style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+              textAlign: 'center',
+              padding: '2rem',
+              color: '#666'
+            }}>
+              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>💬</div>
+              <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: '#333' }}>Welcome to Messages</h2>
+              <p style={{ fontSize: '1rem', maxWidth: '400px' }}>
+                Select a conversation from the list to start messaging, or search for someone to begin a new chat.
+              </p>
+            </div>
+          )}
         </div>
-        {showProfile && (
+        {showProfile && selectedUserId && (
           <ProfilePanel 
             user={selectedUser} 
             onClose={() => setShowProfile(false)}
