@@ -2,6 +2,7 @@
 import express from 'express';
 import { submitApplication, getCvFile } from '../../controllers/physicianControllers/degreeApplicationController.ts';
 import upload from '../../middleware/multerConfig';
+import { authMiddleware } from '../../middleware/authMiddleware';
 
 const router = express.Router();
 
@@ -17,8 +18,8 @@ router.post('/apply', upload.single('cv'), asyncHandler(async (req, res) => {
   await submitApplication(req, res);
 }));
 
-// GET route for serving CV files
-router.get('/cv/:cvUrl(*)', asyncHandler(async (req, res) => {
+// GET route for serving CV files (with authentication)
+router.get('/cv/:cvUrl(*)', authMiddleware, asyncHandler(async (req, res) => {
   await getCvFile(req, res);
 }));
 

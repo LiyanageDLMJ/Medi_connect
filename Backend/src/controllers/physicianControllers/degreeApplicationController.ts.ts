@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import validator from "validator";
 import getDegreeModel from "../../models/Degree";
 import getDegreeApplicationModel from "../../models/DegreeApplication";
-import cloudinary from "../../Config/cloudinaryConfig";
+import cloudinary from "../../Config/cloudinaryDegreeConfig";
 import fs from "fs";
 import mongoose from "mongoose";
 import { createNotification } from "../../controllers/notificationController";
@@ -131,6 +131,10 @@ export const submitApplication = async (req: Request, res: Response) => {
     let cvUrl = "";
     if (req.file) {
       try {
+        console.log('=== CV Upload Debug ===');
+        console.log('File path:', req.file.path);
+        console.log('File mimetype:', req.file.mimetype);
+        
         const result = await cloudinary.uploader.upload(req.file.path, {
           folder: "degree-cvs",
           resource_type: "raw", // Use raw for PDF files
@@ -140,7 +144,14 @@ export const submitApplication = async (req: Request, res: Response) => {
           // Ensure the file is publicly accessible
           type: "upload",
           overwrite: false,
+          // Add additional parameters for better accessibility
+          flags: "attachment",
+          format: "pdf"
         });
+        
+        console.log('Cloudinary upload result:', result);
+        console.log('Secure URL:', result.secure_url);
+        
         cvUrl = result.secure_url;
         fs.unlinkSync(req.file.path);
       } catch (cloudinaryError) {
@@ -299,51 +310,140 @@ export const submitApplication = async (req: Request, res: Response) => {
 // New endpoint to serve CV files with authentication
 export const getCvFile = async (req: Request, res: Response) => {
   try {
-    const { cvUrl } = req.params;
-    
     console.log('=== CV File Request Debug ===');
+    console.log('Request method:', req.method);
+    console.log('Request URL:', req.url);
+    console.log('Request params:', req.params);
+    console.log('Request headers:', req.headers);
+    const { cvUrl } = req.params;
     console.log('Requested CV URL:', cvUrl);
     
     if (!cvUrl) {
       return res.status(400).json({ message: "CV URL is required" });
     }
 
-    // If it's a Cloudinary URL, try to fetch it
+    // If it's a Cloudinary URL, use Cloudinary SDK directly
     if (cvUrl.includes('cloudinary.com')) {
-      console.log('Detected Cloudinary URL, attempting to fetch...');
+      console.log('Detected Cloudinary URL, using Cloudinary SDK...');
       try {
-        const response = await fetch(cvUrl);
-        console.log('Cloudinary response status:', response.status);
+        // Extract public_id from the URL
+        console.log('Full CV URL:', cvUrl);
         
-        if (response.ok) {
-          console.log('Cloudinary response OK, processing file...');
-          // Get the file buffer
-          const arrayBuffer = await response.arrayBuffer();
-          const buffer = Buffer.from(arrayBuffer);
+        let publicId = '';
+        
+        // Method 1: Extract the full public_id including folder and extension
+        if (cvUrl.includes('/degree-cvs/')) {
+          const degreeCvsIndex = cvUrl.indexOf('/degree-cvs/');
+          const afterDegreeCvs = cvUrl.substring(degreeCvsIndex + '/degree-cvs/'.length);
+          publicId = 'degree-cvs/' + afterDegreeCvs; // Include folder prefix and extension
+          console.log('Method 1 - Extracted public_id:', publicId);
+          console.log('Debug - degreeCvsIndex:', degreeCvsIndex);
+          console.log('Debug - afterDegreeCvs:', afterDegreeCvs);
+          console.log('Debug - final publicId:', publicId);
+        }
+        
+        if (!publicId) {
+          throw new Error('Could not extract public_id from URL');
+        }
+        
+        // Use Cloudinary SDK to get the file
+        const result = await cloudinary.api.resource(publicId, {
+          resource_type: 'raw',
+          type: 'upload'
+        });
+        
+        console.log('Cloudinary SDK result:', result);
+        
+        // Try to use the derived transformation URL from the SDK result
+        console.log('Attempting to use derived transformation URL...');
+        
+        try {
+          // Check if there's a derived transformation with fl_attachment
+          const derivedTransformation = result.derived?.find(d => d.transformation === 'fl_attachment');
           
-          console.log('File buffer size:', buffer.length);
-          
-          // Set proper headers for PDF download/preview
-          res.setHeader('Content-Type', 'application/pdf');
-          res.setHeader('Content-Length', buffer.length);
-          res.setHeader('Content-Disposition', 'inline; filename="cv.pdf"');
-          res.setHeader('Cache-Control', 'public, max-age=3600');
-          
-          console.log('Sending file buffer to client...');
-          // Send the file buffer
-          res.send(buffer);
-        } else {
-          console.error("Cloudinary response not ok:", response.status, response.statusText);
+          if (derivedTransformation) {
+            console.log('Found derived transformation with fl_attachment');
+            const derivedUrl = derivedTransformation.secure_url;
+            console.log('Using derived URL:', derivedUrl);
+            
+            // Fetch the file using the derived URL
+            const derivedResponse = await fetch(derivedUrl);
+            console.log('Derived response status:', derivedResponse.status);
+            
+            if (derivedResponse.ok) {
+              console.log('Derived URL successful, processing...');
+              const derivedArrayBuffer = await derivedResponse.arrayBuffer();
+              const derivedBuffer = Buffer.from(derivedArrayBuffer);
+              
+              res.setHeader('Content-Type', 'application/pdf');
+              res.setHeader('Content-Length', derivedBuffer.length);
+              res.setHeader('Content-Disposition', 'inline; filename="cv.pdf"');
+              res.setHeader('Cache-Control', 'public, max-age=3600');
+              
+              res.send(derivedBuffer);
+            } else {
+              console.error("Derived URL failed:", derivedResponse.status, derivedResponse.statusText);
+              
+              // Fallback: try the original secure_url
+              console.log('Trying original secure_url...');
+              const originalResponse = await fetch(result.secure_url);
+              console.log('Original response status:', originalResponse.status);
+              
+              if (originalResponse.ok) {
+                console.log('Original URL successful, processing...');
+                const originalArrayBuffer = await originalResponse.arrayBuffer();
+                const originalBuffer = Buffer.from(originalArrayBuffer);
+                
+                res.setHeader('Content-Type', 'application/pdf');
+                res.setHeader('Content-Length', originalBuffer.length);
+                res.setHeader('Content-Disposition', 'inline; filename="cv.pdf"');
+                res.setHeader('Cache-Control', 'public, max-age=3600');
+                
+                res.send(originalBuffer);
+              } else {
+                console.error("Original URL also failed:", originalResponse.status, originalResponse.statusText);
+                res.status(404).json({ 
+                  message: "CV file not found or not accessible",
+                  error: `Both derived and original URLs failed. Derived: ${derivedResponse.status}, Original: ${originalResponse.status}`
+                });
+              }
+            }
+          } else {
+            console.log('No derived transformation found, trying original secure_url...');
+            const originalResponse = await fetch(result.secure_url);
+            console.log('Original response status:', originalResponse.status);
+            
+            if (originalResponse.ok) {
+              console.log('Original URL successful, processing...');
+              const originalArrayBuffer = await originalResponse.arrayBuffer();
+              const originalBuffer = Buffer.from(originalArrayBuffer);
+              
+              res.setHeader('Content-Type', 'application/pdf');
+              res.setHeader('Content-Length', originalBuffer.length);
+              res.setHeader('Content-Disposition', 'inline; filename="cv.pdf"');
+              res.setHeader('Cache-Control', 'public, max-age=3600');
+              
+              res.send(originalBuffer);
+            } else {
+              console.error("Original URL failed:", originalResponse.status, originalResponse.statusText);
+              res.status(404).json({ 
+                message: "CV file not found or not accessible",
+                error: `Original URL failed: ${originalResponse.status}`
+              });
+            }
+          }
+        } catch (downloadError) {
+          console.error("Download approach failed:", downloadError);
           res.status(404).json({ 
             message: "CV file not found or not accessible",
-            error: `Cloudinary returned ${response.status}: ${response.statusText}`
+            error: `Download approach failed: ${downloadError instanceof Error ? downloadError.message : 'Unknown error'}`
           });
         }
-      } catch (error) {
-        console.error("Error fetching from Cloudinary:", error);
-        res.status(500).json({ 
-          message: "Failed to fetch CV from Cloudinary",
-          error: error instanceof Error ? error.message : "Unknown error"
+      } catch (sdkError) {
+        console.error("Cloudinary SDK failed:", sdkError);
+        res.status(404).json({ 
+          message: "CV file not found or not accessible",
+          error: `Cloudinary SDK failed: ${sdkError instanceof Error ? sdkError.message : 'Unknown error'}`
         });
       }
     } else {

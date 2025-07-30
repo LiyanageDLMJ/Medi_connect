@@ -270,9 +270,47 @@ export const updateApplicationStatus = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
+    
+    // Get the application details before updating
+    const application = await getDegreeApplicationModel().findById(id);
+    if (!application) {
+      return res.status(404).json({ success: false, message: "Application not found" });
+    }
+    
+    // Update the status
     await getDegreeApplicationModel().findByIdAndUpdate(id, { status });
-    res.json({ success: true });
+    
+    // If status is changed to "Approved", send notification to the applicant
+    if (status.toLowerCase() === "approved") {
+      try {
+        // Import the notification controller
+        const { createNotification } = await import('../notificationController');
+        
+        // Create notification for the applicant
+        await createNotification(
+          application.email, // Use email as userId for notifications
+          application.applicantType || 'Unknown',
+          'Application Approved! 🎉',
+          `Congratulations! Your application for ${application.degreeName} at ${application.institution} has been approved. You will receive further instructions via email.`,
+          'application_status',
+          {
+            applicationId: id,
+            degreeName: application.degreeName,
+            institution: application.institution,
+            status: status
+          }
+        );
+        
+        console.log(`Notification sent to ${application.email} for approved application`);
+      } catch (notificationError) {
+        console.error('Error sending notification:', notificationError);
+        // Don't fail the entire request if notification fails
+      }
+    }
+    
+    res.json({ success: true, message: `Application status updated to ${status}` });
   } catch (error) {
+    console.error('Error updating application status:', error);
     res.status(500).json({ success: false, message: "Failed to update status" });
   }
 };

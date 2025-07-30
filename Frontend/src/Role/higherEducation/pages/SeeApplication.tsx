@@ -50,6 +50,44 @@ const SeeApplication: React.FC = () => {
     if (id) fetchApplication();
   }, [id]);
 
+  const handleStatusChange = async (newStatus: string) => {
+    if (!window.confirm(`Are you sure you want to change the application status to "${newStatus}"?`)) {
+      return;
+    }
+
+    try {
+      // Get JWT token from localStorage
+      const token = localStorage.getItem('token');
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const response = await fetch(`http://localhost:3000/viewDegreeApplications/updateStatus/${id}`, {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update application status");
+      }
+
+      // Update the local state
+      setApplicant((prev: any) => ({ ...prev, status: newStatus }));
+
+      // Show success message
+      if (newStatus.toLowerCase() === "approved") {
+        alert(`Application approved! A notification has been sent to the applicant.`);
+      } else {
+        alert(`Application status updated to ${newStatus}`);
+      }
+    } catch (err: any) {
+      console.error("Error updating application status:", err);
+      alert("Failed to update application status. Please try again.");
+    }
+  };
+
   const handleDeleteApplication = async () => {
     if (!window.confirm("Are you sure you want to delete this application? This action cannot be undone.")) {
       return;
@@ -85,12 +123,36 @@ const SeeApplication: React.FC = () => {
       // If it's a Cloudinary URL that might have access issues, use our backend endpoint
       if (applicant.cv.includes('cloudinary.com')) {
         const encodedUrl = encodeURIComponent(applicant.cv);
+        const token = localStorage.getItem('token');
         const backendUrl = `http://localhost:3000/degreeApplications/cv/${encodedUrl}`;
-        setSelectedCvUrl(backendUrl);
+        
+        // For iframe preview, we need to handle authentication differently
+        // We'll use a different approach - fetch the file and create a blob URL
+        fetch(backendUrl, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        .then(response => {
+          if (response.ok) {
+            return response.blob();
+          } else {
+            throw new Error('Failed to fetch CV');
+          }
+        })
+        .then(blob => {
+          const blobUrl = URL.createObjectURL(blob);
+          setSelectedCvUrl(blobUrl);
+          setShowCvPreview(true);
+        })
+        .catch(error => {
+          console.error('Error fetching CV:', error);
+          alert('Failed to load CV preview. Please try again.');
+        });
       } else {
         setSelectedCvUrl(applicant.cv);
+        setShowCvPreview(true);
       }
-      setShowCvPreview(true);
     }
   };
 
@@ -99,13 +161,36 @@ const SeeApplication: React.FC = () => {
       // If it's a Cloudinary URL that might have access issues, use our backend endpoint
       if (applicant.cv.includes('cloudinary.com')) {
         const encodedUrl = encodeURIComponent(applicant.cv);
+        const token = localStorage.getItem('token');
         const backendUrl = `http://localhost:3000/degreeApplications/cv/${encodedUrl}`;
-        const link = document.createElement('a');
-        link.href = backendUrl;
-        link.download = `${applicant.name.replace(/\s+/g, '_')}_CV.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        
+        // Fetch the file with authentication and trigger download
+        fetch(backendUrl, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        .then(response => {
+          if (response.ok) {
+            return response.blob();
+          } else {
+            throw new Error('Failed to fetch CV');
+          }
+        })
+        .then(blob => {
+          const blobUrl = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = blobUrl;
+          link.download = `${applicant.name.replace(/\s+/g, '_')}_CV.pdf`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(blobUrl);
+        })
+        .catch(error => {
+          console.error('Error downloading CV:', error);
+          alert('Failed to download CV. Please try again.');
+        });
       } else {
         const link = document.createElement('a');
         link.href = applicant.cv;
@@ -195,7 +280,7 @@ function getStatusColor(status: string) {
           <div className="w-full md:w-2/3 bg-white rounded-xl shadow p-8 border border-gray-100">
             {/* Tabs */}
             <div className="flex gap-4 border-b mb-6">
-              {["Applicant Profile", "Resume", "Hiring Progress"].map((tab, idx) => (
+              {["Applicant Profile", "Resume", "Review Process"].map((tab, idx) => (
                 <button
                   key={tab}
                   className={`pb-2 px-2 text-base font-medium border-b-2 transition-colors duration-200 ${
@@ -308,9 +393,68 @@ function getStatusColor(status: string) {
               )}
               {activeTab === 2 && (
                 <div className="space-y-6">
-                  <h3 className="font-semibold mb-4 text-lg text-gray-700">Hiring Progress</h3>
+                  <h3 className="font-semibold mb-4 text-lg text-gray-700">Review Process</h3>
+                  
+                  {/* Current Status */}
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-gray-600">Hiring progress tracking will be implemented here.</p>
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="font-medium text-gray-700">Current Status</h4>
+                      <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(applicant.status)}`}>
+                        {applicant.status}
+                      </span>
+                    </div>
+                    
+                    <div className="text-sm text-gray-600 mb-4">
+                      <p><strong>Application Date:</strong> {applicant.appliedDate || (applicant.submissionDate ? new Date(applicant.submissionDate).toLocaleDateString() : "Unknown")}</p>
+                      <p><strong>Degree:</strong> {applicant.degreeName}</p>
+                      {/* <p><strong>Institution:</strong> {applicant.institution}</p> */}
+                    </div>
+                  </div>
+
+                  {/* Status Change Section */}
+                  <div className="bg-white border border-gray-200 rounded-lg p-4">
+                    <h4 className="font-medium text-gray-700 mb-3">Update Application Status</h4>
+                    <div className="flex flex-wrap gap-3">
+                      <button
+                        onClick={() => handleStatusChange("Approved")}
+                        className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                          applicant.status === "Approved" 
+                            ? "bg-green-100 text-green-800 border border-green-300" 
+                            : "bg-green-600 text-white hover:bg-green-700"
+                        }`}
+                        disabled={applicant.status === "Approved"}
+                      >
+                        ✓ Approve Application
+                      </button>
+                      <button
+                        onClick={() => handleStatusChange("Rejected")}
+                        className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                          applicant.status === "Rejected" 
+                            ? "bg-red-100 text-red-800 border border-red-300" 
+                            : "bg-red-600 text-white hover:bg-red-700"
+                        }`}
+                        disabled={applicant.status === "Rejected"}
+                      >
+                        ✗ Reject Application
+                      </button>
+                      <button
+                        onClick={() => handleStatusChange("Pending")}
+                        className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                          applicant.status === "Pending" 
+                            ? "bg-yellow-100 text-yellow-800 border border-yellow-300" 
+                            : "bg-yellow-600 text-white hover:bg-yellow-700"
+                        }`}
+                        disabled={applicant.status === "Pending"}
+                      >
+                        ⏳ Mark as Pending
+                      </button>
+                    </div>
+                    
+                    <div className="mt-3 text-xs text-gray-500">
+                      <p>• <strong>Approved:</strong> Applicant will receive a notification and further instructions</p>
+                      <p>• <strong>Rejected:</strong> Application will be marked as rejected</p>
+                      <p>• <strong>Pending:</strong> Application will be marked for further review</p>
+                    </div>
                   </div>
                 </div>
               )}

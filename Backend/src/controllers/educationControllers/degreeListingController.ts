@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import getDegreeModel, { IDegree } from '../../models/Degree';
 import getDegreeApplicationModel from '../../models/DegreeApplication';
 import { parseTuitionFee } from '../../utils/degreeUtils';
-import cloudinary from "../../Config/cloudinaryConfig";
+import cloudinary from "../../Config/cloudinaryDegreeConfig";
 import fs from "fs";
 
 type AsyncRequestHandler = (req: Request, res: Response, next: NextFunction) => Promise<void>;

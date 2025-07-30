@@ -283,7 +283,7 @@ const ViewApplications: React.FC = () => {
         <TopBar />
         <div className="flex flex-col min-h-[calc(100vh-80px)] p-4 md:ml-64 h-full">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
-            <h2 className="text-2xl font-semibold whitespace-nowrap">Total Applicants: {filteredApplications.length}</h2>
+            <h2 className="text-2xl font-semibold whitespace-nowrap">Total Applications: {filteredApplications.length}</h2>
             <div className="flex flex-wrap gap-2 items-center w-full md:w-auto">
               {/* Search by Applicant */}
               <input
@@ -391,7 +391,7 @@ const ViewApplications: React.FC = () => {
                             Applicant
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status
+                            Application Status
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Type
