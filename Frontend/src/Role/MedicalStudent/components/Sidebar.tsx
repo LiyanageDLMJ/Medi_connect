@@ -14,7 +14,7 @@ const navLinks = [
 const Sidebar: React.FC = () => {
   const navigate = useNavigate();
   return (
-    <div style={{ width: 220, background: '#fff', minHeight: '100vh', boxShadow: '2px 0 8px rgba(0,0,0,0.03)', position: 'relative' }}>
+    <div style={{ width: 250, background: '#fff', minHeight: '100vh', boxShadow: '2px 0 8px rgba(0,0,0,0.03)', position: 'relative' }}>
       <div style={{ fontWeight: 700, fontSize: 24, color: '#184389', padding: '2rem 1rem 1rem 1rem', letterSpacing: 1 }}>
         MedConnect
       </div>
