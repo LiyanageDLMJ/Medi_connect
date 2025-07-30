@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import Sidebar from "../components/NavBar/Sidebar";
 import DoctorForm from "../../../LoginRegister/register/forms/DoctorForm";
+import SidebarWrapper from "../../../Components/SidebarWrapper";
 import { useFormContext } from "../../../context/FormContext";
 import UpdateCV02 from "./UpdateCV02";
 
@@ -41,7 +42,6 @@ export default function UpdateCV01() {
         setFormData((prev) => ({
           ...prev,
           yourName: data.name || prev.yourName,
-          age: data.age ? String(data.age) : prev.age,
           currentLocation: data.location || prev.currentLocation,
           professionalTitle: data.profession || prev.professionalTitle,
           specialization: data.specialty || prev.specialization,
@@ -56,6 +56,9 @@ export default function UpdateCV01() {
     // run only once
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Get user role from localStorage
+  const userType = localStorage.getItem('userType');
 
   const validatePhoneNumber = (phone: string) => {
     //phone number validation
@@ -73,6 +76,7 @@ export default function UpdateCV01() {
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >
+    
   ) => {
     const { name, value } = e.target;
 
@@ -99,12 +103,16 @@ export default function UpdateCV01() {
   const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("hiiiiiii");
-    navigate("/physician/update-cv02");
+    if (userType === 'MedicalStudent') {
+      navigate("/medical_student/update-cv02");
+    } else {
+      navigate("/physician/update-cv02");
+    }
   };
 
   return (
     <div>
-      <Sidebar />
+      <SidebarWrapper />
 
       <div className="flex-1 overflow-auto md:pl-64">
         {/* Header */}
@@ -214,14 +222,10 @@ export default function UpdateCV01() {
                       value={formData.linkedinLink}
                       onChange={handleInputChange}
                       placeholder="https://www.linkedin.com/in/yourprofile"
-                      className={`w-full p-3 bg-gray-50 border border-gray-200 rounded-md ${
-                        linkedinError ? "border-red-500" : ""
-                      }`}
+                      className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md"
                     />
                     {linkedinError && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {linkedinError}
-                      </p>
+                      <p className="text-red-500 text-sm mt-1">{linkedinError}</p>
                     )}
                   </div>
 

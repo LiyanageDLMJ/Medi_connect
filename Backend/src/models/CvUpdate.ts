@@ -21,11 +21,11 @@ const CvUpdateSchema = new Schema({
   hospitalInstitution: { type: String, required: true },
   employmentPeriod: { type: String, required: true },
   resumeRawUrl: { type: String, required: true },
-  
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Add userId field
+}, {
+  timestamps: true
 });
 
-
 const CvDoctorUpdate=mongoose.model('cvData',CvUpdateSchema);
-
 
 export default CvDoctorUpdate;

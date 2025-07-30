@@ -6,8 +6,8 @@ import Doctor from '../../models/DoctorModel'; // Doctor model
 import EducationalInstitute from '../../models/EducationalInstituteModel'; // Educational Institute model
 import Recruiter from '../../models/RecruiterModel'; // Recruiter model
 import MedicalStudent from '../../models/MedicalStudentModel'; // Medical Student model
-
-// Map userType to corresponding models and discriminator keys
+import crypto from 'crypto';
+import { Document } from 'mongoose';
 const userModels: { [key: string]: any } = {
   Doctor: Doctor,
   MedicalStudent: MedicalStudent,
@@ -200,28 +200,46 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-// Get current user info from JWT
-export const getCurrentUser: RequestHandler = async (req, res) => {
+// Forgot Password Controller
+export const forgotPassword = async (req: Request, res: Response) => {
   try {
-    // The authMiddleware already decoded the JWT token and put it in req.user
-    const userData = (req as any).user;
-    if (!userData) {
-      res.status(401).json({ message: 'No user data found' });
-      return;
-    }
-    
-    // Return the user data from the JWT token
-    res.json({
-      id: userData.id,
-      _id: userData.id,
-      email: userData.email,
-      userType: userData.userType,
-      // Note: name and profilePic are not in the JWT token, so they'll be undefined
-      // If you need these, you'll need to fetch from database or include in JWT
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: 'Email is required' });
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Generate a reset token and expiry
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpiry = Date.now() + 1000 * 60 * 30; // 30 minutes
+    (user as any).resetPasswordToken = resetToken;
+    (user as any).resetPasswordExpires = resetTokenExpiry;
+    await user.save();
+
+    // Create reset link
+    const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${resetToken}&email=${encodeURIComponent(user.email)}`;
+
+    // Setup nodemailer transporter (Gmail SMTP for demo)
+    const nodemailer = require('nodemailer');
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
     });
-  } catch (error) {
-    console.error('getCurrentUser error:', error);
-    res.status(401).json({ message: 'Invalid or expired token' });
+
+    // Send email
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: user.email,
+      subject: 'Password Reset Request',
+      html: `<p>You requested a password reset. Click the link below to reset your password:</p><p><a href="${resetLink}">${resetLink}</a></p><p>If you did not request this, please ignore this email.</p>`,
+    });
+
+    res.json({ message: 'Password reset link sent to your email.' });
+  } catch (err) {
+    console.error('Forgot password error:', err);
+    res.status(500).json({ message: 'Failed to send reset link', error: err instanceof Error ? err.message : 'Unknown error' });
   }
 };
 

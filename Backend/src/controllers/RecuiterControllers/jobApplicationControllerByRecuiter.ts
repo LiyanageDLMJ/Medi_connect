@@ -95,3 +95,16 @@ export const updateStatus = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const getApplicationsForRecruiter = async (req: Request, res: Response) => {
+  const recruiterId = req.query.recruiterId; // or from req.user if using auth middleware
+  if (!recruiterId) return res.status(400).json({ message: "Recruiter ID required" });
+
+  // Find jobs posted by this recruiter
+  const jobs = await Job.find({ recruiter: recruiterId }).select('_id');
+  const jobIds = jobs.map(j => j._id);
+
+  // Find applications for those jobs
+  const applications = await JobApplication.find({ jobId: { $in: jobIds } }).populate('userId');
+  res.json({ data: applications });
+};

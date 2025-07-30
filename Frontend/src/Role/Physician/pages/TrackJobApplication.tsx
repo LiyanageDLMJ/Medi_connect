@@ -1,7 +1,8 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
-import Sidebar from "../components/NavBar/Sidebar"
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import SidebarWrapper from "../../../Components/SidebarWrapper";
 
 import {
   CalendarDays,
@@ -319,8 +320,8 @@ export default function JobApplicationTracker() {
   });
 
   // Application row component
-  const ApplicationRow = ({ application }: { application: JobApplication }) => (
-    <TableRow key={application._id}>
+  const ApplicationRow = ({ application, className = "" }: { application: JobApplication; className?: string }) => (
+    <TableRow key={application._id} className={className}>
       <TableCell className="font-medium">
         <div className="flex items-center gap-2">
           <Building2 className="w-4 h-4 text-gray-500" />
@@ -359,22 +360,20 @@ export default function JobApplicationTracker() {
   // Loading state
   if (loading) {
     return (
-      <div className="flex-1 overflow-auto md:pl-64">
-        <Sidebar />
+      <SidebarWrapper>
         <div className="container mx-auto p-6">
           <div className="flex justify-center items-center h-64">
             <div className="text-lg">Loading applications...</div>
           </div>
         </div>
-      </div>
+      </SidebarWrapper>
     );
   }
 
   // Error state
   if (error) {
     return (
-      <div className="flex-1 overflow-auto md:pl-64">
-        <Sidebar />
+      <SidebarWrapper>
         <div className="container mx-auto p-6">
           <div className="text-center text-red-500">
             <p>Error: {error}</p>
@@ -383,70 +382,80 @@ export default function JobApplicationTracker() {
             </Button>
           </div>
         </div>
-      </div>
+      </SidebarWrapper>
     );
   }
 
   return (
-    <div className="flex-1 overflow-auto md:pl-64">
-      <Sidebar />
-      {/* Doctor name at top right */}
-      <div className="flex justify-end items-center p-4">
-        <img
-          src={userProfile.photoUrl || "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/340px-Default_pfp.svg.png"}
-          className="w-10 h-10 rounded-full mr-2"
-          alt={userProfile.name}
-        />
-        <span className="font-semibold text-gray-700">
-          {userProfile.name ? `Dr. ${userProfile.name}` : ""}
-        </span>
-      </div>
-      <div className="container mx-auto p-6 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-bold">Medical Job Application Tracker</h1>
-            <p className="text-gray-500">Track and manage your medical career applications</p>
+    <div className="flex">
+      <SidebarWrapper />
+      <div className="flex-1 overflow-auto md:pl-64">
+        <div className="min-h-screen bg-white">
+          {/* Doctor name at top right */}
+          <div className="relative bg-gradient-to-r from-blue-50 to-blue-100 rounded-b-3xl shadow-md mb-8">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 p-6">
+              <div>
+                <h1 className="text-4xl font-extrabold text-blue-900 flex items-center gap-2">
+                  <CheckCircle className="text-blue-500 w-10 h-10" />
+                  Medical Job Application Tracker
+                </h1>
+                <p className="text-gray-600 mt-2 text-lg">Track and manage your medical career applications</p>
+              </div>
+              <div className="flex flex-col items-center">
+                <img
+                  src={userProfile.photoUrl || "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/340px-Default_pfp.svg.png"}
+                  className="w-16 h-16 rounded-full border-4 border-blue-200 shadow"
+                  alt={userProfile.name}
+                />
+                <span className="font-semibold text-gray-700 mt-2">
+                  {userProfile.name ? `Dr. ${userProfile.name}` : ""}
+                </span>
+              </div>
+            </div>
           </div>
-          <Button className="flex items-center gap-2">
-            <Plus className="w-4 h-4" />
-            Add Application
-          </Button>
-        </div>
-
+        <div className="container mx-auto p-6 space-y-10">
+        {/* Header */}
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
+          <Card className="transition-transform hover:scale-105 hover:shadow-lg">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Applications</CardTitle>
-              <Building2 className="h-4 w-4 text-gray-500" />
+              <div className="bg-blue-100 p-2 rounded-full">
+                <Building2 className="h-4 w-4 text-blue-600" />
+              </div>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{statusCounts.total}</div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="transition-transform hover:scale-105 hover:shadow-lg">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Active Applications</CardTitle>
-              <Clock className="h-4 w-4 text-gray-500" />
+              <div className="bg-purple-100 p-2 rounded-full">
+                <Clock className="h-4 w-4 text-purple-600" />
+              </div>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{statusCounts.active}</div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="transition-transform hover:scale-105 hover:shadow-lg">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Offers Received</CardTitle>
-              <CheckCircle className="h-4 w-4 text-gray-500" />
+              <div className="bg-green-100 p-2 rounded-full">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+              </div>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">{statusCounts.offers}</div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="transition-transform hover:scale-105 hover:shadow-lg">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Rejections</CardTitle>
-              <XCircle className="h-4 w-4 text-gray-500" />
+              <div className="bg-red-100 p-2 rounded-full">
+                <XCircle className="h-4 w-4 text-red-600" />
+              </div>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-600">{statusCounts.rejected}</div>
@@ -458,7 +467,7 @@ export default function JobApplicationTracker() {
         <Card>
           <CardHeader>
             <CardTitle>Applications</CardTitle>
-            <CardDescription>Manage and track your medical job applications</CardDescription>
+            <CardDescription>Track your medical job applications</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col sm:flex-row gap-4 mb-6">
@@ -505,8 +514,12 @@ export default function JobApplicationTracker() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredApplications.map((application) => (
-                    <ApplicationRow key={application._id} application={application} />
+                  {filteredApplications.map((application, idx) => (
+                    <ApplicationRow
+                      key={application._id}
+                      application={application}
+                      className={idx % 2 === 0 ? "bg-gray-50" : ""}
+                    />
                   ))}
                 </TableBody>
               </Table>
@@ -533,16 +546,18 @@ export default function JobApplicationTracker() {
                 const Icon = config.icon
 
                 return (
-                  <div key={status} className="text-center p-4 rounded-lg border border-gray-200">
-                    <Icon className="w-6 h-6 mx-auto mb-2 text-gray-500" />
+                  <div key={status} className={`text-center p-4 rounded-lg border border-gray-200 shadow-sm ${config.color}`}>
+                    <Icon className="w-6 h-6 mx-auto mb-2" />
                     <div className="text-2xl font-bold">{count}</div>
-                    <div className="text-xs text-gray-500">{config.label}</div>
+                    <div className="text-xs">{config.label}</div>
                   </div>
                 )
               })}
             </div>
           </CardContent>
         </Card>
+      </div>
+        </div>
       </div>
     </div>
   )

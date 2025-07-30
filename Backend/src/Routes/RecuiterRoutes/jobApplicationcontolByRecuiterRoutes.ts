@@ -16,4 +16,6 @@ router.patch('/markAsViewed/:id', markAsViewed as RequestHandler);
 // Update application status
 router.patch('/updateStatus/:id', updateStatus as RequestHandler);
 
+
+
 export default router;

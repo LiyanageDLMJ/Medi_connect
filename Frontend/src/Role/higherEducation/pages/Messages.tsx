@@ -1,13 +1,13 @@
 import Sidebar from "../components/Sidebar";
-import TopBar from "../components/TopBar";
 import MessageBox from '../../../Components/MessageBox/MessageBox';
 
 const Messages = () => {
   return (
     <div className="flex h-screen">
       {/* Sidebar */}
-      <Sidebar />
-
+      <div style={{ flex: '0 0 250px', height: '100vh' }}>
+        <Sidebar />
+      </div>
       {/* Main Content */}
       <div className="flex-1 overflow-auto md:ml-64"> {/* Add margin on larger screens to account for sidebar */}
         <TopBar />

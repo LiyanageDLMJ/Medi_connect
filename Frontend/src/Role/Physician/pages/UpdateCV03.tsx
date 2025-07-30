@@ -1,6 +1,6 @@
 "use client";
-import { useNavigate } from "react-router-dom";
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useFormContext } from "../../../context/FormContext";
 import { supabase } from "../../../utils/supabase";
 
@@ -8,23 +8,29 @@ import {
   Bell,
   ChevronDown,
   ChevronLeft,
+  ChevronRight,
   Menu,
   Search,
   User,
   Check,
 } from "lucide-react";
-import Sidebar from "../components/NavBar/Sidebar";
+import SidebarWrapper from "../../../Components/SidebarWrapper";
+
 import axios from "axios";
 
 export default function UpdateCV03() {
   const { formData, setFormData } = useFormContext();
   const navigate = useNavigate();
   const [resumeFile, setResumeFile] = useState<File | null>(null);
-  const [error, setError] = useState<string | null>(null);
+
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [createdDoctorId, setCreatedDoctorId] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [error, setError] = useState<string | null>(null); // Added for user feedback
+
+  // Get user role from localStorage
+  const userType = localStorage.getItem('userType');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -121,13 +127,17 @@ export default function UpdateCV03() {
 
       console.log("File uploaded successfully, URL:", supabaseUrl);
 
-      // Prepare payload with Supabase URL
+      // Get userId from localStorage
+      const userId = localStorage.getItem("userId");
+
+      // Prepare payload with Supabase URL and userId
       const payload = {
         ...formData,
         resumeRawUrl: supabaseUrl, // This should be the Supabase URL
         jobTitle: formData.jobTitle,
         hospitalInstitution: formData.hospitalInstitution,
         employmentPeriod: formData.employmentPeriod,
+        userId: userId // Add userId to the payload
       };
 
       console.log("Sending payload to backend:", payload);
@@ -164,7 +174,7 @@ export default function UpdateCV03() {
 
   return (
     <div>
-      <Sidebar />
+      <SidebarWrapper />
       <div className="flex-1 overflow-auto md:pl-64">
         <header className="flex items-center justify-between p-4 bg-white border-b">
           <div className="flex items-center gap-4">
@@ -205,7 +215,13 @@ export default function UpdateCV03() {
           <div className="flex border-b mb-8">
             <button className="flex items-center gap-2 px-6 py-4 border-b-2 border-blue-500 text-blue-500">
               <User className="w-5 h-5" />
+              <span>Basic Details</span>
+            </button>
+            <button className="flex items-center gap-2 px-6 py-4 text-gray-600">
               <span>Update CV</span>
+            </button>
+            <button className="flex items-center gap-2 px-6 py-4 text-gray-600">
+              <span>Profile Settings</span>
             </button>
           </div>
 
@@ -242,6 +258,7 @@ export default function UpdateCV03() {
                     className="block text-sm font-medium"
                   >
                     Expected Job Type*
+                    Job Title*
                   </label>
                   <input
                     id="JobTitle"
@@ -336,7 +353,13 @@ export default function UpdateCV03() {
             <div className="mt-8 flex justify-between">
               <button
                 type="button"
-                onClick={() => navigate("/physician/update-cv02")}
+                onClick={() => {
+                  if (userType === 'MedicalStudent') {
+                    navigate("/medical_student/update-cv02");
+                  } else {
+                    navigate("/physician/update-cv02");
+                  }
+                }}
                 className="flex items-center justify-center w-10 h-10 rounded-md border"
               >
                 <ChevronLeft className="h-5 w-5" />

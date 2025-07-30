@@ -27,6 +27,11 @@ import LoginRegisterRoutes from "./Routes/LoginRegisterRoutes";
 import userListRoutes from "./Routes/UserListRoutes";
 import { createServer } from "http";
 import { attachSocket } from "./socketServer";
+import recruiterCandidateRoutes from "./Routes/RecuiterRoutes/CandidateRoutes";
+import medicalCvRoutes from "./Routes/MedicalStudentRoutes/medicalCvRoutes";
+connectDB();
+
+connectDB(); 
 import faqRoutes from "./Routes/FAQRoutes";
 connectDB();
 
@@ -95,6 +100,7 @@ app.use('/notifications', notificationRoutes);
 app.use("/api/faqs", faqRoutes);
 // app.use('/images', express.static('src/image'));
 app.use('/image', express.static(path.join(__dirname, "../image")));
+app.use('/medicalStudentCv', medicalCvRoutes);
 
 app.use("/auth", LoginRegisterRoutes);
 

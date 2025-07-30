@@ -13,6 +13,54 @@ const navLinks = [
 
 const Sidebar: React.FC = () => {
   const navigate = useNavigate();
+
+  const navLinks = [
+    { label: "Dashboard", to: "/medical_student/dashboard", icon: <FiHome size={20} /> },
+    { label: "Your Profile", to: "/medical_student/profile", icon: <FiUser size={20} /> },
+    { label: 'CV Insertion', to: '/medical_student/cv-step01', icon: <FiFileText size={20} /> },
+    {
+      label: "Job & Internships",
+      to: "/medical_student/job-internship",
+      icon: <FiBriefcase size={20} />,
+    },
+     {
+      label: "Track job Application",
+      to: "/medical_student/job-application-tracker",
+      icon: <FiSearch size={20} />,
+    },
+    {
+      label: "Higher Education",
+      to: "/medical_student/higher-education",
+      icon: <FiBook size={20} />,
+    },
+    {
+      label: "Messages",
+      to: "/medical_student/messages",
+      icon: <FiMessageSquare size={20} />,
+    },
+    {
+      label: "Interview Invitations",
+      to: "/medical_student/interview-invitations",
+      icon: <FiCalendar size={20} />,
+    },
+  ];
+
+  // --- Notification Badge Logic ---
+  const [unread, setUnread] = useState(false);
+  
+  useEffect(() => {
+    const userId = localStorage.getItem('userId') || '1';
+    initiateSocket(userId);
+    const socket = getSocket();
+    if (!socket) return;
+    socket.on('receive_message', () => {
+      setUnread(true);
+    });
+    return () => {
+      socket?.off('receive_message');
+    };
+  }, []);
+
   return (
     <div style={{ width: 250, background: '#fff', minHeight: '100vh', boxShadow: '2px 0 8px rgba(0,0,0,0.03)', position: 'relative' }}>
       <div style={{ fontWeight: 700, fontSize: 24, color: '#184389', padding: '2rem 1rem 1rem 1rem', letterSpacing: 1 }}>

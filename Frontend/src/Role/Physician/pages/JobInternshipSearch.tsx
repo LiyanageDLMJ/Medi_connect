@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios"; // Install axios if not already installed
 
 import Jobs from "../components/JobDiv/Jobs";
-import Sidebar from "../components/NavBar/Sidebar";
+import SidebarWrapper from "../../../Components/SidebarWrapper";
 import SearchDoctor from "../components/SearchDiv/Search";
 import SearchMedicalStudent from '../../MedicalStudent/components/search';
 
@@ -114,15 +114,18 @@ const JobInternshipSearch = () => {
 
   return (
     <div>
-      <Sidebar />
-      <div className="flex-1 overflow-auto md:pl-64">
-        {userType === 'Doctor' ? (
-          <SearchDoctor filters={filters} onFilterChange={handleFilterChange} onClear={handleClearFilters} />
-        ) : (
-          <SearchMedicalStudent filters={filters} onFilterChange={handleFilterChange} onClear={handleClearFilters} />
-        )}
-        <Jobs jobs={filteredJobs} totalJobs={jobs.length} />
-      </div>
+      <SidebarWrapper>
+        <div className="flex-1 overflow-auto md:pl-64">
+          <div className="w-full">
+            {userType === 'Doctor' ? (
+              <SearchDoctor filters={filters} onFilterChange={handleFilterChange} onClear={handleClearFilters} />
+            ) : (
+              <SearchMedicalStudent filters={filters} onFilterChange={handleFilterChange} onClear={handleClearFilters} />
+            )}
+            <Jobs jobs={filteredJobs} totalJobs={jobs.length} />
+          </div>
+        </div>
+      </SidebarWrapper>
     </div>
   );
 };

@@ -85,7 +85,7 @@ export default function UpdateCV02() {
     }));
   };
 
-  // Graduation date is handled directly via the MUI DatePicker `onChange` callback below
+  // Graduation date is handled directly via the MUI DatePicker onChange callback below
 
   const addCertification = () => {
     if (
@@ -282,6 +282,7 @@ export default function UpdateCV02() {
                       <option value="Oncology">Oncology</option>
                       <option value="Orthopedics">Orthopedics</option>
                       <option value="Dermatologist">Dermatologist</option>
+                      <option value="Radiologist">Radiologist</option>
                       <option value="Neurologist">Neurologist</option>
                       <option value="Obstetrics and gynaecology">
                         Obstetrics and gynaecology
