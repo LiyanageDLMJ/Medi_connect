@@ -41,7 +41,7 @@ const LoginPage = () => {
       toast.success('Login successful!'); // Show success toast
 
       const redirectMap: Record<UserType, string> = {
-        Doctor: '/physician/dashboard',
+        Doctor: '/physician/DoctorDashboard',
         MedicalStudent: '/medical_student/dashboard',
         Recruiter: '/recruiter/dashboard',
         EducationalInstitute: '/higher-education/dashboard',
@@ -141,6 +141,7 @@ const LoginForm = styled.form`
 
 const LoginButton = styled.button`
   background:rgba(35, 23, 197, 0.84);
+  background:#2E5FB7;
   color: white;
   padding: 0.75rem;
   border: none;

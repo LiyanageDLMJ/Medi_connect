@@ -5,11 +5,11 @@ import { SlLocationPin } from "react-icons/sl";
 
 interface SearchFilters {
   searchText: string;
-  hospital: string;
+  hospitalName: string;
   location: string;
   field: string;
-  type: string;
-  salary: string;
+  jobType: string;
+  salaryRange: string;
 }
 
 interface SearchProps {
@@ -19,21 +19,38 @@ interface SearchProps {
 }
 
 const Search: React.FC<SearchProps> = ({ filters, onFilterChange, onClear }) => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+  };
+
   return (
     <div className="flex flex-col gap-4">
-        <div className="searchDiv flex items-center justify-center bg-gradient-to-tr from-[#2E5FB7] to-[#1a365d] rounded-[8px] h-[120px] w-[95%] mx-auto">
+      <div className="searchDiv flex items-center justify-center bg-gradient-to-tr from-[#2E5FB7] to-[#1a365d] rounded-[8px] h-[120px] w-[95%] mx-auto">
         <h2 className="text-center text-4xl font-bold text-white">Find your dream Job here</h2>
       </div>
       <div className="searchDiv grid gap-10 bg-gray-200 rounded-[8px] p-[3rem] w-[95%] mx-auto">
-        <SearchForm filters={filters} onFilterChange={onFilterChange} />
-        <SearchFilters filters={filters} onFilterChange={onFilterChange} onClear={onClear} />
+        <SearchForm 
+          filters={filters} 
+          onFilterChange={onFilterChange}
+          onSubmit={handleSubmit} 
+        />
+        <SearchFilters 
+          filters={filters} 
+          onFilterChange={onFilterChange} 
+          onClear={onClear} 
+        />
       </div>
     </div>
   );
 };
 
-const SearchForm: React.FC<{ filters: SearchFilters; onFilterChange: (e: React.ChangeEvent<HTMLInputElement>) => void }> = ({ filters, onFilterChange }) => (
-  <form onSubmit={(e) => e.preventDefault()}>
+const SearchForm: React.FC<{ 
+  filters: SearchFilters; 
+  onFilterChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onSubmit: (e: React.FormEvent) => void;
+}> = ({ filters, onFilterChange, onSubmit }) => (
+  <form onSubmit={onSubmit}>
     <div className="firstDiv flex items-center justify-between rounded-[8px] gap-[8px] bg-white p-5 shadow-lg shadow-greyIsh-7080">
       <SearchInput
         icon={<AiOutlineSearch className="text-[25px] icon" />}
@@ -44,8 +61,8 @@ const SearchForm: React.FC<{ filters: SearchFilters; onFilterChange: (e: React.C
       />
       <SearchInput
         icon={<FaRegHospital className="text-[25px] icon" />}
-        name="hospital"
-        value={filters.hospital}
+        name="hospitalName"
+        value={filters.hospitalName}
         placeholder="Search by Hospital Name..."
         onFilterChange={onFilterChange}
       />
@@ -56,14 +73,20 @@ const SearchForm: React.FC<{ filters: SearchFilters; onFilterChange: (e: React.C
         placeholder="Search by Location..."
         onFilterChange={onFilterChange}
       />
-      <button type="submit" className="button">
+      <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white px-6 py-2 rounded-md">
         Search
       </button> 
     </div>
   </form>
 );
 
-const SearchInput: React.FC<{ icon: React.ReactNode; name: string; value: string; placeholder: string; onFilterChange: (e: React.ChangeEvent<HTMLInputElement>) => void }> = ({ icon, name, value, placeholder, onFilterChange }) => (
+const SearchInput: React.FC<{ 
+  icon: React.ReactNode; 
+  name: string; 
+  value: string; 
+  placeholder: string; 
+  onFilterChange: (e: React.ChangeEvent<HTMLInputElement>) => void 
+}> = ({ icon, name, value, placeholder, onFilterChange }) => (
   <div className="flex gap-2 items-center flex-grow">
     {icon}
     <input
@@ -76,26 +99,89 @@ const SearchInput: React.FC<{ icon: React.ReactNode; name: string; value: string
     />
     {value && (
       <AiOutlineCloseCircle
-        onClick={() => onFilterChange({ target: { name, value: "" } } as unknown as React.ChangeEvent<HTMLInputElement>)}
+        onClick={() => {
+          const event = {
+            target: { 
+              name, 
+              value: "" 
+            }
+          } as React.ChangeEvent<HTMLInputElement>;
+          
+          onFilterChange(event);
+        }}
         className="text-[25px] text-red-500 cursor-pointer hover:text-textColor icon"
       />
     )}
   </div>
 );
 
-const SearchFilters: React.FC<{ filters: SearchFilters; onFilterChange: (e: React.ChangeEvent<HTMLSelectElement>) => void; onClear: () => void }> = ({ filters, onFilterChange, onClear }) => (
+const SearchFilters: React.FC<{ 
+  filters: SearchFilters; 
+  onFilterChange: (e: React.ChangeEvent<HTMLSelectElement>) => void; 
+  onClear: () => void 
+}> = ({ filters, onFilterChange, onClear }) => (
   <div className="secondDiv flex items-center gap-10 justify-center">
-    <FilterSelect label="Field" name="field" value={filters.field} options={["Dentist", "Cardiologist", "Neurologist", "Psychiatrist", "Hematologist", "Radiologist", "Dermatologist"]} onFilterChange={onFilterChange} />
-    <FilterSelect label="Type" name="type" value={filters.type} options={["Internship", "Part-Time", "Full-Time", "Remote"]} onFilterChange={onFilterChange} />
-    <FilterSelect label="Salary" name="salary" value={filters.salary} options={["Hourly", "Weekly", "Monthly", "Above 500,000", "Above 300,000"]} onFilterChange={onFilterChange} />
-    <FilterSelect label="Location" name="location" value={filters.location} options={["France", "Paris", "London", "China", "New York"]} onFilterChange={onFilterChange} />
-    <span onClick={onClear} className="text-[#a1a1a1] cursor-pointer">
+    <FilterSelect 
+      label="Field" 
+      name="field" 
+      value={filters.field} 
+      options={[
+        "Cardiologist", 
+        "Pediatrician", 
+        "General Physician", 
+        "Neurosurgeon", 
+        "Orthopedic Surgeon", 
+        "Dentist", 
+        "Neurologist", 
+        "Psychiatrist", 
+        "Hematologist", 
+        "Radiologist", 
+        "Dermatologist"
+      ]} 
+      onFilterChange={onFilterChange} 
+    />
+    <FilterSelect 
+      label="Type" 
+      name="jobType" 
+      value={filters.jobType} 
+      options={[
+        "Part-Time", 
+        "Full-Time", 
+        "Remote"
+      ]} 
+      onFilterChange={onFilterChange} 
+    />
+    <FilterSelect 
+      label="Salary" 
+      name="salaryRange" 
+      value={filters.salaryRange} 
+      options={[
+        "Above 500,000", 
+        "LKR 200,000 - 250,000", 
+        "Above 300,000", 
+        "Stipend Based",
+        "Hourly", 
+        "Weekly", 
+        "Monthly"
+      ]} 
+      onFilterChange={onFilterChange} 
+    />
+    <span 
+      onClick={onClear} 
+      className="text-[#a1a1a1] cursor-pointer hover:text-red-500"
+    >
       Clear All
     </span>
   </div>
 );
 
-const FilterSelect: React.FC<{ label: string; name: string; value: string; options: string[]; onFilterChange: (e: React.ChangeEvent<HTMLSelectElement>) => void }> = ({ label, name, value, options, onFilterChange }) => (
+const FilterSelect: React.FC<{ 
+  label: string; 
+  name: string; 
+  value: string; 
+  options: string[]; 
+  onFilterChange: (e: React.ChangeEvent<HTMLSelectElement>) => void 
+}> = ({ label, name, value, options, onFilterChange }) => (
   <div className="singleSearch flex gap-2 items-center">
     <label htmlFor={name} className="text-[#808080] font-semibold">
       {label}:

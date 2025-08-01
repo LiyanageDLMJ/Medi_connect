@@ -1,36 +1,62 @@
+import cloudinary from "../../Config/cloudinaryConfig";
 import { Request, Response } from "express";
 import JobApplication from "../../models/JobApplication";
+import Job from "../../models/Job";
+import mongoose from "mongoose";
 
 // Add a new job application
 export const addJobApplication = async (req: Request, res: Response) => {
   try {
-    // Extract fields from req.body
-    const { name, email, phone, experience } = req.body;
+    // Get userId from authentication middleware (recommended)
+    // const userId = req.user.id;
 
-    // Extract file from req.file (multer adds this)
-    const cv = req.file ? req.file.path : null; // Store the file path
+    // TEMPORARY: If you don't have auth, get userId from frontend (not secure, but works for now)
+    const userId = req.body.userId;
 
-    // Validate required fields
-    const requiredFields = { name, email, phone, experience, cv };
-    const missingFields = Object.entries(requiredFields)
-      .filter(([_, value]) => !value)
-      .map(([field]) => field);
-
-    if (missingFields.length > 0) {
-      return res.status(400).json({
-        message: "All fields are required",
-        missingFields,
-      });
+    console.log("Request body:", req.body);
+    
+    const { name, email, phone, experience, jobId } = req.body;
+    
+    // Check if jobId exists
+    if (!jobId || jobId.trim() === "") {
+      return res.status(400).json({ message: "Valid Job ID is required" });
     }
-
-    // Create new job application
-    const newApplication = new JobApplication({ name, email, phone, experience, cv });
+    
+    // Find job using jobId field (not _id)
+    const job = await Job.findOne({ jobId: jobId });
+    if (!job) {
+      console.log("Job not found with jobId:", jobId);
+      return res.status(400).json({ message: "Job not found" });
+    }
+    
+    console.log("Job found:", job);
+    
+    // Create the job application
+    const newApplication = new JobApplication({
+      name,
+      email,
+      phone,
+      experience,
+      jobId: job._id, // Store as string, matching your Job model
+      cv: req.file ? req.file.path : null,
+      appliedDate: new Date(),
+      status: 'applied',
+      userId, // <-- ADD THIS LINE
+    });
+    
     const savedApplication = await newApplication.save();
-
-    res.status(201).json({ message: "Application submitted successfully", application: savedApplication });
+    
+    res.status(201).json({
+      message: "Application submitted successfully",
+      application: savedApplication
+    });
+    
   } catch (error: any) {
-    console.error("Error adding job application:", error.message);
-    res.status(500).json({ message: "Failed to submit application", error: error.message });
+    console.error("Error in addJobApplication:", error);
+    res.status(500).json({ 
+      message: "Failed to submit application", 
+      error: error.message 
+    });
   }
 };
 
@@ -78,3 +104,36 @@ export const deleteJobApplication = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Failed to delete application", error: error.message });
   }
 };
+
+// Add a new endpoint to get applications by user email
+export const getApplicationsByEmail = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.params;
+    const applications = await JobApplication.find({ email })
+      .sort({ appliedDate: -1 });
+    
+    res.status(200).json(applications);
+  } catch (error: any) {
+    res.status(500).json({ 
+      message: "Failed to fetch applications", 
+      error: error.message 
+    });
+  }
+};
+
+// Get all applications for a specific user
+export const getUserApplications = async (req: Request, res: Response) => {
+  try {
+    const userId = req.params.userId;
+    const applications = await JobApplication.find({ userId })
+      .populate('jobId') // <-- This will fetch the job details!
+      .sort({ appliedDate: -1 });
+    res.status(200).json(applications);
+  } catch (error: any) {
+    res.status(500).json({ 
+      message: "Failed to fetch applications",
+      error: error.message 
+    });
+  }
+};
+

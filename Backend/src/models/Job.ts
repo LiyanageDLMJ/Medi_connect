@@ -6,6 +6,10 @@ const JobSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  recruiterId: {
+    type: String,
+    required: true,
+  },
   title: {
     type: String,
     required: true,
@@ -38,6 +42,10 @@ const JobSchema = new mongoose.Schema({
   salaryRange: {
     type: String,
   },
+  applicationDeadline: {
+    type: Date,
+    required: true,
+  },
   status: {
     type: String,
     enum: ["OPEN", "INTERVIEW", "PENDING", "CLOSED"],
@@ -53,8 +61,8 @@ const JobSchema = new mongoose.Schema({
   },
 });
 
-const db = mongoose.connection.useDb("Jobs"); // Ensure the correct database is used
-const Job = db.model("Job", JobSchema, "Jobdata"); // Ensure the correct collection is used
+// Ensure the correct database is used
+const Job = mongoose.model("Job", JobSchema ); // Ensure the correct collection is used
 
 export default Job;
 

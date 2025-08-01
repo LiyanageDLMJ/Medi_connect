@@ -6,8 +6,8 @@ import Doctor from '../../models/DoctorModel'; // Doctor model
 import EducationalInstitute from '../../models/EducationalInstituteModel'; // Educational Institute model
 import Recruiter from '../../models/RecruiterModel'; // Recruiter model
 import MedicalStudent from '../../models/MedicalStudentModel'; // Medical Student model
-
-// Map userType to corresponding models and discriminator keys
+import crypto from 'crypto';
+import { Document } from 'mongoose';
 const userModels: { [key: string]: any } = {
   Doctor: Doctor,
   MedicalStudent: MedicalStudent,
@@ -38,6 +38,10 @@ export const register = async (req: Request, res: Response) => {
     // Password confirmation
     if (password !== confirmPassword) {
       return res.status(400).json({ message: 'Passwords do not match' });
+    }
+    // Enforce minimum password length
+    if (password.length < 8) {
+      return res.status(400).json({ message: 'Password must be at least 8 characters long' });
     }
     // Always lowercase email
     const normalizedEmail = email.toLowerCase().trim();
@@ -185,5 +189,71 @@ export const login = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'An error occurred during login' });
+  }
+};
+
+// Forgot Password Controller
+export const forgotPassword = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: 'Email is required' });
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Generate a reset token and expiry
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpiry = Date.now() + 1000 * 60 * 30; // 30 minutes
+    (user as any).resetPasswordToken = resetToken;
+    (user as any).resetPasswordExpires = resetTokenExpiry;
+    await user.save();
+
+    // Create reset link
+    const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${resetToken}&email=${encodeURIComponent(user.email)}`;
+
+    // Setup nodemailer transporter (Gmail SMTP for demo)
+    const nodemailer = require('nodemailer');
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    // Send email
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: user.email,
+      subject: 'Password Reset Request',
+      html: `<p>You requested a password reset. Click the link below to reset your password:</p><p><a href="${resetLink}">${resetLink}</a></p><p>If you did not request this, please ignore this email.</p>`,
+    });
+
+    res.json({ message: 'Password reset link sent to your email.' });
+  } catch (err) {
+    console.error('Forgot password error:', err);
+    res.status(500).json({ message: 'Failed to send reset link', error: err instanceof Error ? err.message : 'Unknown error' });
+  }
+};
+
+// Reset Password Controller
+export const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const { email, token, newPassword } = req.body;
+    if (!email || !token || !newPassword) return res.status(400).json({ message: 'Missing required fields' });
+    const user = await User.findOne({ email: email.toLowerCase().trim(), resetPasswordToken: token });
+    if (!user) return res.status(400).json({ message: 'Invalid or expired reset token' });
+    if (!(user as any).resetPasswordExpires || (user as any).resetPasswordExpires < Date.now()) {
+      return res.status(400).json({ message: 'Reset token has expired' });
+    }
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    (user as any).resetPasswordToken = '';
+    (user as any).resetPasswordExpires = null;
+    await user.save();
+    res.json({ message: 'Password has been reset successfully.' });
+  } catch (err) {
+    console.error('Reset password error:', err);
+    res.status(500).json({ message: 'Failed to reset password', error: err instanceof Error ? err.message : 'Unknown error' });
   }
 };

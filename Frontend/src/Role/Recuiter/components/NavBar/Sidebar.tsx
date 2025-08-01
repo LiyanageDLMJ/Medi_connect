@@ -9,6 +9,7 @@ import {
   FiUsers,
   FiMessageSquare,
   FiLogOut,
+  FiFileText,
 } from "react-icons/fi";
 
 const SidebarRecruiter = () => {
@@ -16,12 +17,41 @@ const SidebarRecruiter = () => {
   const navigate = useNavigate();
 
   const navLinks = [
-    { label: "Dashboard", to: "/recruiter/dashboard", icon: <FiHome size={20} /> },
-    { label: "Your Profile", to: "/recruiter/profile", icon: <FiUser size={20} /> },
-    { label: "Job & Internship Post", to: "/recruiter/JobPost", icon: <FiBriefcase size={20} /> },
-    { label: "Job Listings", to: "/recruiter/JobListing", icon: <FiList size={20} /> },
-    { label: "View Candidates", to: "/recruiter/VeiwCandidates", icon: <FiUsers size={20} /> },
-    { label: "Messages", to: "/recruiter/messages", icon: <FiMessageSquare size={20} /> },
+    {
+      label: "Dashboard",
+      to: "/recruiter/dashboard",
+      icon: <FiHome size={20} />,
+    },
+    {
+      label: "Your Profile",
+      to: "/recruiter/profile",
+      icon: <FiUser size={20} />,
+    },
+    {
+      label: "CompareCV",
+      to: "/recruiter/cvCompare",
+      icon: <FiFileText size={20} />,
+    },
+    {
+      label: "Job & Internship Post",
+      to: "/recruiter/JobPost",
+      icon: <FiBriefcase size={20} />,
+    },
+    {
+      label: "Job Listings",
+      to: "/recruiter/JobListing",
+      icon: <FiList size={20} />,
+    },
+    {
+      label: "View Candidates",
+      to: "/recruiter/ViewCandidates",
+      icon: <FiUsers size={20} />,
+    },
+    {
+      label: "Messages",
+      to: "/recruiter/messages",
+      icon: <FiMessageSquare size={20} />,
+    },
   ];
 
   return (
@@ -36,47 +66,47 @@ const SidebarRecruiter = () => {
 
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 w-64 h-screen bg-white shadow-lg transform transition-transform md:transform-none ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        } md:translate-x-0 z-40`}
-        style={{ minHeight: '100vh', position: 'relative' }}
+        className={`fixed inset-y-0 left-0 w-64 h-screen bg-white shadow-lg z-40 flex flex-col justify-between`}
       >
-        <div className="flex items-center justify-between p-7">
-          <span className="text-xl font-bold">
-            <span className="text-blue-600">Medi</span>Connect
-          </span>
-          <button className="md:hidden" onClick={() => setIsOpen(false)}>
-            <FiMenu size={24} />
+        <div>
+          <div className="flex items-center justify-between p-7">
+            <span className="text-xl font-bold">
+              <span className="text-blue-600">Medi</span>Connect
+            </span>
+            <button className="md:hidden" onClick={() => setIsOpen(false)}>
+              <FiMenu size={24} />
+            </button>
+          </div>
+
+          <nav className="flex flex-col px-4 space-y-2">
+            {navLinks.map(({ to, label, icon }) => (
+              <button
+                key={to}
+                onClick={() => {
+                  navigate(to);
+                  setIsOpen(false);
+                }}
+                className="flex items-center gap-3 px-4 py-2 text-black hover:bg-[#184389] hover:text-white rounded-[12px] transition-all"
+              >
+                {icon}
+                <span>{label}</span>
+              </button>
+            ))}
+          </nav>
+        </div>
+        <div className="mb-6">
+          {/* Logout Button - always at the bottom */}
+          <button
+            onClick={() => {
+              localStorage.clear();
+              navigate("/login");
+            }}
+            className="flex items-center gap-3 px-4 py-2 text-black hover:bg-red-100 hover:text-red-600 rounded-[12px] transition-all w-[calc(100%-32px)] mx-4"
+          >
+            <FiLogOut size={20} />
+            <span>Logout</span>
           </button>
         </div>
-
-        <nav className="flex flex-col px-4 space-y-2">
-          {navLinks.map(({ to, label, icon }) => (
-            <button
-              key={to}
-              onClick={() => {
-                navigate(to);
-                setIsOpen(false);
-              }}
-              className="flex items-center gap-3 px-4 py-2 text-black hover:bg-[#184389] hover:text-white rounded-[12px] transition-all"
-            >
-              {icon}
-              <span>{label}</span>
-            </button>
-          ))}
-        </nav>
-        {/* Logout Button - absolutely positioned at the bottom */}
-        <button
-          onClick={() => {
-            localStorage.clear();
-            navigate('/login');
-          }}
-          className="flex items-center gap-3 px-4 py-2 text-black hover:bg-red-100 hover:text-red-600 rounded-[12px] transition-all"
-          style={{ position: 'absolute', bottom: 24, left: 16, right: 16, width: 'calc(100% - 32px)' }}
-        >
-          <FiLogOut size={20} />
-          <span>Logout</span>
-        </button>
       </div>
 
       {/* Overlay for mobile */}

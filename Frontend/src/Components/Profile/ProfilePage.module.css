@@ -140,6 +140,43 @@
   padding: 0 0.3rem;
 }
 
+.floatingLabel select {
+  width: 100%;
+  padding: 1.1rem 1rem 0.7rem 2.7rem;
+  border: 1.5px solid #dbeafe;
+  border-radius: 7px;
+  background: #f9fafb;
+  font-size: 1.08rem;
+  outline: none;
+  transition: border 0.2s;
+  appearance: none;
+  z-index: 1;
+}
+.floatingLabel select:focus {
+  border-color: #184389;
+}
+.floatingLabel select + label {
+  position: absolute;
+  left: 2.7rem;
+  top: 0.7rem;
+  color: #5a6a8e;
+  font-size: 1rem;
+  pointer-events: none;
+  transition: all 0.18s;
+  background: transparent;
+  z-index: 2;
+}
+.floatingLabel select:focus + label,
+.floatingLabel select:not([value=""]) + label {
+  top: -0.9rem;
+  left: 1.1rem;
+  font-size: 0.93rem;
+  color: #184389;
+  background: #fff;
+  padding: 0 0.3rem;
+  z-index: 3;
+}
+
 .inputIcon {
   position: absolute;
   left: 0.8rem;
@@ -370,6 +407,23 @@ input:checked + .slider:before { transform: translateX(22px); }
 }
 .switch input:checked + .slider:before {
   transform: translateX(22px);
+}
+
+.inputCard {
+  background: #fff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(24,67,137,0.04);
+  padding: 0.9rem 1.1rem;
+  font-size: 1.08rem;
+  outline: none;
+  transition: border 0.2s, box-shadow 0.2s;
+  width: 100%;
+  margin-bottom: 0;
+}
+.inputCard:focus {
+  border-color: #2563eb;
+  box-shadow: 0 2px 12px rgba(37,99,235,0.10);
 }
 
 @media (max-width: 700px) {

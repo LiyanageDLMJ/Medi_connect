@@ -88,4 +88,38 @@ router.delete('/', async (req, res) => {
   }
 });
 
+// GET /messages/latest?user1=...
+router.get('/latest', async (req, res) => {
+  const { user1 } = req.query as { user1?: string };
+  if (!user1) {
+    return res.status(400).json({ message: 'user1 is required' });
+  }
+  try {
+    // Find all messages involving user1
+    const msgs = await Message.find({
+      $or: [
+        { senderId: user1 },
+        { receiverId: user1 },
+      ],
+    }).sort({ createdAt: -1 });
+
+    // Map to latest message per unique conversation (user1 <-> user2)
+    const latestMap = new Map();
+    msgs.forEach(msg => {
+      // Conversation key: always store as lower id first for uniqueness
+      const ids = [msg.senderId, msg.receiverId].sort();
+      const key = ids.join('-');
+      // Only include conversations where user1 is one of the participants
+      if (ids.includes(user1) && !latestMap.has(key)) {
+        latestMap.set(key, msg);
+      }
+    });
+    const latestMessages = Array.from(latestMap.values());
+    res.json(latestMessages);
+  } catch (err) {
+    console.error('Fetch latest messages error', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 export default router;
