@@ -11,24 +11,24 @@ interface FormData {
   medicalDegree: string;
   university: string;
   specialization: string;
-  experience: string;
+  experience: number|string; // Changed to string to accommodate both number and string
   certificationInput: string[];
   additionalCertifications: string; 
   graduationDate: string; 
-  medicalLicenseNumber: string;
+  medicalLicenseNumber: number|string; // Changed to string to accommodate both number and string
   medicalLicenseIssuer: string;
   jobTitle: string;
   employmentPeriod: string;
   hospitalInstitution: string;
   resumePdfUrl: string;
+  resumeRawUrl: string; // Add this field for Supabase URL
+  fullName: string;
+  email: string;
+  phone: string;
+  location: string;
 }
 
-interface FormContextType {
-  formData: FormData;
-  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
-}
-
-const defaultFormData: FormData = {
+const initialFormData: FormData = {
   yourName: "",
   professionalTitle: "",
   currentLocation: "",
@@ -41,7 +41,7 @@ const defaultFormData: FormData = {
   specialization: "",
   experience: "",
   certificationInput: [],
-  additionalCertifications: "", 
+  additionalCertifications: "",
   graduationDate: "",
   medicalLicenseNumber: "",
   medicalLicenseIssuer: "",
@@ -49,12 +49,22 @@ const defaultFormData: FormData = {
   employmentPeriod: "",
   hospitalInstitution: "",
   resumePdfUrl: "",
+  resumeRawUrl: "",
+  fullName: "",
+  email: "",
+  phone: "",
+  location: "",
 };
+
+interface FormContextType {
+  formData: FormData;
+  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
+}
 
 const FormContext = createContext<FormContextType | undefined>(undefined);
 
 export const FormProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [formData, setFormData] = useState<FormData>(defaultFormData);
+  const [formData, setFormData] = useState<FormData>(initialFormData);
 
   return (
     <FormContext.Provider value={{ formData, setFormData }}>
@@ -65,7 +75,7 @@ export const FormProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 export const useFormContext = () => {
   const context = useContext(FormContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error("useFormContext must be used within a FormProvider");
   }
   return context;

@@ -5,6 +5,7 @@ import {
   updateJob,
   deleteJob,
   getJobById,
+  viewAllJobs,
 } from "../../controllers/RecuiterControllers/jobPostController";
 
 const router = express.Router();
@@ -29,7 +30,8 @@ router.put("/updateJobs/:id", asyncHandler(updateJob));
 // Route to delete a job post by ID
 router.delete("/deleteJobs/:id", asyncHandler(deleteJob));
 
-
+// Route to view all job posts (all recruiters)
+router.get("/viewAllJobs", asyncHandler(viewAllJobs));
 
 
 export default router;

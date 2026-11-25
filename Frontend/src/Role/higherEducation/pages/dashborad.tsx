@@ -5,20 +5,15 @@ import TopBar from "../components/TopBar";
 
 const Dashborad = () => {
   return (
-    <div className="flex h-screen">
-    {/* Sidebar */}
-    <Sidebar />
-
-    {/* Main Content */}
-    <div className="flex-1 overflow-auto md:pl-64"> {/* Add padding on larger screens to account for sidebar */}
-    <TopBar />
-    <div className="flex flex-col min-h-[calc(100vh-80px)] p-4 ">
-     
-     
-     
+    <div style={{ display: 'flex', minHeight: '100vh', background: 'linear-gradient(135deg, #f7fafd 0%, #e3eafc 100%)' }}>
+      <Sidebar />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', minHeight: '100vh', padding: '2.5rem 1rem' }}>
+        <TopBar />
+        <div style={{ width: '100%', maxWidth: 900, marginTop: 32 }}>
+          {/* Main content goes here */}
+        </div>
       </div>
-</div>
-</div>
+    </div>
   )
 }
 

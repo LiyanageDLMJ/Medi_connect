@@ -54,8 +54,8 @@ export const imageUpload = multer({
     } else {
       cb(new Error("Only image files (JPEG, PNG, JPG, WebP) are allowed"));
     }
-  },
-  limits: { fileSize: 5 * 1024 * 1024 }, // Increased to 5MB to match frontend expectation
+  }, // Increased to 5MB to match frontend expectation
+  limits: { fileSize: 20 * 1024 * 1024 } // 20MB limit
 });
 
 export default upload;

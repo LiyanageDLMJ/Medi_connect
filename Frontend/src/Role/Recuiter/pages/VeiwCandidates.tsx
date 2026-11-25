@@ -19,6 +19,7 @@ interface Application {
     title: string;
     hospitalName: string;
     location: string;
+    department: string;
   };
 }
 
@@ -32,6 +33,8 @@ const ViewCandidates = () => {
   const [newStatus, setNewStatus] = useState('');
   const [feedback, setFeedback] = useState('');
   const [updateLoading, setUpdateLoading] = useState(false);
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [recruiterProfile, setRecruiterProfile] = useState<{ companyName?: string; photoUrl?: string }>({});
 
   const statusOptions = [
     'applied',
@@ -46,17 +49,42 @@ const ViewCandidates = () => {
 
   useEffect(() => {
     fetchApplications();
+    // Fetch recruiter profile on mount
+    const fetchProfile = async () => {
+      const token = localStorage.getItem('token');
+      const userId = localStorage.getItem('userId');
+      if (!token || !userId) return;
+      try {
+        const res = await fetch('http://localhost:3000/profile', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'x-user-id': userId,
+          },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setRecruiterProfile({ companyName: data.companyName, photoUrl: data.photoUrl });
+        }
+      } catch (err) {
+        // Optionally handle error
+      }
+    };
+    fetchProfile();
   }, []);
 
   const fetchApplications = async () => {
     try {
-      // Fix: Change to match your actual backend route
-      const response = await axios.get('http://localhost:3000/jobApplicationControl/getApplications');
+      const token = localStorage.getItem('token');
+      const userId = localStorage.getItem('userId');
+      const headers: any = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      if (userId) headers['x-user-id'] = userId;
+      const response = await axios.get('http://localhost:3000/jobApplicationControl/getApplications', { headers });
       setApplications(response.data);
       setError(null);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to fetch applications');
       console.error('Error fetching applications:', err);
+      setError(err.response?.data?.message || err.message || 'Failed to fetch applications');
     } finally {
       setIsLoading(false);
     }
@@ -107,16 +135,40 @@ const ViewCandidates = () => {
     }
   };
 
+  const handleViewCV = (application: Application) => {
+    if (!application.cv) {
+      alert('CV file not available for this candidate');
+      return;
+    }
+
+    const cvUrl = `http://localhost:3000/${application.cv}`;
+    
+    // Try to open the CV in a new tab
+    const newWindow = window.open(cvUrl, '_blank');
+    
+    if (!newWindow) {
+      // If popup is blocked, show an alert with the URL
+      alert(`CV URL: ${cvUrl}\n\nIf the CV doesn't open automatically, please copy and paste this URL into your browser.`);
+    }
+  };
+
   const handleUpdateStatus = async () => {
     if (!selectedApplication) return;
 
     setUpdateLoading(true);
     try {
-      // Fix: Change to match your actual backend route
-      await axios.patch(`http://localhost:3000/jobApplicationControl/updateStatus/${selectedApplication._id}`, {
-        status: newStatus,
-        recruiterFeedback: feedback
-      });
+      await axios.patch(
+        `http://localhost:3000/jobApplicationControl/updateStatus/${selectedApplication._id}`,
+        {
+          status: newStatus,
+          recruiterFeedback: feedback
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
       // Update local state
       setApplications(prev => 
@@ -133,168 +185,277 @@ const ViewCandidates = () => {
       setFeedback('');
     } catch (error: any) {
       console.error('Error updating status:', error);
-      setError(error.response?.data?.message || 'Failed to update status');
+      setError(error.response?.data?.message || error.message || 'Failed to update status');
     } finally {
       setUpdateLoading(false);
     }
   };
 
-  const filteredApplications = applications.filter(app =>
-    app.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    app.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredApplications = applications.filter(app => {
+    const matchesSearch = app.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         app.email.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === 'all' || app.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      <Sidebar />
-      
-      <div className="flex-1 overflow-auto md:pl-64">
-        <div className="p-8">
-          <div className="mb-8 flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">Candidate Applications</h1>
-            <div className="flex items-center">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/340px-Default_pfp.svg.png" className="w-10 h-10 rounded-full mr-2" />
-              <span className="font-semibold text-gray-700">Mayo Clinic</span>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex flex-col md:flex-row">
+      <div className="w-full md:w-64 flex-shrink-0 md:sticky md:top-0 md:h-screen z-10">
+        <Sidebar />
+      </div>
+      <div className="flex-1 overflow-auto flex flex-col items-center justify-start px-4 py-8 min-h-screen">
+        <div className="w-full max-w-7xl bg-white/80 backdrop-blur-sm shadow-xl rounded-3xl p-6 md:p-10 mx-auto border border-white/20">
+          {/* Enhanced Header */}
+          <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-6 bg-gradient-to-r from-blue-900 to-indigo-500 rounded-2xl text-white">
+            <div>
+              <h1 className="text-3xl font-bold">Candidate Applications</h1>
+              <p className="text-blue-100 mt-1">Manage and review job applications</p>
+            </div>
+            <div className="flex items-center justify-end w-full md:w-auto">
+              <div className="flex items-center gap-3 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
+                <img
+                  src={recruiterProfile.photoUrl || "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/340px-Default_pfp.svg.png"}
+                  className="w-10 h-10 rounded-full border-2 border-white/30"
+                  alt="Profile"
+                />
+                <span className="font-semibold">{recruiterProfile.companyName || "Recruiter"}</span>
+              </div>
             </div>
           </div>
             
-          <div className="mt-4 flex items-center">
+          {/* Enhanced Search and Filter Section */}
+          <div className="mb-6 flex flex-col lg:flex-row items-center gap-4 p-6 bg-gradient-to-r from-gray-50 to-blue-50 rounded-2xl border border-gray-100">
+            {/* Search Field */}
             <div className="relative flex-1 max-w-md">
               <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search candidates..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm transition-all duration-200"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
+
+            {/* Status Filter */}
+            <div className="relative min-w-[200px]">
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm text-gray-700 transition-all duration-200"
+              >
+                <option value="all">All Statuses</option>
+                <option value="applied">Applied</option>
+                <option value="phone-screen">Phone Screen</option>
+                <option value="interview-scheduled">Interview Scheduled</option>
+                <option value="in-review">In Review</option>
+                <option value="final-interview">Final Interview</option>
+                <option value="offer">Offer</option>
+                <option value="rejected">Rejected</option>
+                <option value="withdrawn">Withdrawn</option>
+              </select>
+            </div>
+
+            {/* Clear Filters Button */}
+            <button
+              onClick={() => {
+                setSearchTerm('');
+                setStatusFilter('all');
+              }}
+              className="px-6 py-3 text-gray-600 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all duration-200 bg-white shadow-sm font-medium"
+            >
+              Clear Filters
+            </button>
+          </div>
+
+          {/* Enhanced Results Summary */}
+          <div className="mb-6 p-4 bg-blue-50 rounded-xl border border-blue-100">
+            <div className="text-sm text-gray-700">
+              <span className="font-semibold text-blue-800">Showing {filteredApplications.length} of {applications.length} candidates</span>
+              {statusFilter !== 'all' && (
+                <span className="ml-4 inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                  Status: {statusFilter.replace('-', ' ')}
+                </span>
+              )}
+              {searchTerm && (
+                <span className="ml-4 inline-flex items-center px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+                  Search: "{searchTerm}"
+                </span>
+              )}
+            </div>
           </div>
 
           {error && (
-            <div className="mb-4 p-4 bg-red-50 border-l-4 border-red-500 text-red-700">
-              {error}
+            <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-xl">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium">{error}</p>
+                </div>
+              </div>
             </div>
           )}
 
           {isLoading ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+            <div className="flex items-center justify-center flex-1 py-20">
+              <div className="flex flex-col items-center gap-4">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                <p className="text-gray-600 font-medium">Loading candidates...</p>
+              </div>
             </div>
           ) : (
-            <div className="overflow-x-auto bg-white rounded-lg shadow">
-              <table className="min-w-full table-auto">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-blue-500 uppercase tracking-wider">Name</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-blue-500 uppercase tracking-wider">Contact Info</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-blue-500 uppercase tracking-wider">Experience</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-blue-500 uppercase tracking-wider">Applied Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-blue-500 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-blue-500 uppercase tracking-wider">Viewed</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-blue-500 uppercase tracking-wider">CV</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-blue-500 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredApplications.map((application) => (
-                    <tr key={application._id} className={`hover:bg-gray-50 ${!application.viewedByRecruiter ? 'bg-blue-50' : ''}`}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="font-medium text-gray-900">{application.name}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900">{application.email}</div>
-                        <div className="text-sm text-gray-500">{application.phone}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900 max-w-xs truncate">
-                          {application.experience}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatDate(application.appliedDate)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(application.status)}`}>
-                          {application.status.replace('-', ' ')}
-                        </span>
-                      </td>
-                      
-                      {/* Add this missing "Viewed" column */}
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          {application.viewedByRecruiter ? (
-                            <span className="text-green-600 flex items-center text-sm">
-                              <FaEye className="mr-1" />
-                              Viewed
-                            </span>
-                          ) : (
-                            <span className="text-orange-600 flex items-center text-sm font-semibold">
-                              <FaEye className="mr-1" />
+            <div className="bg-white rounded-2xl shadow-lg flex-1 flex flex-col min-h-0 border border-gray-100 overflow-hidden">
+              {/* Enhanced table header */}
+              <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 flex-shrink-0">
+                <table className="w-full table-fixed">
+                  <thead>
+                    <tr>
+                      <th className="w-[12%] px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Name
+                      </th>
+                      <th className="w-[18%] px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Contact Info
+                      </th>
+                      <th className="w-[12%] px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Title
+                      </th>
+                      <th className="w-[20%] px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Experience
+                      </th>
+                      <th className="w-[12%] px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Applied Date
+                      </th>
+                      <th className="w-[10%] px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="w-[10%] px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        CV
+                      </th>
+                      <th className="w-[10%] px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                </table>
+              </div>
+
+              {/* Enhanced scrollable table body */}
+              <div className="flex-1 overflow-y-auto overflow-x-hidden min-h-0">
+                <table className="w-full table-fixed">
+                  <tbody className="bg-white divide-y divide-gray-100">
+                    {filteredApplications.map((application, index) => (
+                      <tr 
+                        key={application._id} 
+                        className={`hover:bg-blue-50/50 transition-all duration-200 ${
+                          !application.viewedByRecruiter ? 'bg-blue-50/30 border-l-4 border-blue-400' : ''
+                        } ${index % 2 === 0 ? 'bg-gray-50/30' : 'bg-white'}`}
+                      >
+                        <td className="w-[12%] px-4 py-4 whitespace-nowrap">
+                          <div className="font-semibold text-gray-900 truncate text-sm">{application.name}</div>
+                          {!application.viewedByRecruiter && (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mt-1">
                               New
                             </span>
                           )}
-                        </div>
-                      </td>
-                      
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <a
-                          href={application.cv}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                        >
-                          <FaDownload className="mr-2" />
-                          View CV
-                        </a>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button
-                          onClick={() => handleViewCandidate(application)}
-                          className="text-blue-600 hover:text-blue-900 mr-3"
-                          title="View Candidate"
-                        >
-                          <FaEye />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSelectedApplication(application);
-                            setNewStatus(application.status);
-                            setFeedback(application.recruiterFeedback || '');
-                            setShowStatusModal(true);
-                          }}
-                          className="text-green-600 hover:text-green-900"
-                          title="Update Status"
-                        >
-                          <FaEdit />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        </td>
+                        <td className="w-[18%] px-4 py-4">
+                          <div className="text-sm text-gray-900 truncate">{application.email}</div>
+                          <div className="text-sm text-gray-500">{application.phone}</div>
+                        </td>
+                        <td className="w-[12%] px-4 py-4">
+                          <div className="text-sm font-medium text-gray-900 truncate" title={application.jobId?.title || 'N/A'}>
+                            {application.jobId?.title || 'N/A'}
+                          </div>
+                        </td>
+                        <td className="w-[20%] px-4 py-4">
+                          <div className="text-sm text-gray-900 truncate" title={application.experience}>
+                            {application.experience}
+                          </div>
+                        </td>
+                        <td className="w-[12%] px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {formatDate(application.appliedDate)}
+                        </td>
+                        <td className="w-[10%] px-4 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(application.status)}`}>
+                            {application.status.replace('-', ' ')}
+                          </span>
+                        </td>
+                        <td className="w-[10%] px-4 py-4 whitespace-nowrap">
+                          <button
+                            onClick={() => handleViewCV(application)}
+                            className="inline-flex items-center px-3 py-2 border border-transparent text-xs leading-4 font-medium rounded-lg text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-sm"
+                          >
+                            <FaDownload className="mr-1" />
+                            View
+                          </button>
+                        </td>
+                        <td className="w-[10%] px-4 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex items-center space-x-3">
+                            <button
+                              onClick={() => handleViewCandidate(application)}
+                              className="text-blue-600 hover:text-blue-900 transition-colors duration-200 p-1 rounded-md hover:bg-blue-50"
+                              title="View Candidate"
+                            >
+                              <FaEye />
+                            </button>
+                            <button
+                              onClick={() => {
+                                setSelectedApplication(application);
+                                setNewStatus(application.status);
+                                setFeedback(application.recruiterFeedback || '');
+                                setShowStatusModal(true);
+                              }}
+                              className="text-green-600 hover:text-green-900 transition-colors duration-200 p-1 rounded-md hover:bg-green-50"
+                              title="Update Status"
+                            >
+                              <FaEdit />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              
+              {/* Enhanced empty state */}
+              {filteredApplications.length === 0 && (
+                <div className="text-center py-16">
+                  <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <FaSearch className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <p className="text-gray-500 text-lg font-medium">No applications found</p>
+                  <p className="text-gray-400 mt-2">Try adjusting your search criteria or filters</p>
+                </div>
+              )}
             </div>
           )}
         </div>
       </div>
 
-      {/* Status Update Modal */}
+      {/* Enhanced Status Update Modal */}
       {showStatusModal && selectedApplication && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-96 max-w-md mx-4">
-            <h2 className="text-lg font-bold mb-4">Update Application Status</h2>
-            <p className="text-sm text-gray-600 mb-4">
-              Candidate: <span className="font-semibold">{selectedApplication.name}</span>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-8 w-96 max-w-md mx-4 shadow-2xl border border-gray-100">
+            <h2 className="text-xl font-bold mb-4 text-gray-900">Update Application Status</h2>
+            <p className="text-sm text-gray-600 mb-6 p-4 bg-gray-50 rounded-lg">
+              Candidate: <span className="font-semibold text-gray-900">{selectedApplication.name}</span>
             </p>
             
-            <div className="mb-4">
+            <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Status
               </label>
               <select
                 value={newStatus}
                 onChange={(e) => setNewStatus(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
               >
                 {statusOptions.map(status => (
                   <option key={status} value={status}>
@@ -304,19 +465,19 @@ const ViewCandidates = () => {
               </select>
             </div>
 
-            <div className="mb-6">
+            <div className="mb-8">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Feedback (Optional)
               </label>
               <textarea
                 value={feedback}
                 onChange={(e) => setFeedback(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 h-20 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 h-24 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
                 placeholder="Add feedback for the candidate..."
               />
             </div>
 
-            <div className="flex justify-end space-x-3">
+            <div className="flex justify-end space-x-4">
               <button
                 onClick={() => {
                   setShowStatusModal(false);
@@ -324,14 +485,14 @@ const ViewCandidates = () => {
                   setNewStatus('');
                   setFeedback('');
                 }}
-                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-6 py-3 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 font-medium"
                 disabled={updateLoading}
               >
                 Cancel
               </button>
               <button
                 onClick={handleUpdateStatus}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors duration-200 font-medium"
                 disabled={updateLoading}
               >
                 {updateLoading ? 'Updating...' : 'Update'}

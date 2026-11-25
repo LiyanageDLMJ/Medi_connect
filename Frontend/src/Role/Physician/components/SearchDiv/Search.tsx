@@ -145,7 +145,6 @@ const SearchFilters: React.FC<{
       name="jobType" 
       value={filters.jobType} 
       options={[
-        "Internship", 
         "Part-Time", 
         "Full-Time", 
         "Remote"

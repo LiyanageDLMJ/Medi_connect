@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import DoctorForm from '../register/forms/DoctorForm';
 import MedicalStudentForm from '../register/forms/MedicalStudentForm';
 import RecruiterForm from '../register/forms/RecruiterForm';
 import EducationalInstituteForm from '../register/forms/EducationalInstituteForm';
 import { InputGroup, Label, Input, Select } from '../components/StyledFormComponents';
 import Navbar from '../components/Navbar';
+import toast from 'react-hot-toast';
 
 type UserType = 'doctor' | 'medical_student' | 'recruiter' | 'educational_institute' | '';
 
@@ -15,16 +16,24 @@ interface FormData {
   email: string;
   password: string;
   confirmPassword: string;
+  idPhoto?: File | null;
+  // Doctor fields
   profession?: string;
   specialty?: string;
   location?: string;
   higherEducation?: string;
+  otherSpecialty?: string; // Added for 'Other' specialty
+  // Medical Student fields
   currentInstitute?: string;
   yearOfStudy?: string;
   fieldOfStudy?: string;
-  hospitalName?: string;
+  otherFieldOfStudy?: string; // Added for 'Other' field of study
+  // Recruiter fields
+  companyName?: string;
+  companyType?: string;
   position?: string;
-  healthcareType?: string;
+  contactNumber?: string;
+  // Educational Institute fields
   instituteName?: string;
   instituteType?: string;
   accreditation?: string;
@@ -32,6 +41,7 @@ interface FormData {
 }
 
 const Register = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<FormData>({
     userType: '',
     email: '',
@@ -39,16 +49,100 @@ const Register = () => {
     confirmPassword: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Registration attempt with:', formData);
+    setMessage(null);
+    setError(null);
+
+    // Simple client-side validation
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      toast.error('Passwords do not match'); // Show error toast
+      return;
+    }
+    if (!formData.userType) {
+      setError('Please select a user type');
+      toast.error('Please select a user type'); // Show error toast
+      return;
+    }
+
+    try {
+      const API_BASE = window.location.origin.includes('localhost') ? 'http://localhost:3000' : window.location.origin;
+
+      // Prepare payload, handling 'Other' fields
+      let payload: any = { ...formData };
+      // Doctor: handle specialty
+      if (formData.userType === 'doctor' && formData.specialty === 'Other (please specify)') {
+        payload.specialty = formData.otherSpecialty || '';
+        delete payload.otherSpecialty;
+      }
+      // Medical Student: handle fieldOfStudy
+      if (formData.userType === 'medical_student' && formData.fieldOfStudy === 'Other (please specify)') {
+        payload.fieldOfStudy = formData.otherFieldOfStudy || '';
+        delete payload.otherFieldOfStudy;
+      }
+
+      // If idPhoto present, convert to base64 string so we can still send JSON
+      if (formData.idPhoto) {
+        const file = formData.idPhoto as File;
+        const base64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+        payload.idPhotoBase64 = base64;
+        delete payload.idPhoto;
+      }
+
+      const res = await fetch(`${API_BASE}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.message || 'Registration failed'); // Show error toast
+        throw new Error(data.message || 'Registration failed');
+      }
+
+      // Show success toast on registration
+      toast.success('Registration successful! Please log in.');
+      setMessage('Registration successful! Please log in. Redirecting to login page...');
+
+      // Wait a moment so the user can read the success message, then send to login
+      setTimeout(() => navigate('/login'), 1500);
+      // Optionally reset form
+      setFormData({
+        userType: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        idPhoto: null,
+      } as FormData);
+    } catch (err: any) {
+      setError(err.message || 'An error occurred');
+      // Error toast already shown above
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    if (e.target.type === 'file') {
+      const fileInput = e.target as HTMLInputElement;
+      setFormData({
+        ...formData,
+        idPhoto: fileInput.files?.[0] || null,
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [e.target.name]: (e.target as any).value,
+      });
+    }
   };
 
   return (
@@ -118,6 +212,7 @@ const Register = () => {
             <RegisterButton type="submit">
               Register <span>→</span>
             </RegisterButton>
+
             <RegisterLink>
               Already have an account? <Link to="/login">Login</Link>
             </RegisterLink>

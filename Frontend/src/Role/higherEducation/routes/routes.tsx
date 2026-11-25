@@ -1,8 +1,8 @@
 import { Routes, Route } from "react-router-dom";
-import NavBar from "../components/NavBar/NavBar";
+import Sidebar from "../components/Sidebar";
 import DegreeListing from "../pages/DegreeListing";
 import Footer from "../../../Components/FooterDiv/Footer";
-import Dashboard from "../pages/dashborad";
+import Dashboard from "../pages/Dashboard";
 import UserProfile from "../pages/YourProfile";
 import ViewApplications from "../pages/ViewApplications";
 import PerformanceInsights from "../pages/PerformanceInsights";
@@ -10,7 +10,7 @@ import Messages from "../pages/Messages";
 const routes = () => {
   return (
     <div>
-      <NavBar />
+      <Sidebar />
       <Routes>
        <Route path="/" element={<Dashboard />} />
        <Route path="/higher-education/degree-listing/profile" element={<UserProfile />} />

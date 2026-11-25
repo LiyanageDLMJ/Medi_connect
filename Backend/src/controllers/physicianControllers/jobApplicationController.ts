@@ -7,62 +7,50 @@ import mongoose from "mongoose";
 // Add a new job application
 export const addJobApplication = async (req: Request, res: Response) => {
   try {
-    console.log("Request body:", req.body); // Add this log
-    console.log("Request files:", req.files); // Add this log
+    // Get userId from authentication middleware (recommended)
+    // const userId = req.user.id;
+
+    // TEMPORARY: If you don't have auth, get userId from frontend (not secure, but works for now)
+    const userId = req.body.userId;
+
+    console.log("Request body:", req.body);
     
     const { name, email, phone, experience, jobId } = req.body;
     
-    // Add detailed logging
-    console.log("Received jobId:", jobId);
-    console.log("Type of jobId:", typeof jobId);
-    
-    // Check if jobId exists and is valid
+    // Check if jobId exists
     if (!jobId || jobId.trim() === "") {
-      console.log("Invalid jobId received");
       return res.status(400).json({ message: "Valid Job ID is required" });
     }
     
-    // Check if the job exists in your database
-    const jobExists = await Job.findById(jobId);
-    if (!jobExists) {
-      console.log("Job not found in database");
+    // Find job using jobId field (not _id)
+    const job = await Job.findOne({ jobId: jobId });
+    if (!job) {
+      console.log("Job not found with jobId:", jobId);
       return res.status(400).json({ message: "Job not found" });
     }
-
-    if (!req.file) {
-      return res.status(400).json({ 
-        message: "CV file is required",
-        missingFields: ["cv"]
-      });
-    }
-
-    console.log("Received application:", { jobId, name, email, phone, experience, cv: req.file?.path });
-
-    // Upload file to Cloudinary
-    const cloudinaryResponse = await cloudinary.uploader.upload(req.file.path, {
-      folder: "cvs", 
-      resource_type: "raw" 
-    });
-
-    // Create new job application with Cloudinary URL
+    
+    console.log("Job found:", job);
+    
+    // Create the job application
     const newApplication = new JobApplication({
-      jobId,
       name,
       email,
       phone,
       experience,
-      cv: cloudinaryResponse.secure_url 
+      jobId: job._id, // Store as string, matching your Job model
+      cv: req.file ? req.file.path : null,
+      appliedDate: new Date(),
+      status: 'applied',
+      userId, // <-- ADD THIS LINE
     });
-
-    // Save to database
-    await newApplication.save();
-
-    // Return success response
-    return res.status(201).json({
+    
+    const savedApplication = await newApplication.save();
+    
+    res.status(201).json({
       message: "Application submitted successfully",
-      application: newApplication
+      application: savedApplication
     });
-
+    
   } catch (error: any) {
     console.error("Error in addJobApplication:", error);
     res.status(500).json({ 
@@ -138,8 +126,8 @@ export const getUserApplications = async (req: Request, res: Response) => {
   try {
     const userId = req.params.userId;
     const applications = await JobApplication.find({ userId })
+      .populate('jobId') // <-- This will fetch the job details!
       .sort({ appliedDate: -1 });
-    
     res.status(200).json(applications);
   } catch (error: any) {
     res.status(500).json({ 

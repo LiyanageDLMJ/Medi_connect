@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const JobApplicationSchema = new mongoose.Schema({
   jobId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Job', // Reference to Job model
+    ref: 'Job',
     required: true,
   },
   name: {
@@ -43,7 +43,12 @@ const JobApplicationSchema = new mongoose.Schema({
   lastUpdate: {
     type: Date,
     default: Date.now,
-  }
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
 }, {
   timestamps: true
 });

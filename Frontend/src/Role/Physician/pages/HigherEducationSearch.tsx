@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import SidebarWrapper from "../../../Components/SidebarWrapper";
 import Search from "../components/DegreeDiv/DegreeSearch";
 import DegreeCard from "../components/DegreeDiv/DegreeCard";
-import Sidebar from "../components/NavBar/Sidebar";
 import TopBar from "../components/TopBar";
 
 // Utility function to derive statusColor based on status
@@ -67,7 +68,7 @@ const HigherEducationSearch = () => {
 
   return (
     <div className="flex h-screen">
-      <Sidebar />
+      <SidebarWrapper />
       <div className="flex-1 overflow-auto md:pl-60">
         <TopBar />
         <div className="flex flex-col min-h-[calc(100vh-80px)] p-4">

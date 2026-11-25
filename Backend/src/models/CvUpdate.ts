@@ -13,19 +13,19 @@ const CvUpdateSchema = new Schema({
   university: { type: String, required: true },
   specialization: { type: String, required: true },
   experience: { type: String, required: true },
-  additionalCertifications: [String],
+  certificationInput: [String],
   graduationDate: String,
   medicalLicenseNumber: { type: String, required: true },
   medicalLicenseIssuer: { type: String, required: true },
   jobTitle: { type: String, required: true },
   hospitalInstitution: { type: String, required: true },
   employmentPeriod: { type: String, required: true },
-  resumePdfUrl: { type: String, required: true },
-  
+  resumeRawUrl: { type: String, required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Add userId field
+}, {
+  timestamps: true
 });
 
-
 const CvDoctorUpdate=mongoose.model('cvData',CvUpdateSchema);
-
 
 export default CvDoctorUpdate;

@@ -3,9 +3,10 @@ import { InputGroup, Label, Input, Select } from '../../components/StyledFormCom
 
 interface RecruiterFormProps {
   formData: {
-    hospitalName?: string;
+    companyName?: string;
+    companyType?: string;
     position?: string;
-    healthcareType?: string;
+    contactNumber?: string;
   };
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
 }
@@ -14,11 +15,11 @@ const RecruiterForm: React.FC<RecruiterFormProps> = ({ formData, handleChange })
   return (
     <>
       <InputGroup>
-        <Label>Hospital Name</Label>
+        <Label>Company Name</Label>
         <Input
           type="text"
-          name="hospitalName"
-          value={formData.hospitalName || ''}
+          name="companyName"
+          value={formData.companyName || ''}
           onChange={handleChange}
           required
         />
@@ -34,20 +35,29 @@ const RecruiterForm: React.FC<RecruiterFormProps> = ({ formData, handleChange })
         />
       </InputGroup>
       <InputGroup>
-        <Label>Healthcare Type</Label>
+        <Label>Company Type</Label>
         <Select
-          name="healthcareType"
-          value={formData.healthcareType || ''}
+          name="companyType"
+          value={formData.companyType || ''}
           onChange={handleChange}
           required
         >
-          <option value="">Select Industry</option>
-          <option value="healthcare">Healthcare</option>
+          <option value="">Select Company Type</option>
           <option value="hospital">Hospital</option>
           <option value="clinic">Clinic</option>
           <option value="pharmaceutical">Pharmaceutical</option>
           <option value="other">Other</option>
         </Select>
+      </InputGroup>
+      <InputGroup>
+        <Label>Contact Number</Label>
+        <Input
+          type="text"
+          name="contactNumber"
+          value={formData.contactNumber || ''}
+          onChange={handleChange}
+          required
+        />
       </InputGroup>
     </>
   );
